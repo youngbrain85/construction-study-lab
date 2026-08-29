@@ -202,3 +202,11 @@ test('evaluateMix: 물 +100 → collapse·F / 물 −100 → zero slump', () => 
   assert.equal(dry.behavior.mode, 'zero');
   assert.ok(dry.measuredSlump <= 0.5);
 });
+
+test('scoreMix: shear 배합은 슬럼프 점수 반감 → A등급 불가', () => {
+  const slab = E.MISSIONS.find(m => m.id === 'slab');
+  const r = E.evaluateMix({ ...TEXTBOOK, ca: 2500, fa: 500 }, slab, 42);
+  assert.equal(r.behavior.mode, 'shear');
+  assert.ok(r.score.slumpPts <= 20, `slumpPts=${r.score.slumpPts}`);
+  assert.ok(r.score.grade !== 'A', `grade=${r.score.grade}`);
+});

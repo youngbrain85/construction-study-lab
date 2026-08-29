@@ -205,6 +205,8 @@
       const d = measuredSlump < lo ? lo - measuredSlump : measuredSlump - hi;
       slumpPts = clamp(40 - 12 * d, 0, 40);
     }
+    // 전단 슬럼프는 ASTM C143상 비대표 시험 — 배합 결함(모르타르 부족) 신호이므로 슬럼프 점수 50% 감점
+    if (behavior.mode === 'shear') slumpPts = Math.round(slumpPts * 0.5 * 10) / 10;
 
     // 강도 40점: 미달 비율 ×100 감점
     const ratio = avgStrength / mission.fc;
