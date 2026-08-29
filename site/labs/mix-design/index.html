@@ -443,352 +443,88 @@ function canvasFallback(root, title, sub, resultNodes, nextLabel, onNext) {
       h('button', { class: 'btn btn-primary', onclick: onNext }, nextLabel)));
 }
 
-// ── MIX: 드럼 믹서 ────────────────────────────────────────────────
-// 경사식 포터블 드럼 믹서(레퍼런스: 실험실용 전동 틸팅 드럼 믹서 실사진, §hotfix):
-// 검정 강관 A-프레임(다리 2쌍: 바퀴쪽/발쪽) + 주황 드럼(벨리 원뿔대 + 좁아지는 목 +
-// 개구부) + 검정 모터 하우징(전원 케이블) + 측면 핸드휠 + 버킷 투입 연출. 슬럼프 장면과
-// 톤 통일(상부 좌측 광원, 접지 그림자, 금속/도장 그라데이션).
+// ── MIX: 드럼 믹서(Scene3D 3D 소비) ──────────────────────────────────
+// 3D 지오메트리·애니메이션은 scene3d.js의 Scene3D.buildMixerScene()이 전담한다.
+// 이 파일은 스테이지 생성 + HTML 오버레이(캡션) + 버튼 계약 + 폴백만 담당한다.
+// 캡션 경계(0.9/1.6/2.6초)는 buildMixerScene 내부 STAGE_BOUNDS와 반드시 동기화한다.
+const MIX_CAPTION_BOUNDS = [0.9, 1.6, 2.6];
+const MIX_CAPTIONS = ['Adding cement…', 'Adding water…', 'Adding aggregates…', 'Mixing…'];
 Scenes.mix = () => {
-  let raf = 0, start = 0;
-  const W = 900, H = 460;
+  let stage = null, start = 0;
   const mix = designToMix();
   const wc = mix.cement > 0 ? mix.water / mix.cement : 1.2;
-  // ctx.rotate와 동일한 회전행렬 — 드럼 로컬 좌표를 월드 오프셋으로 환산할 때 재사용
-  const rotPt = (lx, ly, ang) => [lx * Math.cos(ang) - ly * Math.sin(ang), lx * Math.sin(ang) + ly * Math.cos(ang)];
   return {
     mount(root) {
-      const { canvas, ctx } = canvasStage(W, H, 'Concrete drum mixer animation');
-      if (!ctx) {
+      const S3 = window.Scene3D;
+      if (!S3 || !S3.ready) {
         canvasFallback(root, 'Batching & mixing', 'One cubic yard, coming up.',
           h('p', {}, 'Mixing complete.'), 'Continue to Slump Test →', () => go('slump'));
         return;
       }
+      const container = h('div', { class: 'canvas-stage',
+        style: 'position:relative;width:100%;max-width:900px;aspect-ratio:900/460;overflow:hidden' });
+      stage = S3.createStage(container, {
+        w: 900, h: 460, fov: 42,
+        cameraPos: { x: 2.9, y: 2.1, z: 3.6 }, target: { x: 0, y: 0.82, z: 0 },
+      });
+      if (!stage) {
+        canvasFallback(root, 'Batching & mixing', 'One cubic yard, coming up.',
+          h('p', {}, 'Mixing complete.'), 'Continue to Slump Test →', () => go('slump'));
+        return;
+      }
+      const THREE = S3.THREE;
+      stage.renderer.domElement.setAttribute('role', 'img');
+      stage.renderer.domElement.setAttribute('aria-label', 'Concrete drum mixer animation');
+
+      const rng = E.mulberry32(7); // 시드 고정 — 골재 배치(계약: MixEngine.mulberry32만 사용)
+      const mixer = S3.buildMixerScene({ wc, rng });
+      stage.scene.add(mixer.group);
+
+      const caption = h('div', { style: 'position:absolute;left:0;right:0;top:10px;text-align:center;' +
+        'font:600 14px Inter,sans-serif;color:#5b6472;pointer-events:none' }, MIX_CAPTIONS[0]);
+      container.append(caption);
+
       const nextBtn = h('button', { class: 'btn btn-primary', onclick: () => go('slump') },
         'Continue to Slump Test →');
       nextBtn.disabled = true;
-      sceneShell(root, 'Batching & mixing', 'One cubic yard, coming up.', canvas,
+      sceneShell(root, 'Batching & mixing', 'One cubic yard, coming up.', container,
         [h('button', { class: 'btn btn-ghost', onclick: () => go('slump') }, 'Skip'), nextBtn]);
 
-      // ── 배치 상수 ────────────────────────────────────────────────
-      const groundY = H - 70;
-      const drumCx = 470, drumCy = 200;
-      const TILT = 0.73; // 개구부가 화면 위-오른쪽 ~42°를 향하도록(레퍼런스 사진 각도)
-      const ASPECT = 0.70; // 원형 단면의 시점 압축 비율(장/단축 공통) — 드럼 벨리 기준
-      // 드럼 축(로컬 y, 사진 구조): 후단 허브(모터 부착) → 벨리(원뿔대, 최대폭) → 좁아지는 목 → 개구부
-      const Y_HUB = 100, R_HUB = 34;
-      const Y_BELLY = 46, R_BELLY = 122;
-      const Y_NECK = -6, R_NECK = 92;
-      const OPEN_LY = -42, OPEN_RX = 60, OPEN_RY = 40; // 개구부 — 드럼 로컬 좌표 기준(회전하지 않음, 고정)
-      const MOTOR_LY = Y_HUB;                          // 모터 하우징 — 드럼 후단(허브)에 부착
-      const CRADLE_LY = Y_BELLY + 4;                   // 프레임 크래들 링이 드럼을 감싸는 위치
-      const [openDx, openDy] = rotPt(0, OPEN_LY, TILT);
-      const openWorldX = drumCx + openDx, openWorldY = drumCy + openDy;
-      const [motorDx, motorDy] = rotPt(0, MOTOR_LY, TILT);
-      const motorWorldX = drumCx + motorDx, motorWorldY = drumCy + motorDy;
-      const wheel1 = { x: 342, y: groundY - 34, r: 34 };
-      const wheel2 = { x: 387, y: groundY - 30, r: 30 };
-      const axle = { x: 365, y: groundY - 32 };
-      const apex = { x: 496, y: groundY - 100 };
-      const foot = { x: 630, y: groundY };
-      // 측면 틸팅 핸드휠(요소: 핸드휠) — 드럼 틸트 축(크래들) 높이에 맞추고, 프레임에 브래킷으로 연결
-      const [cradleDx, cradleDy] = rotPt(0, CRADLE_LY, TILT);
-      const cradleWorldX = drumCx + cradleDx, cradleWorldY = drumCy + cradleDy;
-      const handwheelHub = { x: foot.x - 4, y: cradleWorldY - 4 };
-      // 브래킷이 다리(foot–apex) 빔 위의 실제 지점에서 뻗어나오도록 그 선 위의 한 점을 앵커로 사용
-      const bracketAnchor = { x: foot.x + (apex.x - foot.x) * 0.45, y: foot.y + (apex.y - foot.y) * 0.45 };
-
-      // ── 재질 그라데이션(슬럼프 장면과 톤 통일) ──────────────────────
-      const tubeGrad = (th) => { const g = ctx.createLinearGradient(0, -th / 2, 0, th / 2); // 검정 강관 원통형 하이라이트
-        g.addColorStop(0, '#6b7280'); g.addColorStop(0.45, '#2a2d33'); g.addColorStop(1, '#0c0d10'); return g; };
-      const drumGrad = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1); // 주황 드럼 도장
-        g.addColorStop(0, '#ff9a4d'); g.addColorStop(0.5, '#e8720c'); g.addColorStop(1, '#8f3d06'); return g; };
-      const rimGrad = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1); // 개구부 림 전용 — 몸통보다 밝게(사진의 도드라진 림)
-        g.addColorStop(0, '#ffc98a'); g.addColorStop(0.5, '#ff9433'); g.addColorStop(1, '#c25f0c'); return g; };
-      function groundShadow(cx, rx) { // 접지 그림자 — 상부 좌측 광원이므로 우하단으로 치우친 타원
-        ctx.save(); ctx.fillStyle = 'rgba(30,34,44,.18)';
-        ctx.beginPath(); ctx.ellipse(cx + 6, groundY + 5, rx, Math.max(4, rx * 0.2), 0, 0, Math.PI * 2);
-        ctx.fill(); ctx.restore();
-      }
-      function roundRectPath(x, y, w, hh, rad) {
-        ctx.beginPath(); ctx.moveTo(x + rad, y);
-        ctx.arcTo(x + w, y, x + w, y + hh, rad); ctx.arcTo(x + w, y + hh, x, y + hh, rad);
-        ctx.arcTo(x, y + hh, x, y, rad); ctx.arcTo(x, y, x + w, y, rad); ctx.closePath();
-      }
-      // 검정 강관 빔 — 두 점을 잇는 사각 빔(원통형 하이라이트 그라데이션 + 볼트)
-      function drawBeam(x0, y0, x1, y1, th) {
-        const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
-        ctx.save(); ctx.translate(x0, y0); ctx.rotate(ang);
-        ctx.fillStyle = tubeGrad(th); ctx.fillRect(0, -th / 2, len, th);
-        ctx.strokeStyle = '#000'; ctx.lineWidth = 1.2; ctx.strokeRect(0, -th / 2, len, th);
-        ctx.restore();
-      }
-      // 다리 한 쌍(요소: 다리 4개·2쌍) — 같은 두 점을 잇는 관을 살짝 벌려 앞/뒤 한 쌍처럼 보이게 함
-      function drawLegPair(x0, y0, x1, y1, th) {
-        const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy) || 1;
-        const nx = -dy / len, ny = dx / len, off = 5;
-        drawBeam(x0 + nx * off, y0 + ny * off, x1 + nx * off, y1 + ny * off, th);
-        drawBeam(x0 - nx * off, y0 - ny * off, x1 - nx * off, y1 - ny * off, th);
-      }
-      function drawWheel(x, y, r) { // 소형 바퀴(요소: 바퀴 2)
-        groundShadow(x, r + 8);
-        const g = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.15, x, y, r);
-        g.addColorStop(0, '#4a4e57'); g.addColorStop(1, '#16181c');
-        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = g; ctx.fill();
-        ctx.strokeStyle = '#0c0d10'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.beginPath(); ctx.arc(x, y, r * 0.36, 0, Math.PI * 2); ctx.fillStyle = '#9aa2b1'; ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y, r * 0.13, 0, Math.PI * 2); ctx.fillStyle = '#5b6472'; ctx.fill();
-      }
-      function drawFrame() { // 검정 강관 A-프레임(요소: 검정 프레임) — 다리 2쌍(바퀴쪽/발쪽) + 가로 보강대
-        drawLegPair(axle.x, axle.y, apex.x, apex.y, 11);
-        drawLegPair(foot.x, foot.y, apex.x, apex.y, 11);
-        drawBeam(axle.x - 8, axle.y - 34, foot.x - 46, foot.y - 44, 8); // 가로 보강대
-        for (const p of [apex, axle, foot]) {
-          ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2); ctx.fillStyle = '#111214'; ctx.fill();
-        }
-        groundShadow(foot.x, 30);
-        ctx.fillStyle = '#24262b'; ctx.fillRect(foot.x - 18, groundY - 6, 36, 10); // 고정 발판
-      }
-      function drawPowerCable() { // 전원 케이블(요소: 모터 케이블) — 하우징 하단 커넥터에서 나와 바닥까지 늘어짐
-        // 모터 하우징 하단 커넥터(하우징 로컬 좌표계 기준, TILT*0.5 회전 반영) → 월드 좌표
-        const [ccx, ccy] = rotPt(0, 28 + 4, TILT * 0.5);
-        const sx = motorWorldX + ccx, sy = motorWorldY + ccy;
-        const ex = wheel1.x - 15, ey = groundY - 4;
-        const midY = (sy + ey) / 2 + 26;
-        ctx.beginPath(); ctx.arc(sx, sy, 4, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill(); // 커넥터 소켓
-        ctx.strokeStyle = '#14151a'; ctx.lineWidth = 5.5; ctx.lineCap = 'round'; // 외곽선 — 하우징/바닥 모두와 대비 확보
-        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(sx - 14, midY, ex, ey); ctx.stroke();
-        ctx.strokeStyle = '#aab0ba'; ctx.lineWidth = 3; ctx.lineCap = 'round'; // 밝은 회백색 케이블 본체(사진 톤)
-        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(sx - 14, midY, ex, ey); ctx.stroke();
-      }
-      function drawCradle() { // 드럼 벨리를 감싸는 크래들 링 — 프레임과 드럼을 시각적으로 연결
-        ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(TILT);
-        ctx.strokeStyle = '#2a2d33'; ctx.lineWidth = 11; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.ellipse(0, CRADLE_LY, R_BELLY * 0.72, R_BELLY * ASPECT * 0.72, 0, Math.PI * 0.15, Math.PI * 0.85);
-        ctx.stroke();
-        ctx.restore();
-      }
-      function drawRivetRing(y, rx, spin, count, size) { // 리벳/볼트 점(회전) — 지정 y의 원주 단면을 따라 배치
-        const ry = rx * ASPECT;
-        for (let i = 0; i < count; i++) {
-          const a = (i / count) * Math.PI * 2 + spin;
-          const x = Math.cos(a) * rx, yy = y + Math.sin(a) * ry;
-          ctx.beginPath(); ctx.arc(x, yy, size, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(50,25,0,.55)'; ctx.fill();
-        }
-      }
-      // 드럼 몸통(요소: 뒤쪽 큰 벨리 + 앞쪽 좁아지는 목) — 로컬 y축(허브→벨리→목→개구부) 실루엣
-      function drumBodyPath() {
-        ctx.beginPath();
-        ctx.moveTo(R_HUB, Y_HUB);
-        ctx.quadraticCurveTo(R_BELLY * 1.05, (Y_HUB + Y_BELLY) / 2, R_BELLY, Y_BELLY);
-        ctx.quadraticCurveTo((R_BELLY + R_NECK) / 2, (Y_BELLY + Y_NECK) / 2, R_NECK, Y_NECK);
-        ctx.quadraticCurveTo((R_NECK + OPEN_RX + 6) / 2, (Y_NECK + OPEN_LY) / 2, OPEN_RX + 6, OPEN_LY);
-        ctx.lineTo(-(OPEN_RX + 6), OPEN_LY); // 개구부 쪽 절단면(뒤이어 그리는 개구부 콜라가 이 이음매를 덮음)
-        ctx.quadraticCurveTo(-(R_NECK + OPEN_RX + 6) / 2, (Y_NECK + OPEN_LY) / 2, -R_NECK, Y_NECK);
-        ctx.quadraticCurveTo(-(R_BELLY + R_NECK) / 2, (Y_BELLY + Y_NECK) / 2, -R_BELLY, Y_BELLY);
-        ctx.quadraticCurveTo(-R_BELLY * 1.05, (Y_HUB + Y_BELLY) / 2, -R_HUB, Y_HUB);
-        ctx.closePath(); // 허브 쪽 절단면(뒤이어 그리는 모터 하우징이 이 이음매를 덮음)
-      }
-      function drawDrumBody(spin) {
-        ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(TILT);
-        drumBodyPath();
-        ctx.fillStyle = drumGrad(OPEN_LY - 10, Y_HUB + 10); ctx.fill();
-        ctx.strokeStyle = '#7a3a06'; ctx.lineWidth = 3; ctx.stroke();
-
-        ctx.save(); drumBodyPath(); ctx.clip(); // 좌상단 하이라이트(광원 통일)
-        const hl = ctx.createLinearGradient(-R_BELLY, Y_BELLY, -R_BELLY * 0.1, Y_NECK);
-        hl.addColorStop(0, 'rgba(255,255,255,.45)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = hl; ctx.fillRect(-R_BELLY, Y_NECK - 20, R_BELLY * 0.95, (Y_HUB - Y_NECK) + 40);
-        // 명암 밴드(요소: 회전 표현) — 벨리 표면을 도는 은은한 세로 음영 줄무늬 2개(spin 위상만큼 이동)
-        for (let i = 0; i < 2; i++) {
-          const a = spin + i * Math.PI;
-          const bx = Math.sin(a) * R_BELLY * 0.82;
-          ctx.fillStyle = `rgba(60,28,0,${(0.12 + 0.12 * Math.max(0, Math.cos(a))).toFixed(3)})`;
-          ctx.beginPath();
-          ctx.ellipse(bx, Y_BELLY - 8, R_BELLY * 0.11, (Y_HUB - Y_NECK) * 0.55, 0, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-
-        drawRivetRing(Y_BELLY, R_BELLY * 0.97, spin, 12, 3.2); // 벨리 리벳(요소: 리벳/볼트 점, 회전)
-        ctx.restore();
-      }
-      function drawMotorHousing() { // 검정 모터 하우징(요소: 모터 하우징) — 드럼 허브(반대쪽 끝)에 부착
-        ctx.save(); ctx.translate(motorWorldX, motorWorldY); ctx.rotate(TILT * 0.5);
-        const w = 78, hh = 56;
-        roundRectPath(-w / 2, -hh / 2, w, hh, 9);
-        const g = ctx.createLinearGradient(0, -hh / 2, 0, hh / 2);
-        g.addColorStop(0, '#3a3d44'); g.addColorStop(1, '#131519');
-        ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 2.5; // 통풍구
-        for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(i * 11, -hh / 2 + 9); ctx.lineTo(i * 11, hh / 2 - 9); ctx.stroke(); }
-        ctx.beginPath(); ctx.arc(w / 2 + 3, 0, 10, 0, Math.PI * 2); ctx.fillStyle = '#5b6472'; ctx.fill(); // 풀리
-        ctx.strokeStyle = '#1c1e23'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.restore();
-      }
-      function drawHandwheelBracket() { // 핸드휠 지지 브래킷(요소: 브래킷) — 프레임 apex + 다리 빔 위 지점에서 뻗어나와 허브를 물리적으로 지지
-        drawBeam(apex.x, apex.y, handwheelHub.x, handwheelHub.y, 9);
-        drawBeam(bracketAnchor.x, bracketAnchor.y, handwheelHub.x, handwheelHub.y, 7);
-        for (const p of [apex, bracketAnchor]) {
-          ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fillStyle = '#111214'; ctx.fill();
-        }
-        ctx.save(); ctx.translate(handwheelHub.x, handwheelHub.y); // 마운트 플레이트(허브 밑판)
-        roundRectPath(-11, -5, 22, 16, 3);
-        ctx.fillStyle = '#1c1e23'; ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke();
-        ctx.restore();
-      }
-      function drawHandwheel() { // 측면 틸팅 핸드휠(요소: 핸드휠) — 스포크 4개 원형 크랭크 + 손잡이
-        groundShadow(handwheelHub.x, 18);
-        ctx.save(); ctx.translate(handwheelHub.x, handwheelHub.y);
-        ctx.strokeStyle = '#1c1e23'; ctx.lineWidth = 6; ctx.lineCap = 'round'; // 지지축
-        ctx.beginPath(); ctx.moveTo(-16, 8); ctx.lineTo(0, 0); ctx.stroke();
-        const rimR = 28;
-        ctx.beginPath(); ctx.arc(0, 0, rimR, 0, Math.PI * 2);
-        ctx.strokeStyle = '#111214'; ctx.lineWidth = 5; ctx.stroke();
-        for (let i = 0; i < 4; i++) { // 스포크
-          const a = (i / 4) * Math.PI * 2 + Math.PI / 8;
-          ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * rimR, Math.sin(a) * rimR);
-          ctx.strokeStyle = '#2a2d33'; ctx.lineWidth = 4; ctx.stroke();
-        }
-        ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fillStyle = '#4a4e57'; ctx.fill(); // 허브
-        const ha = Math.PI * 0.15; // 손잡이 레버 + 그립
-        const hx = Math.cos(ha) * rimR, hy = Math.sin(ha) * rimR;
-        const gx = Math.cos(ha) * (rimR + 22), gy = Math.sin(ha) * (rimR + 22);
-        ctx.strokeStyle = '#111214'; ctx.lineWidth = 5; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(gx, gy); ctx.stroke();
-        ctx.beginPath(); ctx.arc(gx, gy, 6, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill();
-        ctx.restore();
-      }
-      // 믹싱 핀(블레이드) — 드럼과 함께 회전하며 반죽을 쓸어 올린다(요소: 믹싱 핀 2개)
-      function drawBlade(angle) {
-        const bx = Math.cos(angle) * OPEN_RX * 0.72, by = Math.sin(angle) * OPEN_RY * 0.72;
-        ctx.save(); ctx.translate(bx, by); ctx.rotate(angle + Math.PI / 2.3);
-        const g = ctx.createLinearGradient(-8, 0, 8, 0);
-        g.addColorStop(0, '#5b6472'); g.addColorStop(1, '#1c1e23');
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.moveTo(-9, -16); ctx.lineTo(9, -14); ctx.lineTo(6, 15); ctx.lineTo(-6, 15); ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 1; ctx.stroke();
-        ctx.restore();
-        return { x: bx, y: by };
-      }
-      // 개구부(요소: 개구부 — 형태·위치 고정) — 칼라 립 + 클리핑된 내부(믹싱 핀 + 회전 반죽 + 골재 점 + w/c 광택)
-      function drawDrumOpening(fill, spin) {
-        ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(TILT); ctx.translate(0, OPEN_LY);
-        ctx.beginPath(); ctx.ellipse(0, 0, OPEN_RX + 7, OPEN_RY + 7, 0, 0, Math.PI * 2);
-        ctx.fillStyle = rimGrad(-OPEN_RY - 7, OPEN_RY + 7); ctx.fill(); // 몸통보다 밝은 전용 그라데이션 — 사진처럼 림이 도드라짐
-        ctx.strokeStyle = '#7a3a06'; ctx.lineWidth = 2.5; ctx.stroke();
-        // 1.05배: 벨리 리벳과 위상을 미세하게 어긋내 두 리벳 링이 항상 같은 자리에서 겹쳐 "고정된 무늬"처럼 보이는 것을 방지
-        drawRivetRing(0, (OPEN_RX + 7) * 0.94, spin * 1.05, 10, 2.4); // 개구부 립 리벳(회전)
-
-        ctx.save();
-        ctx.beginPath(); ctx.ellipse(0, 0, OPEN_RX, OPEN_RY, 0, 0, Math.PI * 2); ctx.clip(); // 내부 — 고정 개구부 안쪽만 노출
-        ctx.fillStyle = '#232630'; ctx.fillRect(-OPEN_RX, -OPEN_RY, OPEN_RX * 2, OPEN_RY * 2); // 어두운 빈 드럼 내부
-
-        const CAP = 0.78; // 반죽이 다 차도 핀이 보이도록 최대 두께를 제한
-        const fh = OPEN_RY * 2 * fill * CAP;
-        const baseTopY = OPEN_RY - fh;
-        const tiltAmp = Math.min(fh, OPEN_RY * 0.7) * 0.4;
-        const tiltPhaseY = Math.sin(spin) * tiltAmp; // 회전에 따라 좌우로 기우는 반죽 표면
-        const surfY = (x) => baseTopY + tiltPhaseY * (x / OPEN_RX);
-
-        // 믹싱 핀 2개(180° 간격, spin과 함께 회전) — 먼저 그려서 반죽에 잠기는 아랫부분은 뒤이어 덮인다
-        const blades = [drawBlade(spin), drawBlade(spin + Math.PI)];
-
-        if (fill > 0) { // 반죽(회전에 따라 기운 표면 — 회전 방향으로 쓸려 올라갔다 떨어지는 표현)
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(-OPEN_RX, OPEN_RY); ctx.lineTo(-OPEN_RX, surfY(-OPEN_RX));
-          ctx.quadraticCurveTo(0, baseTopY - tiltPhaseY * 0.3, OPEN_RX, surfY(OPEN_RX));
-          ctx.lineTo(OPEN_RX, OPEN_RY); ctx.closePath(); ctx.clip();
-          const light = 58 - Math.min(18, Math.max(0, (wc - 0.4) * 40)); // 젖을수록 어둡게(v1 동등)
-          ctx.fillStyle = `hsl(220 6% ${light}%)`;
-          ctx.fillRect(-OPEN_RX, -OPEN_RY, OPEN_RX * 2, OPEN_RY * 2);
-          const rng = E.mulberry32(7); // 시드 고정 — 골재 점
-          for (let i = 0; i < 80; i++) {
-            const x = (rng() * 2 - 1) * OPEN_RX * 0.9, y = OPEN_RY - rng() * fh;
-            ctx.fillStyle = i % 3 ? '#7b7f88' : '#a9adb5';
-            ctx.beginPath(); ctx.arc(x, y, 2 + rng() * 3.2, 0, Math.PI * 2); ctx.fill();
-          }
-          if (wc > 0.62 && fill > 0.1) { // 과수 배합 광택(v1 동등 유지)
-            ctx.fillStyle = 'rgba(160,200,255,.28)';
-            ctx.beginPath(); ctx.ellipse(-OPEN_RX * 0.12, baseTopY + 3, OPEN_RX * 0.62, OPEN_RY * 0.22, 0, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          ctx.restore();
-          // 표면 위로 솟은 핀에 들러붙어 함께 올라가는 반죽 덩어리 — 표면 아래로 내려가면(잠기면) 자연히 사라짐
-          for (const b of blades) {
-            if (b.y < surfY(b.x) - 2) {
-              ctx.fillStyle = `hsl(220 6% ${light}%)`;
-              ctx.beginPath(); ctx.ellipse(b.x, b.y + 6, 9, 6, 0, 0, Math.PI * 2); ctx.fill();
-            }
-          }
-        }
-        ctx.restore();
-        ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 2.5; // 칼라 립 좌상단 하이라이트
-        ctx.beginPath(); ctx.ellipse(0, 0, OPEN_RX + 4, OPEN_RY + 4, 0, Math.PI * 1.05, Math.PI * 1.55); ctx.stroke();
-        ctx.restore();
-      }
-      // 버킷/스쿱 투입 연출(요소: 버킷 투입) — 시멘트→물→골재 순으로 기울여 개구부 안으로 쏟아붓는다(캡션 순서 유지)
-      const stageColor = (tt) => tt < 0.9 ? '#8f949c' : tt < 1.6 ? '#4f8ef0' : '#b7a98d';
-      function drawBucket(t) {
-        if (t >= 2.6) return; // 투입 종료 후에는 숨김
-        const bounds = t < 0.9 ? [0, 0.9] : t < 1.6 ? [0.9, 1.6] : [1.6, 2.6];
-        const lp = Math.min(1, Math.max(0, (t - bounds[0]) / (bounds[1] - bounds[0])));
-        const MAX_TILT = -2.0, tiltAngle = MAX_TILT * Math.sin(lp * Math.PI); // 기울였다 되돌아오는 왕복
-        const bx = openWorldX + 95, by = openWorldY - 60;
-        const color = stageColor(t);
-        ctx.save(); ctx.translate(bx, by); ctx.rotate(tiltAngle);
-        ctx.strokeStyle = '#4b4f58'; ctx.lineWidth = 2.5; // 손잡이
-        ctx.beginPath(); ctx.arc(0, -30, 24, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
-        const topW = 30, botW = 21, hh = 28; // 통 몸체(사다리꼴)
-        ctx.beginPath();
-        ctx.moveTo(-topW, -hh / 2); ctx.lineTo(topW, -hh / 2); ctx.lineTo(botW, hh / 2); ctx.lineTo(-botW, hh / 2); ctx.closePath();
-        const g = ctx.createLinearGradient(0, -hh / 2, 0, hh / 2);
-        g.addColorStop(0, '#e2e6ec'); g.addColorStop(1, '#9aa2b1');
-        ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#6b7484'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = color; // 담긴 재료
-        ctx.beginPath();
-        ctx.moveTo(-topW + 3, -hh / 2 + 4); ctx.lineTo(topW - 3, -hh / 2 + 4);
-        ctx.lineTo(botW - 2, hh / 2 - 3); ctx.lineTo(-botW + 2, hh / 2 - 3); ctx.closePath(); ctx.fill();
-        ctx.restore();
-        if (Math.abs(tiltAngle) > 1.3) { // 크게 기울었을 때만 개구부 안으로 쏟아지는 스트림 표시
-          const [sdx, sdy] = rotPt(-topW, -hh / 2, tiltAngle);
-          ctx.strokeStyle = color; ctx.lineWidth = 6; ctx.lineCap = 'round';
-          ctx.beginPath(); ctx.moveTo(bx + sdx, by + sdy); ctx.lineTo(openWorldX, openWorldY + 6); ctx.stroke();
-        }
+      // 카메라 미세 orbit(±3°) — target 기준 구면좌표 오프셋을 저장해두고 방위각만 사인 진동시킨다
+      const target = new THREE.Vector3(0, 0.82, 0);
+      const camOffset = stage.camera.position.clone().sub(target);
+      const orbitRadiusXZ = Math.hypot(camOffset.x, camOffset.z);
+      const baseAzimuth = Math.atan2(camOffset.x, camOffset.z);
+      function applyCameraOrbit(t) {
+        const az = baseAzimuth + THREE.MathUtils.degToRad(3) * Math.sin(t * 0.6);
+        stage.camera.position.set(
+          target.x + orbitRadiusXZ * Math.sin(az),
+          target.y + camOffset.y,
+          target.z + orbitRadiusXZ * Math.cos(az));
+        stage.camera.lookAt(target);
       }
 
-      const draw = (now) => {
-        if (!start) start = now;
-        const t = (now - start) / 1000;
-        ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = '#d7dde6'; ctx.fillRect(0, groundY, W, H - groundY); // 지면(슬럼프 장면과 통일)
-
-        drawFrame();
-        drawWheel(wheel1.x, wheel1.y, wheel1.r); drawWheel(wheel2.x, wheel2.y, wheel2.r);
-        const spin = t * 1.6;
-        drawDrumBody(spin);
-        drawCradle();
-        drawMotorHousing();
-        drawPowerCable(); // 하우징을 먼저 그린 뒤에 그려야 커넥터가 하우징에서 나오는 것처럼 보인다
-        drawHandwheelBracket();
-        drawHandwheel();
-        const fill = Math.min(1, t / 2.6);
-        drawDrumOpening(fill, spin);
-        drawBucket(t);
-
-        ctx.fillStyle = '#5b6472'; ctx.font = '600 14px Inter, sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(t < 0.9 ? 'Adding cement…' : t < 1.6 ? 'Adding water…' :
-          t < 2.6 ? 'Adding aggregates…' : 'Mixing…', W / 2, 32);
-
+      function renderFrame(t) {
+        mixer.update(t);
+        applyCameraOrbit(t);
+        stage.renderer.render(stage.scene, stage.camera);
+        const idx = t < MIX_CAPTION_BOUNDS[0] ? 0 : t < MIX_CAPTION_BOUNDS[1] ? 1 : t < MIX_CAPTION_BOUNDS[2] ? 2 : 3;
+        caption.textContent = MIX_CAPTIONS[idx];
         if (t >= 4 && nextBtn.disabled) nextBtn.disabled = false;
-        raf = requestAnimationFrame(draw);
-      };
-      raf = requestAnimationFrame(draw);
+      }
+
+      stage.setLoop((now) => {
+        if (!start) start = now;
+        renderFrame((now - start) / 1000);
+      });
+
+      // 검증 훅(스펙 §1) — 마운트 중에만 노출, 히든 페인에서 수동 렌더+픽셀 검증용
+      window.__scene3dDebug = { renderAt: renderFrame, renderer: stage.renderer };
     },
-    unmount() { cancelAnimationFrame(raf); },
+    unmount() {
+      delete window.__scene3dDebug;
+      if (stage) { stage.dispose(); stage = null; } // stop + disposeDeep(scene) + renderer.dispose + DOM 제거
+    },
   };
 };
 
