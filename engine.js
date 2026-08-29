@@ -73,9 +73,59 @@
       desc: 'Forgiving slump window, but keep the strength honest.' },
   ];
 
+  // ── 유틸 ─────────────────────────────────────────────────────────
+  const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+
+  // 잔골재 비율 / 페이스트 용적비
+  function faFraction(mix) {
+    const tot = mix.fa + mix.ca;
+    return tot <= 0 ? 0 : mix.fa / tot;
+  }
+  function pasteFraction(mix) {
+    const v = mix.cement / (MAT.sgCement * MAT.wUnit) + mix.water / MAT.wUnit
+      + 27 * (mix.airPct / 100);
+    return v / 27;
+  }
+  function isHarsh(mix) {
+    return faFraction(mix) < 0.25 || pasteFraction(mix) < 0.22
+      || mix.ca > 0.90 * 27 * MAT.druwCA;
+  }
+
+  // ── 슬럼프 예측: ACI 수량 표 역산 (조각별 선형 + 외삽) ─────────────
+  function predictSlump(mix) {
+    const anchors = WATER_TABLE[mix.isAE ? 'ae' : 'nonAE'][mix.nmas];
+    const S = SLUMP_ANCHORS; // [1.5, 3.5, 6.5]
+    const [W1, W2, W3] = anchors;
+    const slope1 = (S[1] - S[0]) / (W2 - W1); // 아래 구간 기울기 (in. per lb)
+    const slope2 = (S[2] - S[1]) / (W3 - W2); // 위 구간 기울기
+    let s;
+    if (mix.water <= W1) s = S[0] - (W1 - mix.water) * slope1;
+    else if (mix.water <= W2) s = S[0] + (mix.water - W1) * slope1;
+    else if (mix.water <= W3) s = S[1] + (mix.water - W2) * slope2;
+    else s = S[2] + (mix.water - W3) * slope2;
+    // 배합 상태 보정: 거친 배합은 덜 처지고, 모래 과다는 뻑뻑해짐
+    if (isHarsh(mix)) s -= 1.0;
+    if (faFraction(mix) > 0.60) s -= 0.5;
+    return clamp(s, 0, 11);
+  }
+
+  // ── 거동 분류: zero / true / shear / collapse ─────────────────────
+  function classifyBehavior(mix) {
+    const slump = predictSlump(mix);
+    const harsh = isHarsh(mix);
+    let mode;
+    if (slump < 0.5) mode = 'zero';
+    else if (slump >= 8.5) mode = 'collapse';
+    else if (harsh && slump >= 2) mode = 'shear';
+    else mode = 'true';
+    const segregation = slump >= 7.5 || (harsh && slump >= 5) || mode === 'collapse';
+    return { mode, slump, segregation, harsh };
+  }
+
   const MixEngine = {
     DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, FRESH_WEIGHT_TABLE, MAT },
     MISSIONS,
+    predictSlump, classifyBehavior,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = MixEngine;

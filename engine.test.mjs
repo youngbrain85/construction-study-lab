@@ -38,3 +38,49 @@ test('MISSIONS: 미션 5종과 필드', () => {
     assert.ok(m.nmasAllowed.every(n => E.DATA.NMAS_LIST.includes(n)));
   }
 });
+
+// ── 슬럼프 예측 ────────────────────────────────────────────────
+// 기준 배합(미션1 교과서 정답): 3/4" 비공기연행
+const TEXTBOOK = { water: 340, cement: 616, ca: 1701, fa: 1303, airPct: 2, nmas: 0.75, isAE: false };
+
+test('predictSlump: 표 앵커점을 정확히 재현한다', () => {
+  assert.equal(E.predictSlump({ ...TEXTBOOK, water: 315 }), 1.5);
+  assert.equal(E.predictSlump({ ...TEXTBOOK, water: 340 }), 3.5);
+  assert.equal(E.predictSlump({ ...TEXTBOOK, water: 360 }), 6.5);
+  // AE 앵커 (3/4"): 280/305/325
+  const aeMix = { ...TEXTBOOK, isAE: true, airPct: 6, water: 305 };
+  assert.equal(E.predictSlump(aeMix), 3.5);
+});
+
+test('predictSlump: 단조 증가 + 외삽 + 클램프', () => {
+  let prev = -1;
+  for (let w = 150; w <= 500; w += 10) {
+    const s = E.predictSlump({ ...TEXTBOOK, water: w });
+    assert.ok(s >= prev, `water=${w}에서 단조성 위반`);
+    assert.ok(s >= 0 && s <= 11);
+    prev = s;
+  }
+  // 물 과다 → 상한 클램프 (440 lb: 6.5 + 80×0.15 = 18.5 → 11)
+  assert.equal(E.predictSlump({ ...TEXTBOOK, water: 440 }), 11);
+  // 물 과소 → 0 (240 lb: 1.5 − 75×0.08 = −4.5 → 0)
+  assert.equal(E.predictSlump({ ...TEXTBOOK, water: 240 }), 0);
+});
+
+test('classifyBehavior: 4가지 거동 모드', () => {
+  // 정상 배합 → true slump
+  const ok = E.classifyBehavior(TEXTBOOK);
+  assert.equal(ok.mode, 'true');
+  assert.equal(ok.harsh, false);
+  assert.equal(ok.segregation, false);
+  // 물 +100 → collapse + segregation
+  const wet = E.classifyBehavior({ ...TEXTBOOK, water: 440 });
+  assert.equal(wet.mode, 'collapse');
+  assert.equal(wet.segregation, true);
+  // 물 −100 → zero
+  const dry = E.classifyBehavior({ ...TEXTBOOK, water: 240 });
+  assert.equal(dry.mode, 'zero');
+  // 굵은골재 과다(rocky) → harsh → shear (기본 3.5 − 1.0 = 2.5 ≥ 2)
+  const rocky = E.classifyBehavior({ ...TEXTBOOK, ca: 2500, fa: 500 });
+  assert.equal(rocky.harsh, true);
+  assert.equal(rocky.mode, 'shear');
+});
