@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Construction Study Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
+<style>
+/* ── 허브 전용 스타일 (theme.css 공통 컴포넌트 위에 얹는 최소 보정) ── */
+.hero { padding:8px 0 4px; }
+/* 잠긴(비활성) 랩 카드: 클릭 무동작 + 시각적으로 톤 다운, hover 리프트 애니메이션 비활성화 */
+.lab-card-locked { cursor:default; opacity:.65; align-items:center; text-align:center;
+  justify-content:center; min-height:172px; }
+.lab-card-locked:hover { transform:none; box-shadow:var(--shadow); }
+.lab-card-locked .icon { font-size:36px; filter:grayscale(1); }
+.lab-card-locked .desc { flex:none; }
+footer.site-footer { max-width:1100px; margin:0 auto; padding:8px 24px 48px;
+  color:var(--faint); font-size:12.5px; text-align:center; }
+</style>
+</head>
+<body>
+<header class="appbar"><div class="appbar-inner">
+  <div class="logo"><span class="mark">⬢</span> Construction Study Lab</div>
+</div></header>
+<main>
+  <div class="hero">
+    <h1>Construction Study Lab</h1>
+    <p class="sub">Interactive labs for construction materials — CNST-111</p>
+  </div>
+  <div id="lab-grid" class="mission-grid"></div>
+</main>
+<footer class="site-footer">CNST-111 · Construction Materials, Methods, and Equipment</footer>
+<script>
+'use strict';
+
+// ── DOM 빌더 (모듈과 동일한 헬퍼) ──────────────────────────────────
+function h(tag, attrs = {}, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') el.className = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v);
+  }
+  for (const c of children.flat(9)) {
+    if (c == null) continue;
+    el.append(c.nodeType ? c : document.createTextNode(c));
+  }
+  return el;
+}
+
+// ── 랩 레지스트리 ──────────────────────────────────────────────────
+const LABS = [
+  { id: 'mix-design', name: 'Mix Design Lab', icon: '🧪', href: 'labs/mix-design/',
+    desc: 'Proportion a concrete mix with the ACI tables, then put it through virtual slump and strength tests.',
+    meta: '5 missions · ACI PRC-211.1-22', active: true },
+  { id: 'soon-1', active: false }, { id: 'soon-2', active: false },
+];
+
+// ── 점수 → 등급 변환 (Mix Design Lab의 채점 등급과 동일한 경계값) ───
+function scoreToGrade(score) {
+  if (score >= 90) return 'A';
+  if (score >= 80) return 'B';
+  if (score >= 70) return 'C';
+  if (score >= 60) return 'D';
+  return 'F';
+}
+// mixlab-best 저장 형식은 { missionId: score }. 미션들 중 최고 점수를 등급으로
+// 변환해 "Best: A" 형식의 배지로 보여준다. 기록이 없으면 배지를 표시하지 않는다.
+function bestGradeBadge() {
+  try {
+    const best = JSON.parse(localStorage.getItem('mixlab-best') || '{}');
+    const scores = Object.values(best);
+    if (!scores.length) return null;
+    return scoreToGrade(Math.max(...scores));
+  } catch (e) { return null; } // localStorage 접근 불가 환경 무시
+}
+
+// ── 카드 렌더 ──────────────────────────────────────────────────────
+function activeCard(lab) {
+  const grade = bestGradeBadge();
+  return h('a', { class: 'card mission-card', href: lab.href },
+    h('div', { class: 'icon' }, lab.icon),
+    h('h2', {}, lab.name),
+    h('div', { class: 'meta' },
+      h('span', { class: 'badge badge-blue' }, lab.meta),
+      grade ? h('span', { class: 'badge badge-green' }, `Best: ${grade}`) : null),
+    h('div', { class: 'desc' }, lab.desc),
+    h('span', { class: 'btn btn-primary' }, 'Enter Lab →'));
+}
+function lockedCard() {
+  return h('div', { class: 'card mission-card lab-card-locked' },
+    h('div', { class: 'icon' }, '🔒'),
+    h('div', { class: 'desc' }, 'New lab coming soon'));
+}
+
+const grid = document.getElementById('lab-grid');
+LABS.forEach(lab => grid.append(lab.active ? activeCard(lab) : lockedCard()));
+</script>
+</body>
+</html>

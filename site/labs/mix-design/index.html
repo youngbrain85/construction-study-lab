@@ -3,145 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MixLab — Concrete Mix Design Challenge</title>
+<title>Mix Design Lab — Construction Study Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/theme.css">
 <style>
-/* ── MixLab 디자인 시스템 (라이트 SaaS — Zillow/Remote 레퍼런스) ── */
-*, *::before, *::after { box-sizing: border-box; }
-:root {
-  --bg:#ffffff; --surface:#f7f8fa; --surface2:#eef1f5; --border:#e4e7ec;
-  --text:#141c2b; --muted:#5b6472; --faint:#98a1b0;
-  --primary:#1b66f0; --primary-600:#1252cc; --primary-50:#eef4ff;
-  --green:#12855f; --green-50:#e9f7f1; --amber:#b45309; --amber-50:#fdf3e3;
-  --red:#d92d20; --red-50:#fdecea;
-  --radius:12px; --radius-sm:8px;
-  --shadow:0 1px 2px rgba(16,24,40,.05), 0 2px 8px rgba(16,24,40,.06);
-  --font:'Inter',-apple-system,'Segoe UI',sans-serif;
-}
-html, body { margin:0; padding:0; background:var(--surface); color:var(--text);
-  font-family:var(--font); font-size:15px; line-height:1.5; }
-button { font-family:var(--font); }
-
-/* 앱바 */
-.appbar { position:sticky; top:0; z-index:20; background:var(--bg);
-  border-bottom:1px solid var(--border); }
-.appbar-inner { max-width:1100px; margin:0 auto; height:60px; padding:0 24px;
-  display:flex; align-items:center; justify-content:space-between; }
-.logo { font-weight:800; font-size:17px; letter-spacing:-.02em; display:flex; gap:8px; align-items:center; }
-.logo .mark { color:var(--primary); font-size:20px; }
-
-/* 레이아웃 */
-main { max-width:1100px; margin:0 auto; padding:32px 24px 80px; }
-.card { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);
-  box-shadow:var(--shadow); padding:24px; }
-h1 { font-size:26px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
-h2 { font-size:18px; font-weight:700; letter-spacing:-.01em; margin:0 0 4px; }
-.sub { color:var(--muted); margin:0 0 20px; }
-
-/* 버튼 */
-.btn { border:1px solid var(--border); background:var(--bg); color:var(--text);
-  border-radius:var(--radius-sm); padding:10px 18px; font-size:14px; font-weight:600;
-  cursor:pointer; transition:background .15s, border-color .15s; }
-.btn:hover { background:var(--surface); }
-.btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; }
-.btn-primary:hover { background:var(--primary-600); }
-.btn-primary:disabled { background:#a8c4f5; border-color:#a8c4f5; cursor:not-allowed; }
-.btn-ghost { border-color:transparent; background:transparent; color:var(--muted); }
-
-/* 배지 */
-.badge { display:inline-flex; align-items:center; gap:5px; border-radius:999px;
-  font-size:12px; font-weight:600; padding:3px 10px; }
-.badge-blue { background:var(--primary-50); color:var(--primary-600); }
-.badge-green { background:var(--green-50); color:var(--green); }
-.badge-amber { background:var(--amber-50); color:var(--amber); }
-.badge-red { background:var(--red-50); color:var(--red); }
-
-/* 미션 그리드 */
-.mission-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:16px; }
-.mission-card { display:flex; flex-direction:column; gap:10px; cursor:pointer;
-  transition:transform .12s, box-shadow .12s; }
-.mission-card:hover { transform:translateY(-2px);
-  box-shadow:0 4px 14px rgba(16,24,40,.10); }
-.mission-card .icon { font-size:30px; }
-.mission-card .meta { display:flex; flex-wrap:wrap; gap:6px; }
-.mission-card .desc { color:var(--muted); font-size:13.5px; flex:1; }
-
-/* 스텝퍼 (Zillow식) */
-.stepper { display:flex; align-items:flex-start; margin:26px 0 22px; }
-.step { flex:1; text-align:center; position:relative; }
-.step .dot { width:26px; height:26px; border-radius:50%; margin:0 auto 6px;
-  display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;
-  background:var(--surface2); color:var(--faint); border:2px solid var(--border); }
-.step.done .dot { background:var(--primary); border-color:var(--primary); color:#fff; }
-.step.current .dot { background:var(--bg); border-color:var(--primary); color:var(--primary); }
-.step .lbl { font-size:11.5px; font-weight:600; color:var(--faint); overflow-wrap:anywhere; padding:0 2px; }
-.step.current .lbl { color:var(--primary); }
-.step.done .lbl { color:var(--muted); }
-.step:not(:first-child)::before { content:''; position:absolute; top:12px; right:50%;
-  left:-50%; height:2px; background:var(--border); z-index:-1; }
-.step.done:not(:first-child)::before, .step.current:not(:first-child)::before { background:var(--primary); }
-
-/* 위저드 2컬럼 */
-.wizard-grid { display:grid; grid-template-columns:1fr 380px; gap:20px; align-items:start; }
-.ref-panel { position:sticky; top:80px; display:flex; flex-direction:column; gap:14px; }
-@media (max-width:900px){ .wizard-grid { grid-template-columns:1fr; } .ref-panel { position:static; } }
-
-/* 참고표 */
-.ref-table { width:100%; border-collapse:collapse; font-size:12.5px; }
-.ref-table caption { caption-side:top; text-align:left; font-size:12px; font-weight:700;
-  color:var(--muted); text-transform:uppercase; letter-spacing:.04em; padding-bottom:8px; }
-.ref-table th { font-size:11px; text-transform:uppercase; letter-spacing:.03em;
-  color:var(--faint); font-weight:600; text-align:right; padding:6px 8px;
-  border-bottom:1px solid var(--border); }
-.ref-table th:first-child, .ref-table td:first-child { text-align:left; }
-.ref-table td { padding:6px 8px; text-align:right; font-variant-numeric:tabular-nums;
-  border-bottom:1px solid var(--surface2); }
-.ref-table tbody tr:nth-child(odd) { background:var(--surface); }
-.ref-table tbody tr:hover { background:var(--primary-50); }
-.ref-note { font-size:12px; color:var(--faint); margin-top:8px; }
-
-/* 숫자 입력 */
-.num-field { margin:14px 0; }
-.num-field label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; }
-.num-field .wrap { display:flex; align-items:center; border:1px solid var(--border);
-  border-radius:var(--radius-sm); overflow:hidden; background:var(--bg); max-width:240px; }
-.num-field .wrap:focus-within { border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-50); }
-.num-field input { border:0; outline:0; padding:10px 12px; font-size:15px; width:100%;
-  text-align:right; font-variant-numeric:tabular-nums; font-family:var(--font); }
-.num-field .unit { padding:0 12px; color:var(--faint); font-size:13px; white-space:nowrap;
-  background:var(--surface); align-self:stretch; display:flex; align-items:center;
-  border-left:1px solid var(--border); }
-.num-field .hint { font-size:12.5px; color:var(--faint); margin-top:6px; }
-
-/* 선택 카드 (NMAS 등) */
-.choice-row { display:flex; gap:10px; flex-wrap:wrap; }
-.choice { border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--bg);
-  padding:12px 18px; font-weight:600; font-size:14px; cursor:pointer; }
-.choice.selected { border-color:var(--primary); background:var(--primary-50); color:var(--primary-600); }
-
-/* 위저드 하단 내비 */
-.wiz-nav { display:flex; justify-content:space-between; margin-top:22px; }
-
-/* 캔버스 무대 */
-.canvas-stage { background:linear-gradient(180deg,#f4f7fb,#e8edf4);
-  border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);
-  display:block; width:100%; height:auto; }
-.stage-actions { display:flex; justify-content:center; gap:12px; margin-top:18px; }
-
-/* 결과 */
-.score-row { display:grid; grid-template-columns:150px 1fr 90px; gap:14px; align-items:center;
-  padding:12px 0; border-bottom:1px solid var(--surface2); }
-.score-bar { height:8px; border-radius:4px; background:var(--surface2); overflow:hidden; }
-.score-bar > div { height:100%; border-radius:4px; background:var(--primary); }
-.grade-badge { width:92px; height:92px; border-radius:50%; display:flex; align-items:center;
-  justify-content:center; font-size:42px; font-weight:800; color:#fff; }
+/* ── Mix Design Lab 모듈 전용 스타일 ──────────────────────────────
+   공통 디자인 시스템은 shared/theme.css 로 이동했다. 이 모듈에 남은
+   CSS는 현재 없으며(모든 클래스가 다른 랩과 공유되는 범용 컴포넌트),
+   추후 이 모듈만의 스타일이 필요해지면 여기에 추가한다. */
 </style>
 </head>
 <body>
 <header class="appbar"><div class="appbar-inner">
-  <div class="logo"><span class="mark">⬢</span> MixLab</div>
+  <div class="logo"><a href="../../" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;margin-right:4px">← All Labs</a> <span class="mark">⬢</span> MixLab</div>
   <div id="appbar-info"></div>
 </div></header>
 <main id="stage"></main>
