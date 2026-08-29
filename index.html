@@ -561,6 +561,159 @@ Scenes.mix = () => {
   };
 };
 
+// ── SLUMP: 슬럼프 시험 ────────────────────────────────────────────
+Scenes.slump = () => {
+  let raf = 0, start = 0;
+  const W = 900, H = 470, PX = 15; // 1 in. = 15 px
+  const groundY = H - 60, baseX = W / 2 - 120;
+  const r = game.result; // { behavior:{mode,slump}, measuredSlump }
+  return {
+    mount(root) {
+      const { canvas, ctx } = canvasStage(W, H);
+      const modeBadge = { zero: ['badge-amber', 'Zero slump — too dry'],
+        true: ['badge-green', 'True slump'],
+        shear: ['badge-amber', 'Shear slump — harsh mix'],
+        collapse: ['badge-red', 'Collapse — too wet'] }[r.behavior.mode];
+      const info = h('div', { class: 'stage-actions', style: 'min-height:34px' });
+      const nextBtn = h('button', { class: 'btn btn-primary', onclick: () => go('compression') },
+        'Proceed to Strength Test →');
+      nextBtn.style.display = 'none';
+      sceneShell(root, 'Slump test (ASTM C143)',
+        'Fill in three lifts, rod each 25 times, lift the cone — and watch.', canvas, [nextBtn]);
+      root.insertBefore(info, root.querySelector('.stage-actions'));
+
+      // 콘(금속 프러스텀) 그리기 — liftY: 인발 높이(px)
+      function drawCone(liftY) {
+        const topW = 2 * PX, botW = 4 * PX, hgt = 12 * PX;
+        const y0 = groundY - liftY;
+        ctx.strokeStyle = '#7d8797'; ctx.lineWidth = 4; ctx.fillStyle = 'rgba(190,198,210,.35)';
+        ctx.beginPath();
+        ctx.moveTo(baseX - botW, y0); ctx.lineTo(baseX - topW, y0 - hgt);
+        ctx.lineTo(baseX + topW, y0 - hgt); ctx.lineTo(baseX + botW, y0);
+        ctx.fill(); ctx.stroke();
+        // 손잡이
+        ctx.strokeStyle = '#9aa2b1'; ctx.lineWidth = 3;
+        ctx.strokeRect(baseX - botW - 14, y0 - hgt * 0.55, 14, 5);
+        ctx.strokeRect(baseX + botW, y0 - hgt * 0.55, 14, 5);
+      }
+      // 콘크리트 프로파일 — p: 변형 진행도 0→1
+      function drawConcrete(p) {
+        const s = r.behavior.slump, mode = r.behavior.mode;
+        ctx.fillStyle = '#83878f'; ctx.strokeStyle = '#666b74'; ctx.lineWidth = 1.5;
+        const frustum = (rB, rT, hgt, dx) => { // 사다리꼴 단면 (인치 단위)
+          ctx.beginPath();
+          ctx.moveTo(baseX + dx - rB * PX, groundY);
+          ctx.lineTo(baseX + dx - rT * PX, groundY - hgt * PX);
+          ctx.lineTo(baseX + dx + rT * PX, groundY - hgt * PX);
+          ctx.lineTo(baseX + dx + rB * PX, groundY);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+        };
+        if (mode === 'zero') {
+          frustum(4, 2, 12 - 0.3 * p, 0); // 거의 원형 유지
+        } else if (mode === 'true') {
+          const hgt = 12 - s * p;
+          const rB = 4 + s * 0.45 * p, rT = 2 + s * 0.35 * p;
+          // 둥근 마운드: 프러스텀 + 상단 타원
+          frustum(rB, rT, hgt, 0);
+          ctx.beginPath();
+          ctx.ellipse(baseX, groundY - hgt * PX, rT * PX, 0.35 * PX + s * 0.4 * p, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (mode === 'shear') {
+          const hgt = 12 - s * 0.6 * p;
+          frustum(3.4, 1.8, hgt, -0.8 * PX * p);            // 남은 몸통 (살짝 좌측, dx는 px)
+          // 전단면으로 미끄러진 반쪽
+          ctx.save();
+          ctx.translate(baseX + (2.5 + s * 0.5) * PX * p, groundY);
+          ctx.rotate(0.5 * p);
+          ctx.beginPath();
+          ctx.moveTo(-2.2 * PX, 0); ctx.lineTo(-0.6 * PX, -(hgt * 0.55) * PX / 1.4);
+          ctx.lineTo(1.8 * PX, -(hgt * 0.3) * PX / 1.4); ctx.lineTo(2.6 * PX, 0);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+          ctx.restore();
+        } else { // collapse
+          const hgt = 1.6 + (12 - 1.6) * (1 - p);
+          const rB = 4 + 13 * p;
+          // 블리딩 수막 링
+          ctx.save(); ctx.fillStyle = 'rgba(140,185,235,.30)';
+          ctx.beginPath(); ctx.ellipse(baseX, groundY, (rB + 2.5) * PX, 7, 0, 0, Math.PI * 2);
+          ctx.fill(); ctx.restore();
+          // 퍼진 웅덩이 (불규칙 가장자리)
+          ctx.beginPath();
+          const rng = E.mulberry32(11);
+          ctx.moveTo(baseX - rB * PX, groundY);
+          ctx.quadraticCurveTo(baseX - rB * PX * 0.7, groundY - hgt * PX * (1 + rng() * 0.3),
+            baseX - rB * PX * 0.25, groundY - hgt * PX);
+          ctx.quadraticCurveTo(baseX, groundY - hgt * PX * (1.15 + rng() * 0.2),
+            baseX + rB * PX * 0.3, groundY - hgt * PX * 0.95);
+          ctx.quadraticCurveTo(baseX + rB * PX * 0.75, groundY - hgt * PX * (0.8 + rng() * 0.3),
+            baseX + rB * PX, groundY);
+          ctx.closePath(); ctx.fill(); ctx.stroke();
+        }
+        // 골재 점 (시드 고정, 형상 내부 근사)
+        const rng2 = E.mulberry32(23);
+        ctx.fillStyle = 'rgba(60,64,70,.5)';
+        const spread = mode === 'collapse' ? 4 + 13 * p : 4.5;
+        for (let i = 0; i < 40; i++) {
+          const x = baseX + (rng2() * 2 - 1) * spread * PX * 0.8;
+          const y = groundY - rng2() * Math.max(1, (12 - (mode === 'true' ? s * p : mode === 'collapse' ? 10 * p : 0))) * PX * 0.7;
+          if (y < groundY - 2) { ctx.beginPath(); ctx.arc(x, y, 1.5 + rng2() * 2, 0, 7); ctx.fill(); }
+        }
+      }
+      // 측정 오버레이: 원 높이선, 콘(뒤집힘) + 자 + 측정값
+      function drawMeasure() {
+        const topY = groundY - (12 - r.measuredSlump) * PX;
+        ctx.strokeStyle = '#d92d20'; ctx.setLineDash([6, 5]); ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(baseX - 90, groundY - 12 * PX);
+        ctx.lineTo(baseX + 220, groundY - 12 * PX); ctx.stroke(); // 원래 콘 높이
+        ctx.setLineDash([]);
+        // 슬럼프 화살표
+        ctx.strokeStyle = '#1b66f0'; ctx.lineWidth = 2.5;
+        const ax = baseX + 180;
+        ctx.beginPath(); ctx.moveTo(ax, groundY - 12 * PX); ctx.lineTo(ax, topY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ax - 5, topY - 7); ctx.lineTo(ax, topY);
+        ctx.lineTo(ax + 5, topY - 7); ctx.stroke();
+        ctx.fillStyle = '#1b66f0'; ctx.font = '700 16px Inter, sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText(`Slump: ${r.measuredSlump.toFixed(2)} in.`, ax + 14, (groundY - 12 * PX + topY) / 2);
+      }
+
+      const draw = (now) => {
+        if (!start) start = now;
+        const t = (now - start) / 1000;
+        ctx.clearRect(0, 0, W, H);
+        // 지면
+        ctx.fillStyle = '#d7dde6'; ctx.fillRect(0, groundY, W, H - groundY);
+        if (t < 2.2) { // 채움: 3층
+          drawCone(0);
+          const lifts = Math.min(3, Math.floor(t / 0.7) + 1);
+          const fillH = Math.min(12, (t / 2.2) * 12);
+          ctx.fillStyle = '#83878f';
+          ctx.fillRect(baseX - 3.5 * PX, groundY - fillH * PX, 7 * PX, fillH * PX);
+          ctx.fillStyle = '#5b6472'; ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText(`Lift ${lifts} of 3 — rod 25 times`, W / 2, 36);
+        } else if (t < 4.2) { // 인발
+          const lift = easeOutCubic((t - 2.2) / 2) * 16 * PX;
+          drawConcrete(0); drawCone(lift);
+          ctx.fillStyle = '#5b6472'; ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText('Lifting the cone slowly…', W / 2, 36);
+        } else { // 변형 + 측정
+          const p = easeOutCubic((t - 4.2) / 1.2);
+          drawConcrete(p); drawCone(16 * PX);
+          if (p >= 1) {
+            drawMeasure();
+            if (nextBtn.style.display === 'none') {
+              nextBtn.style.display = '';
+              info.append(h('span', { class: 'badge ' + modeBadge[0] }, modeBadge[1]));
+            }
+          }
+        }
+        raf = requestAnimationFrame(draw);
+      };
+      raf = requestAnimationFrame(draw);
+    },
+    unmount() { cancelAnimationFrame(raf); },
+  };
+};
+
 go('home');
 </script>
 </body>
