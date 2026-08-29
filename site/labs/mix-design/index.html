@@ -508,7 +508,7 @@ Scenes.mix = () => {
   };
 };
 
-// ── SLUMP: 슬럼프 시험 ────────────────────────────────────────────
+// ── SLUMP: 슬럼프 시험 (ASTM C143) ────────────────────────────────
 const SLUMP_MODE_BADGE = { zero: ['badge-amber', 'Zero slump — too dry'],
   true: ['badge-green', 'True slump'],
   shear: ['badge-amber', 'Shear slump — harsh mix'],
@@ -516,8 +516,14 @@ const SLUMP_MODE_BADGE = { zero: ['badge-amber', 'Zero slump — too dry'],
 Scenes.slump = () => {
   let raf = 0, start = 0;
   const W = 900, H = 470, PX = 15; // 1 in. = 15 px
-  const groundY = H - 60, baseX = W / 2 - 120;
-  const r = game.result; // { behavior:{mode,slump}, measuredSlump }
+  const groundY = H - 60, baseX = W / 2 - 120, invX = baseX + 300; // 시료 중심 / 뒤집은 콘 중심(측정용)
+  const TOP_R = 2, BOT_R = 4, HGT = 12; // ASTM 콘 규격: 상단 4"⌀ / 하단 8"⌀ / 높이 12" (반경 2"/4")
+  const ROD_TARGET = 25, LAYERS = 3;
+  const POUR_T = 0.3, ROD_T = 1.3, PAUSE_T = 0.2, LAYER_T = POUR_T + ROD_T + PAUSE_T; // 층당 채움+다짐+정지
+  const FILL_DUR = LAYERS * LAYER_T;   // 3층 채움
+  const LIFT_DUR = 5.0;                // ASTM C143 §8.2 규정: 5±2 s 인발을 실제로 시연
+  const SETTLE_DUR = 1.2;              // 변형 애니메이션 길이
+  const r = game.result; // { behavior:{mode,slump,segregation}, measuredSlump } — 불변 계약: 엔진 재계산 금지, 그대로 소비만 한다
   return {
     mount(root) {
       const { canvas, ctx } = canvasStage(W, H);
@@ -539,129 +545,270 @@ Scenes.slump = () => {
         'Fill in three lifts, rod each 25 times, lift the cone — and watch.', canvas, [nextBtn]);
       root.insertBefore(info, root.querySelector('.stage-actions'));
 
-      // 콘(금속 프러스텀) 그리기 — liftY: 인발 높이(px)
-      function drawCone(liftY) {
-        const topW = 2 * PX, botW = 4 * PX, hgt = 12 * PX;
-        const y0 = groundY - liftY;
-        ctx.strokeStyle = '#7d8797'; ctx.lineWidth = 4; ctx.fillStyle = 'rgba(190,198,210,.35)';
-        ctx.beginPath();
-        ctx.moveTo(baseX - botW, y0); ctx.lineTo(baseX - topW, y0 - hgt);
-        ctx.lineTo(baseX + topW, y0 - hgt); ctx.lineTo(baseX + botW, y0);
-        ctx.fill(); ctx.stroke();
-        // 손잡이
-        ctx.strokeStyle = '#9aa2b1'; ctx.lineWidth = 3;
-        ctx.strokeRect(baseX - botW - 14, y0 - hgt * 0.55, 14, 5);
-        ctx.strokeRect(baseX + botW, y0 - hgt * 0.55, 14, 5);
+      // ── 재질 그라데이션(요소2·3): 스펙이 "수직" 그라데이션을 명시하므로 세로 방향으로만
+      // 두고, 광원 방향(요소8, 상부 좌측)은 별도의 하이라이트 밴드·그림자로 표현한다.
+      const steelGrad = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1);
+        g.addColorStop(0, '#eef1f6'); g.addColorStop(0.45, '#c3cad6'); g.addColorStop(1, '#8b93a3'); return g; };
+      const concreteGrad = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1);
+        g.addColorStop(0, '#a89d8c'); g.addColorStop(0.5, '#8a8172'); g.addColorStop(1, '#655f53'); return g; };
+
+      // 접지 그림자 타원(요소8) — 상부 좌측 광원 가정이므로 그림자는 하부 우측으로 살짝 치우친다
+      function groundShadow(cx, rx) {
+        ctx.save(); ctx.fillStyle = 'rgba(30,34,44,.18)';
+        ctx.beginPath(); ctx.ellipse(cx + 6, groundY + 5, rx, Math.max(4, rx * 0.2), 0, 0, Math.PI * 2);
+        ctx.fill(); ctx.restore();
       }
-      // 콘크리트 프로파일 — p: 변형 진행도 0→1
+      // 강철 베이스 플레이트(요소1): 콘보다 넓은 판 + 클램프 2 + 발판 2
+      function drawBasePlate() {
+        const px0 = baseX - 190, px1 = invX + 90, ph = 16;
+        ctx.fillStyle = steelGrad(groundY, groundY + ph);
+        ctx.fillRect(px0, groundY, px1 - px0, ph);
+        ctx.strokeStyle = '#6b7484'; ctx.lineWidth = 1.5; ctx.strokeRect(px0, groundY, px1 - px0, ph);
+        for (const dx of [-(BOT_R * PX + 8), BOT_R * PX + 8]) { // 클램프 2개 — 콘 밑동 고정 걸쇠
+          ctx.fillStyle = '#5b6472'; ctx.fillRect(baseX + dx - 5, groundY - 7, 10, 15);
+          ctx.beginPath(); ctx.arc(baseX + dx, groundY - 7, 4, 0, Math.PI * 2);
+          ctx.fillStyle = '#3d414a'; ctx.fill();
+        }
+        ctx.fillStyle = '#9aa2b1'; // 발판 2개 — 오퍼레이터가 밟아 판을 고정하는 자리
+        ctx.fillRect(px0 + 16, groundY + 3, 36, 10);
+        ctx.fillRect(px1 - 52, groundY + 3, 36, 10);
+      }
+      // 사다리꼴(프러스텀) 경로 — yBase에 반경 rBaseIn(하단), yBase-hgt에 반경 rTopIn(상단)
+      function frustumPath(cx, yBase, rBaseIn, rTopIn, hgtIn) {
+        const rB = rBaseIn * PX, rT = rTopIn * PX, hh = hgtIn * PX, p = new Path2D();
+        p.moveTo(cx - rB, yBase); p.lineTo(cx - rT, yBase - hh);
+        p.lineTo(cx + rT, yBase - hh); p.lineTo(cx + rB, yBase); p.closePath();
+        return p;
+      }
+      // 금속 콘/뒤집은 콘 공용 렌더러(요소2): 광택 수직 그라데이션 + 상하 림(두께) + 손잡이2 + 발판2
+      function drawConeShape(cx, yBase, rBaseIn, rTopIn, hgtIn, opts = {}) {
+        const rB = rBaseIn * PX, rT = rTopIn * PX, hh = hgtIn * PX, yTop = yBase - hh;
+        const path = frustumPath(cx, yBase, rBaseIn, rTopIn, hgtIn);
+        ctx.save(); ctx.globalAlpha = opts.alpha ?? 1;
+        ctx.fillStyle = steelGrad(yTop, yBase); ctx.fill(path);
+        ctx.restore();
+        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 2.5; ctx.stroke(path);
+        if ((opts.alpha ?? 1) > 0.7) { // 좌측 하이라이트 밴드 — 상부 좌측 광원(요소8)
+          ctx.save(); ctx.clip(path);
+          const hl = ctx.createLinearGradient(cx - rB, 0, cx - rB * 0.1, 0);
+          hl.addColorStop(0, 'rgba(255,255,255,.55)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = hl; ctx.fillRect(cx - rB, yTop, rB * 0.9, hh);
+          ctx.restore();
+        }
+        ctx.fillStyle = '#7d8797'; ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 1.5; // 상·하 림(두께 표현)
+        ctx.beginPath(); ctx.ellipse(cx, yTop, rT, 3.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(cx, yBase, rB, 3.6, 0, 0, Math.PI * 2); ctx.stroke();
+        if (opts.handles !== false) { // 손잡이 2개
+          const hy = yTop + hh * 0.32;
+          ctx.strokeStyle = '#7d8797'; ctx.lineWidth = 3.5;
+          ctx.strokeRect(cx - rB - 15, hy - 3, 15, 7); ctx.strokeRect(cx + rB, hy - 3, 15, 7);
+        }
+        if (opts.feet !== false) { // 발판 2개 — 콘 하단 측면 브래킷
+          ctx.fillStyle = '#6b7484';
+          ctx.fillRect(cx - rB - 10, yBase - 14, 10, 6); ctx.fillRect(cx + rB, yBase - 14, 10, 6);
+        }
+      }
+      // 다짐봉(steel rod) — 왕복 다짐 스프라이트 + 측정용 수평 거치 겸용.
+      // 진행 방향에 수직으로(단면 방향) 그라데이션을 둬 원기둥 하이라이트를 표현하고,
+      // 시작점=끝점(길이 0)이 되는 수평/수직 축 모두에서 그라데이션이 소실되지 않게 한다.
+      function drawRod(x0, y0, x1, y1, thickness) {
+        const vertical = x0 === x1;
+        const g = vertical
+          ? ctx.createLinearGradient(x0 - thickness / 2, y0, x0 + thickness / 2, y0)
+          : ctx.createLinearGradient(x0, y0 - thickness / 2, x0, y0 + thickness / 2);
+        g.addColorStop(0, '#eef1f6'); g.addColorStop(0.5, '#aab2c0'); g.addColorStop(1, '#7d8797');
+        ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = g; ctx.lineWidth = thickness;
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        ctx.restore();
+      }
+      // 굵은골재(불규칙 다각형, 갈색·회색 2톤, 시드 고정) + 잔골재 노이즈(요소3)
+      // — 호출부가 미리 clip을 걸어둔 실루엣 내부에서만 그린다.
+      function drawAggregate(rng, xCenter, yTop, yBot, xRadius, opts = {}) {
+        const count = opts.count ?? 11, edgeBias = opts.edgeBias ?? 1;
+        for (let i = 0; i < count; i++) {
+          let u = rng() * 2 - 1; const sign = u < 0 ? -1 : 1; u = sign * Math.pow(Math.abs(u), edgeBias);
+          const cx2 = xCenter + u * xRadius * 0.86, cy2 = yTop + rng() * Math.max(1, yBot - yTop);
+          const rad = 3 + rng() * 4.5, sides = 5 + Math.floor(rng() * 4);
+          ctx.beginPath();
+          for (let k = 0; k < sides; k++) {
+            const ang = (k / sides) * Math.PI * 2 + rng() * 0.4, rr = rad * (0.7 + rng() * 0.5);
+            const px = cx2 + Math.cos(ang) * rr, py = cy2 + Math.sin(ang) * rr * 0.85;
+            k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fillStyle = i % 2 ? 'rgba(122,90,61,.78)' : 'rgba(120,124,131,.78)'; // 갈색/회색 2톤
+          ctx.fill();
+        }
+        ctx.fillStyle = 'rgba(214,203,182,.55)'; // 잔골재(모래) 노이즈
+        for (let i = 0; i < 55; i++) {
+          const x = xCenter + (rng() * 2 - 1) * xRadius * 0.92, y = yTop + rng() * Math.max(1, yBot - yTop);
+          ctx.beginPath(); ctx.arc(x, y, 0.6 + rng() * 0.8, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      // 상부 광택 하이라이트(요소3·8) — 중심에서 좌측으로 살짝 치우쳐 상부-좌측 광원을 암시
+      function topGloss(cx, topY, rx) {
+        ctx.save(); ctx.fillStyle = 'rgba(255,255,255,.3)';
+        ctx.beginPath(); ctx.ellipse(cx - rx * 0.28, topY + 2, Math.max(4, rx * 0.55), 3.2, 0, 0, Math.PI * 2);
+        ctx.fill(); ctx.restore();
+      }
+      // 거친 윤곽 경로 — zero-slump 전용(요소7): 변마다 톱니형 섭동을 줘 "거칠고 뻑뻑한" 표면을 표현
+      function roughFrustumPath(cx, yBase, rBaseIn, rTopIn, hgtIn, seed, jitter) {
+        const rng = E.mulberry32(seed), rB = rBaseIn * PX, rT = rTopIn * PX, hh = hgtIn * PX, N = 5;
+        const pts = [];
+        for (let i = 0; i <= N; i++) { const f = i / N; pts.push([cx - (rB + (rT - rB) * f), yBase - hh * f]); }
+        pts.push([cx + rT, yBase - hh]);
+        for (let i = 0; i <= N; i++) { const f = i / N; pts.push([cx + (rT + (rB - rT) * f), yBase - hh * (1 - f)]); }
+        const path = new Path2D();
+        pts.forEach(([x, y], i) => { const jx = x + (rng() - 0.5) * jitter, jy = y + (rng() - 0.5) * jitter;
+          i === 0 ? path.moveTo(jx, jy) : path.lineTo(jx, jy); });
+        path.closePath();
+        return path;
+      }
+      // 완만한 돔 경로 — true slump(요소7)
+      function domePath(hgtIn, rBIn, rTIn, capIn) {
+        const rB = rBIn * PX, rT = rTIn * PX, hh = hgtIn * PX, cap = capIn * PX, path = new Path2D();
+        path.moveTo(baseX - rB, groundY);
+        path.quadraticCurveTo(baseX - rB * 0.94, groundY - hh * 0.94, baseX - rT, groundY - hh);
+        path.quadraticCurveTo(baseX, groundY - hh - cap, baseX + rT, groundY - hh);
+        path.quadraticCurveTo(baseX + rB * 0.94, groundY - hh * 0.94, baseX + rB, groundY);
+        path.closePath();
+        return path;
+      }
+      // 퍼진 웅덩이 경로(불규칙 가장자리, 시드 고정) — collapse(요소7)
+      function collapsePath(rBIn, hgtIn) {
+        const rng = E.mulberry32(11), rB = rBIn * PX, hh = hgtIn * PX, path = new Path2D();
+        path.moveTo(baseX - rB, groundY);
+        path.quadraticCurveTo(baseX - rB * 0.7, groundY - hh * (1 + rng() * 0.3), baseX - rB * 0.25, groundY - hh);
+        path.quadraticCurveTo(baseX, groundY - hh * (1.15 + rng() * 0.2), baseX + rB * 0.3, groundY - hh * 0.95);
+        path.quadraticCurveTo(baseX + rB * 0.75, groundY - hh * (0.8 + rng() * 0.3), baseX + rB, groundY);
+        path.closePath();
+        return path;
+      }
+      // 블리딩 수막(밝은 반사 띠) — collapse 전용(요소7)
+      function drawBleedFilm(cx, rx) {
+        ctx.save();
+        const g = ctx.createRadialGradient(cx - 12, groundY - 4, rx * 0.1, cx, groundY, rx * 1.05);
+        g.addColorStop(0, 'rgba(255,255,255,.08)'); g.addColorStop(0.7, 'rgba(190,220,245,.35)');
+        g.addColorStop(1, 'rgba(190,220,245,0)');
+        ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(cx, groundY, rx, rx * 0.16, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 2; // 표면에 뜨는 밝은 반사 띠
+        ctx.beginPath(); ctx.ellipse(cx - rx * 0.15, groundY - 1, rx * 0.7, rx * 0.09, 0, Math.PI * 1.05, Math.PI * 1.75);
+        ctx.stroke(); ctx.restore();
+      }
+      // 콘크리트 프로파일(요소3·7) — p: 변형 진행도 0→1. 형상 산정은 behavior.slump(연속값)를 쓰고,
+      // 최종 라벨·치수선만 measuredSlump(양자화값)를 쓴다 — v1 관례 그대로 유지(엔진 재계산 아님).
       function drawConcrete(p) {
         const s = r.behavior.slump, mode = r.behavior.mode;
-        ctx.fillStyle = '#83878f'; ctx.strokeStyle = '#666b74'; ctx.lineWidth = 1.5;
-        const frustum = (rB, rT, hgt, dx) => { // 사다리꼴 단면 (인치 단위)
-          ctx.beginPath();
-          ctx.moveTo(baseX + dx - rB * PX, groundY);
-          ctx.lineTo(baseX + dx - rT * PX, groundY - hgt * PX);
-          ctx.lineTo(baseX + dx + rT * PX, groundY - hgt * PX);
-          ctx.lineTo(baseX + dx + rB * PX, groundY);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
-        };
+        let path, xRadius, yTop, yBot, edgeBias = 1, glossRx = TOP_R * PX;
         if (mode === 'zero') {
-          frustum(4, 2, 12 - 0.3 * p, 0); // 거의 원형 유지
+          const hgt = HGT - 0.3 * p; // 거의 원형 유지, 거친 윤곽만 부여
+          path = roughFrustumPath(baseX, groundY, BOT_R, TOP_R, hgt, 51, 3.2);
+          xRadius = BOT_R * PX; yTop = groundY - hgt * PX; yBot = groundY;
         } else if (mode === 'true') {
-          const hgt = 12 - s * p;
-          const rB = 4 + s * 0.45 * p, rT = 2 + s * 0.35 * p;
-          // 둥근 마운드: 프러스텀 + 상단 타원
-          frustum(rB, rT, hgt, 0);
-          ctx.beginPath();
-          ctx.ellipse(baseX, groundY - hgt * PX, rT * PX, 0.35 * PX + s * 0.4 * p, 0, 0, Math.PI * 2);
-          ctx.fill();
+          const hgt = HGT - s * p, rB = BOT_R + s * 0.45 * p, rT = TOP_R + s * 0.35 * p, cap = 0.35 + s * 0.4 * p;
+          path = domePath(hgt, rB, rT, cap);
+          xRadius = rB * PX; yTop = groundY - (hgt + cap) * PX; yBot = groundY; glossRx = rT * PX;
         } else if (mode === 'shear') {
-          const hgt = 12 - s * 0.6 * p;
-          frustum(3.4, 1.8, hgt, -0.8 * PX * p);            // 남은 몸통 (살짝 좌측, dx는 px)
-          // 전단면으로 미끄러진 반쪽
-          ctx.save();
-          ctx.translate(baseX + (2.5 + s * 0.5) * PX * p, groundY);
-          ctx.rotate(0.5 * p);
-          ctx.beginPath();
-          ctx.moveTo(-2.2 * PX, 0); ctx.lineTo(-0.6 * PX, -(hgt * 0.55) * PX / 1.4);
-          ctx.lineTo(1.8 * PX, -(hgt * 0.3) * PX / 1.4); ctx.lineTo(2.6 * PX, 0);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
-          ctx.restore();
-        } else { // collapse
-          const hgt = 1.6 + (12 - 1.6) * (1 - p);
-          const rB = 4 + 13 * p;
-          // 블리딩 수막 링
-          ctx.save(); ctx.fillStyle = 'rgba(140,185,235,.30)';
-          ctx.beginPath(); ctx.ellipse(baseX, groundY, (rB + 2.5) * PX, 7, 0, 0, Math.PI * 2);
-          ctx.fill(); ctx.restore();
-          // 퍼진 웅덩이 (불규칙 가장자리)
-          ctx.beginPath();
-          const rng = E.mulberry32(11);
-          ctx.moveTo(baseX - rB * PX, groundY);
-          ctx.quadraticCurveTo(baseX - rB * PX * 0.7, groundY - hgt * PX * (1 + rng() * 0.3),
-            baseX - rB * PX * 0.25, groundY - hgt * PX);
-          ctx.quadraticCurveTo(baseX, groundY - hgt * PX * (1.15 + rng() * 0.2),
-            baseX + rB * PX * 0.3, groundY - hgt * PX * 0.95);
-          ctx.quadraticCurveTo(baseX + rB * PX * 0.75, groundY - hgt * PX * (0.8 + rng() * 0.3),
-            baseX + rB * PX, groundY);
-          ctx.closePath(); ctx.fill(); ctx.stroke();
+          const hgt = HGT - s * 0.6 * p, bodyDx = -0.8 * PX * p;
+          path = new Path2D();
+          path.moveTo(baseX + bodyDx - 3.4 * PX, groundY); path.lineTo(baseX + bodyDx - 1.8 * PX, groundY - hgt * PX);
+          path.lineTo(baseX + bodyDx + 1.8 * PX, groundY - hgt * PX); path.lineTo(baseX + bodyDx + 3.4 * PX, groundY);
+          path.closePath(); // 남은 몸통
+          const wx = baseX + (2.5 + s * 0.5) * PX * p, ang = 0.5 * p; // 전단면으로 미끄러진 반쪽 웨지
+          const wedge = [[-2.2 * PX, 0], [-0.6 * PX, -(hgt * 0.55) * PX / 1.4],
+            [1.8 * PX, -(hgt * 0.3) * PX / 1.4], [2.6 * PX, 0]];
+          wedge.forEach(([dx, dy], i) => {
+            const rx = dx * Math.cos(ang) - dy * Math.sin(ang), ry = dx * Math.sin(ang) + dy * Math.cos(ang);
+            i === 0 ? path.moveTo(wx + rx, groundY + ry) : path.lineTo(wx + rx, groundY + ry);
+          });
+          path.closePath();
+          xRadius = 4 * PX; yTop = groundY - hgt * PX; yBot = groundY;
+        } else { // collapse: 팬케이크 + 가장자리 골재 몰림 + 블리딩 수막
+          const hgt = 1.6 + (HGT - 1.6) * (1 - p), rB = BOT_R + 13 * p;
+          drawBleedFilm(baseX, (rB + 2.5) * PX); // 수막을 먼저 그려 테두리 밖으로 살짝 비치게 함
+          path = collapsePath(rB, hgt);
+          xRadius = rB * PX; yTop = groundY - hgt * PX * 1.15; yBot = groundY;
+          edgeBias = 0.42; glossRx = rB * PX * 0.4; // <1 → 골재가 가장자리로 쏠려 분포
         }
-        // 골재 점 (시드 고정, 형상 내부 근사)
-        const rng2 = E.mulberry32(23);
-        ctx.fillStyle = 'rgba(60,64,70,.5)';
-        const spread = mode === 'collapse' ? 4 + 13 * p : 4.5;
-        for (let i = 0; i < 40; i++) {
-          const x = baseX + (rng2() * 2 - 1) * spread * PX * 0.8;
-          const y = groundY - rng2() * Math.max(1, (12 - (mode === 'true' ? s * p : mode === 'collapse' ? 10 * p : 0))) * PX * 0.7;
-          if (y < groundY - 2) { ctx.beginPath(); ctx.arc(x, y, 1.5 + rng2() * 2, 0, 7); ctx.fill(); }
-        }
+        ctx.fillStyle = concreteGrad(yTop, yBot); ctx.fill(path);
+        ctx.strokeStyle = '#5c5548'; ctx.lineWidth = 1.5; ctx.stroke(path);
+        ctx.save(); ctx.clip(path);
+        drawAggregate(E.mulberry32(23), baseX, yTop, yBot, xRadius,
+          { edgeBias, count: mode === 'collapse' ? 16 : 11 });
+        ctx.restore();
+        topGloss(baseX, yTop, glossRx);
+        groundShadow(baseX, xRadius + 8);
       }
-      // 측정 오버레이: 원 높이선, 콘(뒤집힘) + 자 + 측정값
+      // 측정 단계(요소6): 뒤집은 콘을 시료 옆에 세운다
+      function drawInvertedMold() {
+        drawConeShape(invX, groundY, TOP_R, BOT_R, HGT, { handles: false });
+        groundShadow(invX, TOP_R * PX + 10);
+      }
+      // 측정 오버레이(요소6): 다짐봉을 뒤집은 콘 위에 수평으로 얹고, 봉 아래에서 변위된 원중심까지
+      // 수직 치수선을 긋는다. v1의 빨간 점선·화살표는 폐기하고 중립색 실선+눈금으로 대체했다.
       function drawMeasure() {
-        const coneTopY = groundY - 12 * PX;
-        const topY = groundY - (12 - r.measuredSlump) * PX;
-        ctx.strokeStyle = '#d92d20'; ctx.setLineDash([6, 5]); ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(baseX - 90, coneTopY);
-        ctx.lineTo(baseX + 220, coneTopY); ctx.stroke(); // 원래 콘 높이
-        ctx.setLineDash([]);
-        // 슬럼프 화살표 — 제로에 가까운 슬럼프는 화살표 길이가 거의 0이 되어
-        // 화살촉·라벨이 점선과 겹치므로 화살촉을 생략하고 라벨을 위로 띄운다.
-        ctx.strokeStyle = '#1b66f0'; ctx.lineWidth = 2.5;
-        const ax = baseX + 180;
+        const ropeY = groundY - HGT * PX; // 뒤집은 콘(=원래 콘) 높이 기준선 — 봉이 얹히는 높이
+        const topY = groundY - (HGT - r.measuredSlump) * PX; // 변위된 원중심 높이
+        drawRod(baseX, ropeY, invX + 50, ropeY, 7); // 다짐봉을 수평으로 거치
+        ctx.strokeStyle = '#2b3040'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(baseX, ropeY); ctx.lineTo(baseX, topY); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(baseX - 7, ropeY); ctx.lineTo(baseX + 7, ropeY); ctx.stroke(); // 상단 눈금
+        ctx.beginPath(); ctx.moveTo(baseX - 7, topY); ctx.lineTo(baseX + 7, topY); ctx.stroke();   // 하단 눈금
+        ctx.fillStyle = '#2b3040'; ctx.font = '700 16px Inter, sans-serif'; ctx.textAlign = 'left';
+        // 슬럼프가 거의 0이면 눈금 사이 간격이 라벨과 겹치므로 라벨을 기준선 위로 띄운다(v1 fix 동등 유지)
         const tiny = r.measuredSlump < 0.75;
-        ctx.beginPath(); ctx.moveTo(ax, coneTopY); ctx.lineTo(ax, topY); ctx.stroke();
-        if (!tiny) {
-          ctx.beginPath(); ctx.moveTo(ax - 5, topY - 7); ctx.lineTo(ax, topY);
-          ctx.lineTo(ax + 5, topY - 7); ctx.stroke();
-        }
-        ctx.fillStyle = '#1b66f0'; ctx.font = '700 16px Inter, sans-serif'; ctx.textAlign = 'left';
-        const labelY = tiny ? coneTopY - 14 : (coneTopY + topY) / 2; // 점선 위쪽으로 오프셋해 겹침 방지
-        ctx.fillText(`Slump: ${r.measuredSlump.toFixed(2)} in.`, ax + 14, labelY);
+        const labelY = tiny ? ropeY - 14 : (ropeY + topY) / 2;
+        ctx.fillText(`Slump: ${r.measuredSlump.toFixed(2)} in.`, baseX + 16, labelY);
       }
 
       const draw = (now) => {
         if (!start) start = now;
         const t = (now - start) / 1000;
         ctx.clearRect(0, 0, W, H);
-        // 지면
-        ctx.fillStyle = '#d7dde6'; ctx.fillRect(0, groundY, W, H - groundY);
-        if (t < 2.2) { // 채움: 3층
-          drawCone(0);
-          const lifts = Math.min(3, Math.floor(t / 0.7) + 1);
-          const fillH = Math.min(12, (t / 2.2) * 12);
-          ctx.fillStyle = '#83878f';
-          ctx.fillRect(baseX - 3.5 * PX, groundY - fillH * PX, 7 * PX, fillH * PX);
-          ctx.fillStyle = '#5b6472'; ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText(`Lift ${lifts} of 3 — rod 25 times`, W / 2, 36);
-        } else if (t < 4.2) { // 인발
-          const lift = easeOutCubic((t - 2.2) / 2) * 16 * PX;
-          drawConcrete(0); drawCone(lift);
-          ctx.fillStyle = '#5b6472'; ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText('Lifting the cone slowly…', W / 2, 36);
-        } else { // 변형 + 측정
-          const p = easeOutCubic((t - 4.2) / 1.2);
-          drawConcrete(p); drawCone(16 * PX);
+        ctx.fillStyle = '#d7dde6'; ctx.fillRect(0, groundY, W, H - groundY); // 지면
+        ctx.fillStyle = '#5b6472'; ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'center';
+
+        if (t < FILL_DUR) { // 채움: 3층 + 다짐봉 왕복 + 카운터(요소4)
+          drawBasePlate();
+          const layerIdx = Math.min(LAYERS - 1, Math.floor(t / LAYER_T));
+          const tl = t - layerIdx * LAYER_T, layerH = HGT / LAYERS;
+          const pourFrac = Math.min(1, tl / POUR_T);
+          const rodProg = tl <= POUR_T ? 0 : Math.min(1, (tl - POUR_T) / ROD_T);
+          const filledH = layerIdx * layerH + pourFrac * layerH;
+          const conePath = frustumPath(baseX, groundY, BOT_R, TOP_R, HGT);
+          ctx.save(); ctx.clip(conePath); // 콘 안쪽 사다리꼴 단면으로 채움
+          ctx.fillStyle = concreteGrad(groundY - filledH * PX, groundY);
+          ctx.fillRect(baseX - BOT_R * PX, groundY - filledH * PX, BOT_R * 2 * PX, filledH * PX);
+          if (filledH > 0.3) drawAggregate(E.mulberry32(23), baseX, groundY - filledH * PX, groundY, BOT_R * PX, { count: 8 });
+          ctx.restore();
+          drawConeShape(baseX, groundY, BOT_R, TOP_R, HGT, { alpha: 0.5 }); // 반투명 컷어웨이로 채움 과정을 보여준다
+          groundShadow(baseX, BOT_R * PX + 10);
+          if (rodProg > 0) {
+            const rodPos = rodProg * ROD_TARGET, rodCount = Math.min(ROD_TARGET, Math.floor(rodPos));
+            const poke = Math.sin(Math.min(1, rodPos - rodCount) * Math.PI); // 찔렀다 빼는 왕복 모션
+            const rodX = baseX + Math.sin(rodCount * 2.3) * (BOT_R * PX * 0.5);
+            const rodTopY = groundY - HGT * PX - 18, rodTipY = groundY - filledH * PX + 8 - poke * 12;
+            drawRod(rodX, rodTopY, rodX, rodTipY, 5);
+            ctx.fillText(`Lift ${layerIdx + 1} of 3 — Rodding… ${rodCount} / 25`, W / 2, 36);
+          } else {
+            ctx.fillText(`Lift ${layerIdx + 1} of 3 — placing concrete…`, W / 2, 36);
+          }
+        } else if (t < FILL_DUR + LIFT_DUR) { // 인발: 콘 상승 + 타이머(요소5)
+          const lt = t - FILL_DUR;
+          drawBasePlate();
+          drawConcrete(0); // 아직 변형 전 — 원통 그대로 유지
+          const lift = easeOutCubic(lt / LIFT_DUR) * (HGT + 4) * PX;
+          drawConeShape(baseX, groundY - lift, BOT_R, TOP_R, HGT);
+          ctx.fillText(`Lifting: ${lt.toFixed(1)} s`, W / 2, 36);
+          ctx.font = '500 12px Inter, sans-serif'; ctx.fillStyle = '#8b93a3';
+          ctx.fillText('ASTM C143 §8.2 — raise the mold in 5 ± 2 s, straight up, no lateral or torsional motion', W / 2, 54);
+        } else { // 변형 + 측정(요소6·7)
+          const p = easeOutCubic(Math.min(1, (t - FILL_DUR - LIFT_DUR) / SETTLE_DUR));
+          drawBasePlate();
+          drawConcrete(p);
+          ctx.fillText(p >= 1 ? 'Measuring the slump…' : 'Concrete settling…', W / 2, 36);
           if (p >= 1) {
+            drawInvertedMold();
             drawMeasure();
             if (nextBtn.style.display === 'none') {
               nextBtn.style.display = '';
