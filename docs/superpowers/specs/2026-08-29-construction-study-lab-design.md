@@ -18,7 +18,7 @@
 | 재료 | 강의 예제(Slide 19)와 완전 일치 (아래 §3) |
 | 연출 | ASTM C143 절차 리얼리즘 (다짐 연출, 5초 인발, 뒤집은 콘+봉 측정), 드럼 믹서·UTM 사실화 |
 | 도메인 | 사용자가 직접 구매. 구매 후 Netlify 연결·DNS는 이 프로젝트가 수행(스펙 범위: 연결 준비만) |
-| 프레임워크 | 계속 금지. 바닐라 JS + Canvas, 외부 리소스는 Google Fonts(Inter)만 |
+| 프레임워크 | 계속 금지. 바닐라 JS + Canvas, 외부 리소스는 Google Fonts(Inter)만 (v3 개정: 3D 렌더 라이브러리 three.js self-host 허용 — 2026-08-29-three-3d-scenes-design.md 참조) |
 
 재량 판단(승인됨): ① 단일파일 폐지 ② 미션별 골재 형상: slab·wall=rounded / bridge·column·pavement=crushed ③ 허브 Coming soon 잠금 카드 2개(이름 없는 placeholder).
 
