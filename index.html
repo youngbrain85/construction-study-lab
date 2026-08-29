@@ -714,6 +714,153 @@ Scenes.slump = () => {
   };
 };
 
+// ── COMPRESSION: 압축강도 시험 ────────────────────────────────────
+Scenes.compression = () => {
+  let raf = 0, start = 0;
+  const W = 900, H = 470;
+  const r = game.result;
+  const AREA = 28.27; // 6" 지름 공시체 단면적 (in²)
+  function stressAt(fp, eps) {
+    const e0 = 0.002, x = eps / e0;
+    if (x <= 1) return fp * (2 * x - x * x);
+    return Math.max(0, fp * (1 - 0.35 * (eps - e0) / 0.0018));
+  }
+  return {
+    mount(root) {
+      const { canvas, ctx } = canvasStage(W, H);
+      const nextBtn = h('button', { class: 'btn btn-primary', onclick: () => go('results') },
+        'See Final Report →');
+      nextBtn.style.display = 'none';
+      sceneShell(root, 'Compression test (ASTM C39)',
+        'Three 6×12 cylinders, 28 days moist-cured, loaded to failure.', canvas, [nextBtn]);
+
+      const CYL_T = 2.6; // 공시체당 재하 시간(초)
+      const testStart = 3.5;
+      const done = [];   // 파괴 완료된 공시체 강도
+
+      function drawUTM(cx, fp, prog, mode) {
+        // prog: 0→1 재하 진행. eps = prog * 0.0038
+        const eps = prog * 0.0038;
+        const sigma = stressAt(fp, eps);
+        const peaked = eps > 0.002;
+        const cw = 3 * 16, ch = 12 * 10; // 공시체 48×120 px
+        const top = 130, squash = Math.min(10, prog * 12);
+        // 프레임
+        ctx.fillStyle = '#aab2c0';
+        ctx.fillRect(cx - 70, 60, 140, 26);               // 상부 크로스헤드
+        ctx.fillRect(cx - 70, top + ch + 14, 140, 26);    // 하부 베드
+        ctx.fillRect(cx - 66, 60, 14, ch + 80); ctx.fillRect(cx + 52, 60, 14, ch + 80); // 기둥
+        // 플래튼
+        ctx.fillStyle = '#7d8797';
+        ctx.fillRect(cx - 40, top - 12 + squash, 80, 10);
+        ctx.fillRect(cx - 40, top + ch + 2, 80, 10);
+        // 공시체
+        ctx.fillStyle = '#8d9199'; ctx.strokeStyle = '#6a6e76'; ctx.lineWidth = 1.5;
+        ctx.fillRect(cx - cw / 2, top + squash, cw, ch - squash);
+        ctx.strokeRect(cx - cw / 2, top + squash, cw, ch - squash);
+        // 균열 (피크 이후)
+        if (peaked) {
+          ctx.strokeStyle = '#3d414a'; ctx.lineWidth = 2;
+          const cp = Math.min(1, (eps - 0.002) / 0.0016);
+          ctx.save(); ctx.beginPath(); ctx.rect(cx - cw / 2, top + squash, cw, ch - squash); ctx.clip();
+          if (mode === 'columnar') {          // 수직 쪼개짐 (고강도)
+            for (const dx of [-14, 0, 15]) {
+              ctx.beginPath(); ctx.moveTo(cx + dx, top + squash);
+              ctx.lineTo(cx + dx + 4, top + squash + (ch - squash) * cp); ctx.stroke();
+            }
+          } else if (mode === 'crumble') {    // 부스러짐 (재료분리)
+            const rng = E.mulberry32(31);
+            for (let i = 0; i < 8; i++) {
+              const x0 = cx - cw / 2 + rng() * cw, y0 = top + squash + rng() * (ch - squash);
+              ctx.beginPath(); ctx.moveTo(x0, y0);
+              ctx.lineTo(x0 + (rng() - 0.5) * 30 * cp, y0 + rng() * 26 * cp); ctx.stroke();
+            }
+          } else {                            // 원추형 (표준)
+            ctx.beginPath(); ctx.moveTo(cx - cw / 2, top + squash + 8);
+            ctx.lineTo(cx, top + (ch + squash) / 2 + 20);
+            ctx.lineTo(cx + cw / 2, top + squash + 8); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx - cw / 2, top + ch - 8);
+            ctx.lineTo(cx, top + (ch + squash) / 2 - 10);
+            ctx.lineTo(cx + cw / 2, top + ch - 8); ctx.stroke();
+          }
+          ctx.restore();
+        }
+        // 판독기
+        ctx.fillStyle = '#141c2b'; ctx.font = '700 22px Inter, sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText(`${Math.round(sigma).toLocaleString()} psi`, cx + 110, 150);
+        ctx.font = '500 13px Inter, sans-serif'; ctx.fillStyle = '#5b6472';
+        ctx.fillText(`${Math.round(sigma * AREA).toLocaleString()} lbf`, cx + 110, 172);
+        return { eps, sigma };
+      }
+      function drawGraph(fp, epsNow) {
+        // 우측 응력-변형률 미니 그래프
+        const gx = 610, gy = 110, gw = 250, gh = 220;
+        ctx.strokeStyle = '#c9cfda'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(gx, gy, gw, gh);
+        ctx.fillStyle = '#98a1b0'; ctx.font = '500 11px Inter, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('strain', gx + gw / 2, gy + gh + 16);
+        ctx.save(); ctx.translate(gx - 8, gy + gh / 2); ctx.rotate(-Math.PI / 2);
+        ctx.fillText('stress (psi)', 0, 0); ctx.restore();
+        ctx.strokeStyle = '#1b66f0'; ctx.lineWidth = 2.5; ctx.beginPath();
+        const yMax = r.f28 * 1.15 || 1000;
+        for (let e = 0; e <= epsNow; e += 0.00004) {
+          const px2 = gx + (e / 0.0038) * gw;
+          const py = gy + gh - (stressAt(fp, e) / yMax) * gh;
+          e === 0 ? ctx.moveTo(px2, py) : ctx.lineTo(px2, py);
+        }
+        ctx.stroke();
+      }
+      const failMode = r.behavior.segregation ? 'crumble' : (r.f28 >= 5000 ? 'columnar' : 'cone');
+
+      const draw = (now) => {
+        if (!start) start = now;
+        const t = (now - start) / 1000;
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#5b6472'; ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'center';
+        if (t < 1.5) { // cast
+          ctx.fillText('Casting cylinders…', W / 2, 36);
+          for (let i = 0; i < 3; i++) {
+            const cx = W / 2 - 140 + i * 140, fillH = Math.min(1, t / 1.2 - i * 0.15) * 110;
+            ctx.strokeStyle = '#7d8797'; ctx.lineWidth = 2; ctx.strokeRect(cx - 24, 200, 48, 120);
+            if (fillH > 0) { ctx.fillStyle = '#83878f'; ctx.fillRect(cx - 22, 320 - Math.max(0, fillH), 44, Math.max(0, fillH)); }
+          }
+        } else if (t < testStart) { // cure
+          const day = Math.min(28, Math.max(1, Math.round(((t - 1.5) / 2) * 28)));
+          ctx.fillText('Moist curing…', W / 2, 36);
+          ctx.font = '800 46px Inter, sans-serif'; ctx.fillStyle = '#141c2b';
+          ctx.fillText(`Day ${day}`, W / 2, H / 2 - 10);
+          ctx.font = '500 14px Inter, sans-serif'; ctx.fillStyle = '#5b6472';
+          ctx.fillText('73 °F · 100% RH', W / 2, H / 2 + 18);
+        } else { // 3본 순차 재하
+          const idx = Math.min(2, Math.floor((t - testStart) / CYL_T));
+          const prog = Math.min(1, ((t - testStart) - idx * CYL_T) / (CYL_T * 0.92));
+          ctx.fillText(`Cylinder ${idx + 1} of 3`, W / 2, 36);
+          const { eps } = drawUTM(280, r.cylinders[idx], prog, failMode);
+          drawGraph(r.cylinders[idx], eps);
+          if (prog >= 1 && done.length === idx) done.push(r.cylinders[idx]);
+          // 완료 목록
+          ctx.textAlign = 'left'; ctx.font = '600 14px Inter, sans-serif';
+          done.forEach((s, i) => {
+            ctx.fillStyle = '#12855f';
+            ctx.fillText(`#${i + 1}: ${Math.round(s).toLocaleString()} psi`, 610, 370 + i * 22);
+          });
+          if (done.length === 3 && nextBtn.style.display === 'none') {
+            ctx.fillStyle = '#141c2b'; ctx.font = '700 15px Inter, sans-serif';
+            ctx.fillText(`Average: ${Math.round(r.avgStrength).toLocaleString()} psi`, 610, 440);
+            nextBtn.style.display = '';
+          } else if (done.length === 3) {
+            ctx.fillStyle = '#141c2b'; ctx.font = '700 15px Inter, sans-serif';
+            ctx.fillText(`Average: ${Math.round(r.avgStrength).toLocaleString()} psi`, 610, 440);
+          }
+        }
+        raf = requestAnimationFrame(draw);
+      };
+      raf = requestAnimationFrame(draw);
+    },
+    unmount() { cancelAnimationFrame(raf); },
+  };
+};
+
 go('home');
 </script>
 </body>
