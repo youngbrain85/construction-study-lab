@@ -76,7 +76,7 @@ h2 { font-size:18px; font-weight:700; letter-spacing:-.01em; margin:0 0 4px; }
   background:var(--surface2); color:var(--faint); border:2px solid var(--border); }
 .step.done .dot { background:var(--primary); border-color:var(--primary); color:#fff; }
 .step.current .dot { background:var(--bg); border-color:var(--primary); color:var(--primary); }
-.step .lbl { font-size:11.5px; font-weight:600; color:var(--faint); }
+.step .lbl { font-size:11.5px; font-weight:600; color:var(--faint); overflow-wrap:anywhere; padding:0 2px; }
 .step.current .lbl { color:var(--primary); }
 .step.done .lbl { color:var(--muted); }
 .step:not(:first-child)::before { content:''; position:absolute; top:12px; right:50%;
@@ -241,17 +241,37 @@ function refTable(caption, head, rows, note) {
     note ? h('div', { class: 'ref-note' }, note) : null);
 }
 
+// ── 위저드 내비게이션 상태 ────────────────────────────────────────
+// renderDesign()이 매번 새로 만드는 Next 버튼을 여기에 저장해두고,
+// 숫자 입력 중에는 전체 재렌더 없이 이 버튼의 disabled만 갱신한다.
+// (전체 재렌더는 DOM을 파괴해 클릭·포커스가 유실되는 문제가 있었음)
+let wizNextBtn = null;
+function updateWizNav() {
+  if (!wizNextBtn) return;
+  wizNextBtn.disabled = !STEP_DEFS[designStep].ready();
+}
+
 // ── 숫자 입력 (클램프 + NaN 복원) ─────────────────────────────────
 function numField({ label, key, unit, min, max, step, hint }) {
   const input = h('input', { type: 'number', min, max, step: step || 'any',
     value: game.design[key] ?? '' });
+  // 타이핑 중(input): 파싱 성공 시 클램프해 라이브 커밋만 하고, 화면(input.value)과
+  // 전체 트리는 건드리지 않는다 — 재렌더가 DOM을 새로 만들면 다음 키 입력이나
+  // Next 클릭이 사라진 옛 요소를 향하게 되어 클릭 삼켜짐·포커스 유실이 발생했다.
+  input.addEventListener('input', () => {
+    const v = parseFloat(input.value);
+    if (!Number.isNaN(v)) game.design[key] = Math.min(max, Math.max(min, v));
+    updateWizNav(); // Next 버튼 상태만 갱신
+  });
+  // blur(change): 최종값을 클램프해 input.value에 반영. NaN이면 이전 값으로 복원.
+  // 여기서도 재렌더는 하지 않는다(포커스 이동 중 DOM 파괴 방지).
   input.addEventListener('change', () => {
     const v = parseFloat(input.value);
-    if (Number.isNaN(v)) { input.value = game.design[key] ?? ''; return; } // NaN → 복원
+    if (Number.isNaN(v)) { input.value = game.design[key] ?? ''; updateWizNav(); return; } // NaN → 이전 값 복원
     const c = Math.min(max, Math.max(min, v));
     game.design[key] = c;
     input.value = c;
-    renderDesign(); // Next 활성화 갱신
+    updateWizNav(); // Next 버튼 상태만 갱신
   });
   return h('div', { class: 'num-field' },
     h('label', {}, label),
@@ -433,6 +453,7 @@ function renderDesign() {
     onclick: () => { designStep + 1 < total ? (designStep++, renderDesign()) : go('summary'); },
   }, designStep + 1 < total ? 'Next →' : 'Review mix →');
   nextBtn.disabled = !def.ready(); // h()의 setAttribute는 undefined도 문자열로 세팅하므로 속성 대신 프로퍼티로 직접 제어
+  wizNextBtn = nextBtn; // numField가 재렌더 없이 이 버튼 상태만 갱신할 수 있도록 모듈 변수에 저장
   box.append(h('div', { class: 'wiz-nav' },
     h('button', { class: 'btn', onclick: () => { designStep === 0 ? go('home') : (designStep--, renderDesign()); } },
       '← Back'),
@@ -442,7 +463,7 @@ function renderDesign() {
 }
 Scenes.design = () => ({
   mount(root) { designStep = 0; designRoot = root; renderDesign(); },
-  unmount() { designRoot = null; },
+  unmount() { designRoot = null; wizNextBtn = null; },
 });
 
 // ── 배합 요약 ─────────────────────────────────────────────────────
@@ -483,6 +504,7 @@ function canvasStage(w, hgt) {
   const canvas = h('canvas', { class: 'canvas-stage', width: w * dpr, height: hgt * dpr,
     style: `max-width:${w}px` });
   const ctx = canvas.getContext('2d');
+  if (!ctx) return { canvas, ctx: null }; // Canvas 미지원 환경 — 호출부에서 텍스트 폴백으로 전환
   ctx.scale(dpr, dpr);
   return { canvas, ctx };
 }
@@ -490,6 +512,14 @@ const easeOutCubic = (t) => 1 - Math.pow(1 - Math.min(1, Math.max(0, t)), 3);
 function sceneShell(root, title, sub, canvas, actions) {
   root.append(h('h1', {}, title), h('p', { class: 'sub' }, sub), canvas,
     h('div', { class: 'stage-actions' }, actions));
+}
+// Canvas 미지원 시 공통 텍스트 폴백: 애니메이션 대신 카드로 수치 결과를 보여주고
+// 다음 장면 버튼을 즉시 활성화한다 (스펙 §6 "Canvas 미지원 시 텍스트 결과 폴백").
+function canvasFallback(root, title, sub, resultNodes, nextLabel, onNext) {
+  root.append(h('h1', {}, title), h('p', { class: 'sub' }, sub),
+    h('div', { class: 'card' }, resultNodes),
+    h('div', { class: 'stage-actions' },
+      h('button', { class: 'btn btn-primary', onclick: onNext }, nextLabel)));
 }
 
 // ── MIX: 드럼 믹서 ────────────────────────────────────────────────
@@ -501,6 +531,11 @@ Scenes.mix = () => {
   return {
     mount(root) {
       const { canvas, ctx } = canvasStage(W, H);
+      if (!ctx) {
+        canvasFallback(root, 'Batching & mixing', 'One cubic yard, coming up.',
+          h('p', {}, 'Mixing complete.'), 'Continue to Slump Test →', () => go('slump'));
+        return;
+      }
       const nextBtn = h('button', { class: 'btn btn-primary', onclick: () => go('slump') },
         'Continue to Slump Test →');
       nextBtn.disabled = true;
@@ -562,6 +597,10 @@ Scenes.mix = () => {
 };
 
 // ── SLUMP: 슬럼프 시험 ────────────────────────────────────────────
+const SLUMP_MODE_BADGE = { zero: ['badge-amber', 'Zero slump — too dry'],
+  true: ['badge-green', 'True slump'],
+  shear: ['badge-amber', 'Shear slump — harsh mix'],
+  collapse: ['badge-red', 'Collapse — too wet'] };
 Scenes.slump = () => {
   let raf = 0, start = 0;
   const W = 900, H = 470, PX = 15; // 1 in. = 15 px
@@ -570,10 +609,16 @@ Scenes.slump = () => {
   return {
     mount(root) {
       const { canvas, ctx } = canvasStage(W, H);
-      const modeBadge = { zero: ['badge-amber', 'Zero slump — too dry'],
-        true: ['badge-green', 'True slump'],
-        shear: ['badge-amber', 'Shear slump — harsh mix'],
-        collapse: ['badge-red', 'Collapse — too wet'] }[r.behavior.mode];
+      const modeBadge = SLUMP_MODE_BADGE[r.behavior.mode];
+      if (!ctx) {
+        canvasFallback(root, 'Slump test (ASTM C143)',
+          'Fill in three lifts, rod each 25 times, lift the cone — and watch.',
+          h('div', {},
+            h('p', {}, `Slump: ${r.measuredSlump.toFixed(2)} in.`),
+            h('span', { class: 'badge ' + modeBadge[0] }, modeBadge[1])),
+          'Proceed to Strength Test →', () => go('compression'));
+        return;
+      }
       const info = h('div', { class: 'stage-actions', style: 'min-height:34px' });
       const nextBtn = h('button', { class: 'btn btn-primary', onclick: () => go('compression') },
         'Proceed to Strength Test →');
@@ -661,19 +706,25 @@ Scenes.slump = () => {
       }
       // 측정 오버레이: 원 높이선, 콘(뒤집힘) + 자 + 측정값
       function drawMeasure() {
+        const coneTopY = groundY - 12 * PX;
         const topY = groundY - (12 - r.measuredSlump) * PX;
         ctx.strokeStyle = '#d92d20'; ctx.setLineDash([6, 5]); ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(baseX - 90, groundY - 12 * PX);
-        ctx.lineTo(baseX + 220, groundY - 12 * PX); ctx.stroke(); // 원래 콘 높이
+        ctx.beginPath(); ctx.moveTo(baseX - 90, coneTopY);
+        ctx.lineTo(baseX + 220, coneTopY); ctx.stroke(); // 원래 콘 높이
         ctx.setLineDash([]);
-        // 슬럼프 화살표
+        // 슬럼프 화살표 — 제로에 가까운 슬럼프는 화살표 길이가 거의 0이 되어
+        // 화살촉·라벨이 점선과 겹치므로 화살촉을 생략하고 라벨을 위로 띄운다.
         ctx.strokeStyle = '#1b66f0'; ctx.lineWidth = 2.5;
         const ax = baseX + 180;
-        ctx.beginPath(); ctx.moveTo(ax, groundY - 12 * PX); ctx.lineTo(ax, topY); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(ax - 5, topY - 7); ctx.lineTo(ax, topY);
-        ctx.lineTo(ax + 5, topY - 7); ctx.stroke();
+        const tiny = r.measuredSlump < 0.75;
+        ctx.beginPath(); ctx.moveTo(ax, coneTopY); ctx.lineTo(ax, topY); ctx.stroke();
+        if (!tiny) {
+          ctx.beginPath(); ctx.moveTo(ax - 5, topY - 7); ctx.lineTo(ax, topY);
+          ctx.lineTo(ax + 5, topY - 7); ctx.stroke();
+        }
         ctx.fillStyle = '#1b66f0'; ctx.font = '700 16px Inter, sans-serif'; ctx.textAlign = 'left';
-        ctx.fillText(`Slump: ${r.measuredSlump.toFixed(2)} in.`, ax + 14, (groundY - 12 * PX + topY) / 2);
+        const labelY = tiny ? coneTopY - 14 : (coneTopY + topY) / 2; // 점선 위쪽으로 오프셋해 겹침 방지
+        ctx.fillText(`Slump: ${r.measuredSlump.toFixed(2)} in.`, ax + 14, labelY);
       }
 
       const draw = (now) => {
@@ -728,6 +779,15 @@ Scenes.compression = () => {
   return {
     mount(root) {
       const { canvas, ctx } = canvasStage(W, H);
+      if (!ctx) {
+        canvasFallback(root, 'Compression test (ASTM C39)',
+          'Three 6×12 cylinders, 28 days moist-cured, loaded to failure.',
+          h('div', {},
+            r.cylinders.map((s, i) => h('p', {}, `#${i + 1}: ${Math.round(s).toLocaleString()} psi`)),
+            h('p', { style: 'font-weight:700' }, `Average: ${Math.round(r.avgStrength).toLocaleString()} psi`)),
+          'See Final Report →', () => go('results'));
+        return;
+      }
       const nextBtn = h('button', { class: 'btn btn-primary', onclick: () => go('results') },
         'See Final Report →');
       nextBtn.style.display = 'none';
@@ -741,7 +801,9 @@ Scenes.compression = () => {
       function drawUTM(cx, fp, prog, mode) {
         // prog: 0→1 재하 진행. eps = prog * 0.0038
         const eps = prog * 0.0038;
-        const sigma = stressAt(fp, eps);
+        // 큰 판독기(psi/lbf)는 피크(0.002) 이후에도 값이 되돌아 내려가지 않도록 고정 표시한다.
+        // 그래프 곡선은 실제 eps로 그려 하강부(연화)를 그대로 보여준다.
+        const displaySigma = stressAt(fp, Math.min(eps, 0.002));
         const peaked = eps > 0.002;
         const cw = 3 * 16, ch = 12 * 10; // 공시체 48×120 px
         const top = 130, squash = Math.min(10, prog * 12);
@@ -785,12 +847,12 @@ Scenes.compression = () => {
           }
           ctx.restore();
         }
-        // 판독기
+        // 판독기 (피크 고정값 표시)
         ctx.fillStyle = '#141c2b'; ctx.font = '700 22px Inter, sans-serif'; ctx.textAlign = 'left';
-        ctx.fillText(`${Math.round(sigma).toLocaleString()} psi`, cx + 110, 150);
+        ctx.fillText(`${Math.round(displaySigma).toLocaleString()} psi`, cx + 110, 150);
         ctx.font = '500 13px Inter, sans-serif'; ctx.fillStyle = '#5b6472';
-        ctx.fillText(`${Math.round(sigma * AREA).toLocaleString()} lbf`, cx + 110, 172);
-        return { eps, sigma };
+        ctx.fillText(`${Math.round(displaySigma * AREA).toLocaleString()} lbf`, cx + 110, 172);
+        return { eps };
       }
       function drawGraph(fp, epsNow) {
         // 우측 응력-변형률 미니 그래프
