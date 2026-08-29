@@ -313,7 +313,102 @@ const STEP_DEFS = [
       'Rule of thumb: NMAS ≤ 1/5 of the narrowest form dimension, ≤ 3/4 of clear rebar spacing.')],
     ready: () => game.design.nmas != null,
   },
-  // Task 8에서 스텝 3–7 추가
+  {
+    id: 'water', title: 'Step 3 — Mixing water and air content', sub:
+      'Read the water requirement for your slump and aggregate size. Decide whether this mix needs air entrainment.',
+    render(box) {
+      const d = game.design;
+      const aeBtn = (on, lbl) => h('button', {
+        class: 'choice' + (d.isAE === on ? ' selected' : ''),
+        onclick: () => { d.isAE = on; renderDesign(); } }, lbl);
+      box.append(
+        h('div', { class: 'num-field' }, h('label', {}, 'Mix type'),
+          h('div', { class: 'choice-row' }, aeBtn(false, 'Non-air-entrained'), aeBtn(true, 'Air-entrained'))),
+        numField({ label: 'Mixing water', key: 'water', unit: 'lb/cu yd', min: 100, max: 500, step: 1 }),
+        numField({ label: 'Target air content', key: 'airPct', unit: '%', min: 0, max: 10, step: 0.5,
+          hint: 'Non-AE mixes still trap some air — see the table.' }));
+    },
+    refPanels: () => {
+      const W = E.DATA.WATER_TABLE, nmasCols = E.DATA.NMAS_LIST;
+      const head = ['Slump (in.)', ...nmasCols.map(fmtNmas)];
+      const slumpRows = ['1 to 2', '3 to 4', '6 to 7'];
+      const body = (kind) => slumpRows.map((lbl, i) => [lbl, ...nmasCols.map(n => W[kind][n][i])]);
+      return [
+        refTable('Approximate mixing water (lb/cu yd) — non-air-entrained', head,
+          [...body('nonAE'), ['Entrapped air (%)', ...nmasCols.map(n => W.entrappedAir[n])]]),
+        refTable('Approximate mixing water (lb/cu yd) — air-entrained', head,
+          [...body('ae'),
+           ['Target air, mild exposure (%)', ...nmasCols.map(n => W.targetAir[n][0])],
+           ['Target air, moderate (%)', ...nmasCols.map(n => W.targetAir[n][1])],
+           ['Target air, severe (%)', ...nmasCols.map(n => W.targetAir[n][2])]]),
+      ];
+    },
+    ready: () => game.design.water != null && game.design.airPct != null,
+  },
+  {
+    id: 'wc', title: 'Step 4 — Water-cement ratio', sub:
+      "Pick the w/c that delivers the required average strength. Interpolate between rows if needed.",
+    render(box) {
+      box.append(numField({ label: 'Water-cement ratio', key: 'wc', unit: 'by weight',
+        min: 0.25, max: 1.0, step: 0.01,
+        hint: `Assume required average strength f'cr = f'c + 1,200 psi = ${(game.mission.fc + 1200).toLocaleString()} psi.` }));
+    },
+    refPanels: () => {
+      const T = E.DATA.WC_TABLE;
+      return [refTable('Relationship between w/c and compressive strength',
+        ["28-day f'c (psi)", 'Non-AE', 'Air-entrained'],
+        T.strengths.map((fc, i) => [fc.toLocaleString(), T.nonAE[i].toFixed(2), T.ae[i] == null ? '—' : T.ae[i].toFixed(2)]),
+        'Strengths are for concrete containing no more air than the table amounts.')];
+    },
+    ready: () => game.design.wc != null,
+  },
+  {
+    id: 'cement', title: 'Step 5 — Cement content', sub:
+      'Compute the cement content from your water content and w/c ratio, then enter it.',
+    render(box) {
+      box.append(
+        h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin-bottom:4px' },
+          h('strong', {}, 'Formula: '), 'cement = water ÷ (w/c)'),
+        numField({ label: 'Cement content', key: 'cement', unit: 'lb/cu yd', min: 200, max: 1200, step: 1 }));
+    },
+    refPanels: () => [],
+    ready: () => game.design.cement != null,
+  },
+  {
+    id: 'coarse', title: 'Step 6 — Coarse aggregate', sub:
+      'Read the dry-rodded bulk volume fraction for your aggregate size and sand fineness modulus, then convert to weight.',
+    render(box) {
+      box.append(
+        h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin-bottom:4px' },
+          h('strong', {}, 'Formula: '), 'CA weight = fraction × 27 cu ft × dry-rodded unit weight'),
+        numField({ label: 'Coarse aggregate (dry-rodded basis)', key: 'ca', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
+    },
+    refPanels: () => {
+      const T = E.DATA.CA_VOLUME_TABLE;
+      return [refTable('Volume of dry-rodded coarse aggregate per unit volume of concrete',
+        ['NMAS', ...T.fm.map(f => 'FM ' + f.toFixed(2))],
+        E.DATA.NMAS_LIST.map(n => [fmtNmas(n), ...T[n].map(v => v.toFixed(2))]),
+        'Interpolate for fineness modulus values between columns.')];
+    },
+    ready: () => game.design.ca != null,
+  },
+  {
+    id: 'fine', title: 'Step 7 — Fine aggregate (weight method)', sub:
+      'Estimate the fresh concrete unit weight from the table, then back out the sand.',
+    render(box) {
+      box.append(
+        h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin-bottom:4px' },
+          h('strong', {}, 'Formula: '), 'FA = estimated fresh weight − water − cement − CA'),
+        numField({ label: 'Fine aggregate', key: 'fa', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
+    },
+    refPanels: () => {
+      const T = E.DATA.FRESH_WEIGHT_TABLE;
+      return [refTable('First estimate of fresh concrete weight (lb/cu yd)',
+        ['NMAS', 'Non-AE', 'Air-entrained'],
+        E.DATA.NMAS_LIST.map(n => [fmtNmas(n), T.nonAE[n].toLocaleString(), T.ae[n].toLocaleString()]))];
+    },
+    ready: () => game.design.fa != null,
+  },
 ];
 
 // ── DESIGN 장면 ───────────────────────────────────────────────────
@@ -348,6 +443,38 @@ function renderDesign() {
 Scenes.design = () => ({
   mount(root) { designStep = 0; designRoot = root; renderDesign(); },
   unmount() { designRoot = null; },
+});
+
+// ── 배합 요약 ─────────────────────────────────────────────────────
+Scenes.summary = () => ({
+  mount(root) {
+    const d = game.design, m = game.mission;
+    const rows = [
+      ['Water', d.water, 'lb/cu yd'], ['Cement', d.cement, 'lb/cu yd'],
+      ['Coarse aggregate', d.ca, 'lb/cu yd'], ['Fine aggregate', d.fa, 'lb/cu yd'],
+      ['Design air content', d.airPct, '%'],
+      ['Max aggregate size', fmtNmas(d.nmas), ''],
+      ['Mix type', d.isAE ? 'Air-entrained' : 'Non-air-entrained', ''],
+      ['Design w/c (intent)', d.wc, ''],
+      ['Actual w/c (water ÷ cement)', (d.water / d.cement).toFixed(3), ''],
+      ['Total batch weight', (d.water + d.cement + d.ca + d.fa).toLocaleString(), 'lb/cu yd'],
+    ];
+    root.append(
+      h('h1', {}, 'Mix summary'),
+      h('p', { class: 'sub' }, `${m.icon} ${m.name} — one cubic yard batch. Ready when you are.`),
+      h('div', { class: 'wizard-grid' },
+        h('div', { class: 'card' },
+          h('table', { class: 'ref-table' }, h('tbody', {},
+            rows.map(r => h('tr', {}, h('td', {}, r[0]),
+              h('td', { style: 'font-weight:600' }, String(r[1]) + (r[2] ? ' ' + r[2] : '')))))),
+          h('div', { class: 'wiz-nav' },
+            h('button', { class: 'btn', onclick: () => { go('design'); } }, '← Edit design'),
+            h('button', { class: 'btn btn-primary', onclick: () => {
+              game.result = E.evaluateMix(designToMix(), m, game.seed); // 판정은 여기서 1회 확정
+              go('mix');
+            } }, 'Batch & Mix 🥽'))),
+        h('div', { class: 'ref-panel' }, materialsCard())));
+  },
 });
 
 go('home');
