@@ -48,7 +48,8 @@ const game = {
   newRun(mission) {
     this.mission = mission;
     this.design = { slumpTarget: null, nmas: null, isAE: false, water: null,
-      airPct: null, wc: null, cement: null, ca: null, fa: null };
+      airPct: null, wc: null, cement: null, ca: null, fa: null,
+      vCm: null, vWater: null, vCa: null, vAir: null }; // vCm/vWater/vCa/vAir는 Step 7 절대용적법 워크시트 전용 — 판정(designToMix)에는 쓰지 않는다
     this.result = null;
     this.seed = Math.floor(Math.random() * 1e6);
   },
@@ -122,7 +123,22 @@ function refTable(caption, head, rows, note) {
 // 숫자 입력 중에는 전체 재렌더 없이 이 버튼의 disabled만 갱신한다.
 // (전체 재렌더는 DOM을 파괴해 클릭·포커스가 유실되는 문제가 있었음)
 let wizNextBtn = null;
+// Step 7(절대용적법 워크시트) 전용 라이브 표시줄. render()가 요소를 만들어 여기 저장해두면,
+// numField의 input 이벤트가 부르는 updateWizNav()가 재렌더 없이 텍스트만 갱신한다.
+let vFineLine = null;
+function updateVFineLine() {
+  if (!vFineLine) return; // 다른 스텝에서는 요소가 없으므로 아무 것도 하지 않는다
+  const d = game.design;
+  const vals = [d.vCm, d.vWater, d.vCa, d.vAir];
+  if (vals.every(v => v != null)) {
+    const sum = vals.reduce((a, b) => a + b, 0);
+    vFineLine.textContent = `V_fine = 1.000 − ${sum.toFixed(3)} = ${(1 - sum).toFixed(3)} cu yd`;
+  } else {
+    vFineLine.textContent = 'V_fine = —';
+  }
+}
 function updateWizNav() {
+  updateVFineLine();
   if (!wizNextBtn) return;
   wizNextBtn.disabled = !STEP_DEFS[designStep].ready();
 }
@@ -301,21 +317,27 @@ const STEP_DEFS = [
     ready: () => game.design.ca != null,
   },
   {
-    id: 'fine', title: 'Step 7 — Fine aggregate (weight method)', sub:
-      'Estimate the fresh concrete unit weight from the table, then back out the sand.',
+    id: 'fine', title: 'Step 7 — Fine aggregate (absolute volume method)', sub:
+      'Convert every other ingredient to absolute volume, then find the fine aggregate volume by difference.',
     render(box) {
       box.append(
         h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin-bottom:4px' },
-          h('strong', {}, 'Formula: '), 'FA = estimated fresh weight − water − cement − CA'),
-        numField({ label: 'Fine aggregate', key: 'fa', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
+          h('div', {}, h('strong', {}, 'Formula: '), 'V (cu yd) = mass ÷ (relative density × 1,685)'),
+          h('div', {}, 'V_air = air% ÷ 100'),
+          h('div', {}, 'V_fine = 1.000 − ΣV')),
+        numField({ label: 'Cementitious volume', key: 'vCm', unit: 'cu yd', min: 0, max: 1, step: 0.001 }),
+        numField({ label: 'Water volume', key: 'vWater', unit: 'cu yd', min: 0, max: 1, step: 0.001 }),
+        numField({ label: 'Coarse agg. volume', key: 'vCa', unit: 'cu yd', min: 0, max: 1, step: 0.001 }),
+        numField({ label: 'Air volume', key: 'vAir', unit: 'cu yd', min: 0, max: 1, step: 0.001 }));
+      // 라이브 표시줄: 요소는 여기서 한 번만 만들고, 이후 갱신은 updateWizNav() → updateVFineLine()가 담당한다
+      vFineLine = h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;font-weight:600' }, 'V_fine = —');
+      box.append(vFineLine,
+        numField({ label: 'Fine aggregate (SSD basis)', key: 'fa', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
+      updateVFineLine(); // 스텝을 다시 방문했을 때 기존 입력값을 즉시 반영
     },
-    refPanels: () => {
-      const T = E.DATA.FRESH_WEIGHT_TABLE;
-      return [refTable('First estimate of fresh concrete weight (lb/cu yd)',
-        ['NMAS', 'Non-AE', 'Air-entrained'],
-        E.DATA.NMAS_LIST.map(n => [fmtNmas(n), T.nonAE[n].toLocaleString(), T.ae[n].toLocaleString()]))];
-    },
-    ready: () => game.design.fa != null,
+    refPanels: () => [], // 참고표 없음 — materialsCard()의 비중(RD) 값만 사용
+    ready: () => game.design.vCm != null && game.design.vWater != null && game.design.vCa != null
+      && game.design.vAir != null && game.design.fa != null,
   },
 ];
 
@@ -335,6 +357,7 @@ function renderDesign() {
       h('div', { class: 'lbl' }, s.id.toUpperCase())))));
   // 본문 2컬럼
   const box = h('div', { class: 'card' }, h('h2', {}, def.title), h('p', { class: 'sub' }, def.sub));
+  vFineLine = null; // 재렌더 시 이전 스텝(7)의 표시줄 참조를 정리 — 현재 스텝이 'fine'이면 render()가 즉시 새로 채운다
   def.render(box);
   const nextBtn = h('button', {
     class: 'btn btn-primary',
@@ -351,7 +374,7 @@ function renderDesign() {
 }
 Scenes.design = () => ({
   mount(root) { designStep = 0; designRoot = root; renderDesign(); },
-  unmount() { designRoot = null; wizNextBtn = null; },
+  unmount() { designRoot = null; wizNextBtn = null; vFineLine = null; },
 });
 
 // ── 배합 요약 ─────────────────────────────────────────────────────
@@ -366,6 +389,7 @@ Scenes.summary = () => ({
       ['Mix type', d.isAE ? 'Air-entrained' : 'Non-air-entrained', ''],
       ['Design w/c (intent)', d.wc, ''],
       ['Actual w/c (water ÷ cement)', (d.water / d.cement).toFixed(3), ''],
+      ['Absolute volume check', (E.computeYield(designToMix()) / 27).toFixed(3), 'cu yd'],
       ['Total batch weight', (d.water + d.cement + d.ca + d.fa).toLocaleString(), 'lb/cu yd'],
     ];
     root.append(
