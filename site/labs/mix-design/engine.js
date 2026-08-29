@@ -1,4 +1,4 @@
-// engine.js — MixLab 순수 계산 엔진 (ACI 211.1 US 관용단위)
+// engine.js — MixLab 순수 계산 엔진 (ACI PRC-211.1-22 US 관용단위)
 // 브라우저: globalThis.MixEngine / node: module.exports
 (function () {
   'use strict';

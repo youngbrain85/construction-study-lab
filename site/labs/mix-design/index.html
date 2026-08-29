@@ -166,8 +166,7 @@ function numField({ label, key, unit, min, max, step, hint }) {
     updateWizNav(); // Next 버튼 상태만 갱신
   });
   return h('div', { class: 'num-field' },
-    h('label', {}, label),
-    h('div', { class: 'wrap' }, input, h('span', { class: 'unit' }, unit)),
+    h('label', {}, label, h('div', { class: 'wrap' }, input, h('span', { class: 'unit' }, unit))),
     hint ? h('div', { class: 'hint' }, hint) : null);
 }
 
@@ -219,6 +218,7 @@ const STEP_DEFS = [
         game.mission.nmasAllowed.map(n =>
           h('button', {
             class: 'choice' + (game.design.nmas === n ? ' selected' : ''),
+            'aria-pressed': game.design.nmas === n ? 'true' : 'false',
             onclick: () => { game.design.nmas = n; renderDesign(); },
           }, fmtNmas(n)))));
     },
@@ -235,6 +235,7 @@ const STEP_DEFS = [
       const d = game.design;
       const aeBtn = (on, lbl) => h('button', {
         class: 'choice' + (d.isAE === on ? ' selected' : ''),
+        'aria-pressed': d.isAE === on ? 'true' : 'false',
         onclick: () => { d.isAE = on; renderDesign(); } }, lbl);
       box.append(
         h('div', { class: 'num-field' }, h('label', {}, 'Mix type'),
@@ -269,7 +270,8 @@ const STEP_DEFS = [
     render(box) {
       box.append(numField({ label: 'Water-cement ratio', key: 'wc', unit: 'by weight',
         min: 0.25, max: 1.0, step: 0.01,
-        hint: "Assume no acceptable strength record. Read the f'cr table first, then pick w/cm." }));
+        hint: `Assume no acceptable strength record. Read the f'cr table first, then pick w/cm. `
+          + `This mission: f'c ${game.mission.fc.toLocaleString()} → f'cr ${E.fcrFor(game.mission.fc).toLocaleString()} psi.` }));
     },
     refPanels: () => {
       const T = E.DATA.WC_TABLE;
@@ -411,10 +413,10 @@ Scenes.summary = () => ({
 });
 
 // ── 캔버스 공통 ───────────────────────────────────────────────────
-function canvasStage(w, hgt) {
+function canvasStage(w, hgt, ariaLabel) {
   const dpr = window.devicePixelRatio || 1;
   const canvas = h('canvas', { class: 'canvas-stage', width: w * dpr, height: hgt * dpr,
-    style: `max-width:${w}px` });
+    style: `max-width:${w}px`, role: 'img', 'aria-label': ariaLabel || 'Animation' });
   const ctx = canvas.getContext('2d');
   if (!ctx) return { canvas, ctx: null }; // Canvas 미지원 환경 — 호출부에서 텍스트 폴백으로 전환
   ctx.scale(dpr, dpr);
@@ -447,7 +449,7 @@ Scenes.mix = () => {
   const rotPt = (lx, ly, ang) => [lx * Math.cos(ang) - ly * Math.sin(ang), lx * Math.sin(ang) + ly * Math.cos(ang)];
   return {
     mount(root) {
-      const { canvas, ctx } = canvasStage(W, H);
+      const { canvas, ctx } = canvasStage(W, H, 'Concrete drum mixer animation');
       if (!ctx) {
         canvasFallback(root, 'Batching & mixing', 'One cubic yard, coming up.',
           h('p', {}, 'Mixing complete.'), 'Continue to Slump Test →', () => go('slump'));
@@ -654,7 +656,7 @@ const SLUMP_MODE_BADGE = { zero: ['badge-amber', 'Zero slump — too dry'],
   shear: ['badge-amber', 'Shear slump — harsh mix'],
   collapse: ['badge-red', 'Collapse — too wet'] };
 Scenes.slump = () => {
-  let raf = 0, start = 0;
+  let raf = 0, start = 0, finished = false; // finished: 측정 완료+배지 표시 후 rAF 재큐잉 중단
   const W = 900, H = 470, PX = 15; // 1 in. = 15 px
   const groundY = H - 60, baseX = W / 2 - 120, invX = baseX + 300; // 시료 중심 / 뒤집은 콘 중심(측정용)
   const TOP_R = 2, BOT_R = 4, HGT = 12; // ASTM 콘 규격: 상단 4"⌀ / 하단 8"⌀ / 높이 12" (반경 2"/4")
@@ -666,7 +668,7 @@ Scenes.slump = () => {
   const r = game.result; // { behavior:{mode,slump,segregation}, measuredSlump } — 불변 계약: 엔진 재계산 금지, 그대로 소비만 한다
   return {
     mount(root) {
-      const { canvas, ctx } = canvasStage(W, H);
+      const { canvas, ctx } = canvasStage(W, H, 'Concrete slump test animation');
       const modeBadge = SLUMP_MODE_BADGE[r.behavior.mode];
       if (!ctx) {
         canvasFallback(root, 'Slump test (ASTM C143)',
@@ -953,10 +955,11 @@ Scenes.slump = () => {
             if (nextBtn.style.display === 'none') {
               nextBtn.style.display = '';
               info.append(h('span', { class: 'badge ' + modeBadge[0] }, modeBadge[1]));
+              finished = true; // 배지 표시 프레임을 마지막으로 그린 뒤 재큐잉 중단
             }
           }
         }
-        raf = requestAnimationFrame(draw);
+        if (!finished) raf = requestAnimationFrame(draw);
       };
       raf = requestAnimationFrame(draw);
     },
@@ -971,7 +974,7 @@ Scenes.slump = () => {
 // 공시체 캡핑(상하 밝은 띠) + 파괴 유형 정밀화(원추/기둥형 쪼개짐/부스러짐).
 // 슬럼프·믹서 장면과 톤 통일: 상부 좌측 광원, steelGrad 금속 그라데이션, 접지 그림자.
 Scenes.compression = () => {
-  let raf = 0, start = 0;
+  let raf = 0, start = 0, finished = false; // finished: 3본 완료+Average 표시 후 rAF 재큐잉 중단
   const W = 900, H = 470;
   const r = game.result; // 불변 계약: game.result만 소비(f28, cylinders[3], avgStrength, behavior.segregation) — 엔진 재계산 금지
   const AREA = 28.27; // 6" 지름 공시체 단면적 (in²)
@@ -982,7 +985,7 @@ Scenes.compression = () => {
   }
   return {
     mount(root) {
-      const { canvas, ctx } = canvasStage(W, H);
+      const { canvas, ctx } = canvasStage(W, H, 'Concrete cylinder compression test animation');
       if (!ctx) {
         canvasFallback(root, 'Compression test (ASTM C39)',
           'Three 6×12 cylinders, 28 days moist-cured, loaded to failure.',
@@ -1184,6 +1187,7 @@ Scenes.compression = () => {
         ctx.fillText('strain', gx + gw / 2, gy + gh + 16);
         ctx.save(); ctx.translate(gx - 8, gy + gh / 2); ctx.rotate(-Math.PI / 2);
         ctx.fillText('stress (psi)', 0, 0); ctx.restore();
+        ctx.save(); ctx.beginPath(); ctx.rect(gx, gy, gw, gh); ctx.clip(); // 산포로 fp가 yMax 초과 시 곡선이 그래프 박스 밖으로 새는 것을 방지
         ctx.strokeStyle = '#1b66f0'; ctx.lineWidth = 2.5; ctx.beginPath();
         const yMax = r.f28 * 1.15 || 1000;
         for (let e = 0; e <= epsNow; e += 0.00004) {
@@ -1192,6 +1196,7 @@ Scenes.compression = () => {
           e === 0 ? ctx.moveTo(px2, py) : ctx.lineTo(px2, py);
         }
         ctx.stroke();
+        ctx.restore();
       }
       const failMode = r.behavior.segregation ? 'crumble' : (r.f28 >= 5000 ? 'columnar' : 'cone'); // 불변 계약 로직 유지
 
@@ -1242,10 +1247,13 @@ Scenes.compression = () => {
           if (done.length === 3) {
             ctx.fillStyle = '#141c2b'; ctx.font = '700 15px Inter, sans-serif';
             ctx.fillText(`Average: ${Math.round(r.avgStrength).toLocaleString()} psi`, 610, 440);
-            if (nextBtn.style.display === 'none') nextBtn.style.display = '';
+            if (nextBtn.style.display === 'none') {
+              nextBtn.style.display = '';
+              finished = true; // Average 표시 프레임을 마지막으로 그린 뒤 재큐잉 중단
+            }
           }
         }
-        raf = requestAnimationFrame(draw);
+        if (!finished) raf = requestAnimationFrame(draw);
       };
       raf = requestAnimationFrame(draw);
     },
