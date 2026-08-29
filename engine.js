@@ -1,0 +1,83 @@
+// engine.js — MixLab 순수 계산 엔진 (ACI 211.1 US 관용단위)
+// 브라우저: globalThis.MixEngine / node: module.exports
+(function () {
+  'use strict';
+
+  // ── ACI 211.1 표 데이터 ──────────────────────────────────────────
+  const NMAS_LIST = [0.375, 0.5, 0.75, 1.0, 1.5]; // 굵은골재 최대치수 (in.)
+  const SLUMP_ANCHORS = [1.5, 3.5, 6.5]; // 수량 표의 슬럼프 구간 중앙값 (1-2 / 3-4 / 6-7 in.)
+
+  // Table 6.3.3 — 소요 단위수량 (lb/yd³) 및 공기량 (%)
+  const WATER_TABLE = {
+    slumps: SLUMP_ANCHORS,
+    nonAE: {
+      0.375: [350, 385, 410], 0.5: [335, 365, 385], 0.75: [315, 340, 360],
+      1.0: [300, 325, 340], 1.5: [275, 300, 315],
+    },
+    ae: {
+      0.375: [305, 340, 365], 0.5: [295, 325, 345], 0.75: [280, 305, 325],
+      1.0: [270, 295, 310], 1.5: [250, 275, 290],
+    },
+    entrappedAir: { 0.375: 3.0, 0.5: 2.5, 0.75: 2.0, 1.0: 1.5, 1.5: 1.0 }, // 비공기연행 갇힌 공기
+    targetAir: { // 공기연행 목표 공기량 [mild, moderate, severe]
+      0.375: [4.5, 6.0, 7.5], 0.5: [4.0, 5.5, 7.0], 0.75: [3.5, 5.0, 6.0],
+      1.0: [3.0, 4.5, 6.0], 1.5: [2.5, 4.5, 5.5],
+    },
+  };
+
+  // Table 6.3.4(a) — 28일 압축강도 vs w/c
+  const WC_TABLE = {
+    strengths: [2000, 3000, 4000, 5000, 6000, 7000],
+    nonAE: [0.82, 0.68, 0.57, 0.48, 0.41, 0.33],
+    ae: [0.74, 0.59, 0.48, 0.40, 0.32, null], // 7000 psi는 공기연행으로 불가
+  };
+
+  // Table 6.3.6 — 건조봉다짐 굵은골재 용적비 (NMAS × 잔골재 FM)
+  const CA_VOLUME_TABLE = {
+    fm: [2.40, 2.60, 2.80, 3.00],
+    0.375: [0.50, 0.48, 0.46, 0.44], 0.5: [0.59, 0.57, 0.55, 0.53],
+    0.75: [0.66, 0.64, 0.62, 0.60], 1.0: [0.71, 0.69, 0.67, 0.65],
+    1.5: [0.75, 0.73, 0.71, 0.69],
+  };
+
+  // Table 6.3.7.1 — 굳지 않은 콘크리트 추정 단위중량 (lb/yd³)
+  const FRESH_WEIGHT_TABLE = {
+    nonAE: { 0.375: 3840, 0.5: 3890, 0.75: 3960, 1.0: 4010, 1.5: 4070 },
+    ae: { 0.375: 3710, 0.5: 3760, 0.75: 3840, 1.0: 3900, 1.5: 3960 },
+  };
+
+  // 재료 물성 (Materials Lab Report)
+  const MAT = {
+    sgCement: 3.15, sgCA: 2.65, sgFA: 2.64, // 비중
+    druwCA: 100,   // 굵은골재 건조봉다짐 단위중량 (lb/ft³)
+    fmSand: 2.70,  // 잔골재 조립률
+    wUnit: 62.4,   // 물 단위중량 (lb/ft³)
+  };
+
+  // 미션 5종
+  const MISSIONS = [
+    { id: 'slab', name: 'Residential Slab', icon: '🏠', fc: 3000, slumpRange: [3, 4],
+      exposure: 'none', nmasAllowed: [0.75, 1.0, 1.5],
+      desc: 'A 4-in. slab-on-grade for a suburban home. Keep it workable for the finishing crew.' },
+    { id: 'bridge', name: 'Bridge Deck', icon: '🌉', fc: 4500, slumpRange: [3, 4],
+      exposure: 'severe', nmasAllowed: [0.5, 0.75, 1.0],
+      desc: 'Freeze-thaw and deicing salts. Air entrainment is mandatory.' },
+    { id: 'column', name: 'High-rise Column', icon: '🏢', fc: 6000, slumpRange: [4, 5],
+      exposure: 'none', nmasAllowed: [0.5, 0.75],
+      desc: 'Heavily reinforced columns need both strength and flow.' },
+    { id: 'pavement', name: 'Sidewalk Pavement', icon: '🛣️', fc: 4000, slumpRange: [1, 3],
+      exposure: 'severe', nmasAllowed: [0.75, 1.0, 1.5],
+      desc: 'A stiff mix for slip-form paving in a cold climate.' },
+    { id: 'wall', name: 'Basement Wall', icon: '🧱', fc: 3500, slumpRange: [3, 6],
+      exposure: 'none', nmasAllowed: [0.75, 1.0],
+      desc: 'Forgiving slump window, but keep the strength honest.' },
+  ];
+
+  const MixEngine = {
+    DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, FRESH_WEIGHT_TABLE, MAT },
+    MISSIONS,
+  };
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = MixEngine;
+  globalThis.MixEngine = MixEngine;
+})();
