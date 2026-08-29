@@ -443,9 +443,10 @@ function canvasFallback(root, title, sub, resultNodes, nextLabel, onNext) {
 }
 
 // ── MIX: 드럼 믹서 ────────────────────────────────────────────────
-// 경사식 포터블 드럼 믹서(스펙 §5.2): 주황 A자 프레임 + 바퀴 2 + 모터 하우징,
-// 기울어진 드럼(개구부 타원으로 내부 반죽 노출), 버킷 투입 연출. 슬럼프 장면과
-// 톤 통일(상부 좌측 광원, 접지 그림자, 금속 그라데이션).
+// 경사식 포터블 드럼 믹서(레퍼런스: 실험실용 전동 틸팅 드럼 믹서 실사진, §hotfix):
+// 검정 강관 A-프레임(다리 2쌍: 바퀴쪽/발쪽) + 주황 드럼(벨리 원뿔대 + 좁아지는 목 +
+// 개구부) + 검정 모터 하우징(전원 케이블) + 측면 핸드휠 + 버킷 투입 연출. 슬럼프 장면과
+// 톤 통일(상부 좌측 광원, 접지 그림자, 금속/도장 그라데이션).
 Scenes.mix = () => {
   let raf = 0, start = 0;
   const W = 900, H = 460;
@@ -469,11 +470,16 @@ Scenes.mix = () => {
 
       // ── 배치 상수 ────────────────────────────────────────────────
       const groundY = H - 70;
-      const drumCx = 470, drumCy = 200, TILT = -0.5; // 드럼 기울기 — 개구부가 좌상단을 향함
-      const R = 115, RY = 80;                        // 드럼 몸통(타원) 장/단축
-      const OPEN_LY = -40, OPEN_RX = 62, OPEN_RY = 34; // 개구부 — 드럼 로컬 좌표 기준 위치·크기
-      const MOTOR_LY = 92;                            // 모터 하우징 — 드럼 반대쪽 끝(로컬 +y)에 부착
-      const CRADLE_LY = 55;                           // 프레임 크래들 링이 드럼을 감싸는 위치
+      const drumCx = 470, drumCy = 200;
+      const TILT = 0.73; // 개구부가 화면 위-오른쪽 ~42°를 향하도록(레퍼런스 사진 각도)
+      const ASPECT = 0.70; // 원형 단면의 시점 압축 비율(장/단축 공통) — 드럼 벨리 기준
+      // 드럼 축(로컬 y, 사진 구조): 후단 허브(모터 부착) → 벨리(원뿔대, 최대폭) → 좁아지는 목 → 개구부
+      const Y_HUB = 100, R_HUB = 34;
+      const Y_BELLY = 46, R_BELLY = 122;
+      const Y_NECK = -6, R_NECK = 92;
+      const OPEN_LY = -42, OPEN_RX = 60, OPEN_RY = 40; // 개구부 — 드럼 로컬 좌표 기준(회전하지 않음, 고정)
+      const MOTOR_LY = Y_HUB;                          // 모터 하우징 — 드럼 후단(허브)에 부착
+      const CRADLE_LY = Y_BELLY + 4;                   // 프레임 크래들 링이 드럼을 감싸는 위치
       const [openDx, openDy] = rotPt(0, OPEN_LY, TILT);
       const openWorldX = drumCx + openDx, openWorldY = drumCy + openDy;
       const [motorDx, motorDy] = rotPt(0, MOTOR_LY, TILT);
@@ -483,12 +489,13 @@ Scenes.mix = () => {
       const axle = { x: 365, y: groundY - 32 };
       const apex = { x: 496, y: groundY - 100 };
       const foot = { x: 630, y: groundY };
+      const handwheelHub = { x: foot.x - 4, y: drumCy + 26 }; // 측면 틸팅 핸드휠(요소: 핸드휠) — 발쪽 프레임 옆
 
       // ── 재질 그라데이션(슬럼프 장면과 톤 통일) ──────────────────────
-      const steelGrad = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1);
-        g.addColorStop(0, '#eef1f6'); g.addColorStop(0.45, '#c3cad6'); g.addColorStop(1, '#8b93a3'); return g; };
-      const beamGrad = (th) => { const g = ctx.createLinearGradient(0, -th / 2, 0, th / 2); // 빔 수직 방향 — 원통형 하이라이트
-        g.addColorStop(0, '#ffb35c'); g.addColorStop(0.5, '#e8720c'); g.addColorStop(1, '#a3480a'); return g; };
+      const tubeGrad = (th) => { const g = ctx.createLinearGradient(0, -th / 2, 0, th / 2); // 검정 강관 원통형 하이라이트
+        g.addColorStop(0, '#6b7280'); g.addColorStop(0.45, '#2a2d33'); g.addColorStop(1, '#0c0d10'); return g; };
+      const drumGrad = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1); // 주황 드럼 도장
+        g.addColorStop(0, '#ff9a4d'); g.addColorStop(0.5, '#e8720c'); g.addColorStop(1, '#8f3d06'); return g; };
       function groundShadow(cx, rx) { // 접지 그림자 — 상부 좌측 광원이므로 우하단으로 치우친 타원
         ctx.save(); ctx.fillStyle = 'rgba(30,34,44,.18)';
         ctx.beginPath(); ctx.ellipse(cx + 6, groundY + 5, rx, Math.max(4, rx * 0.2), 0, 0, Math.PI * 2);
@@ -499,15 +506,22 @@ Scenes.mix = () => {
         ctx.arcTo(x + w, y, x + w, y + hh, rad); ctx.arcTo(x + w, y + hh, x, y + hh, rad);
         ctx.arcTo(x, y + hh, x, y, rad); ctx.arcTo(x, y, x + w, y, rad); ctx.closePath();
       }
-      // 오렌지 프레임 빔 — 두 점을 잇는 사각 빔(원통형 하이라이트 그라데이션 + 볼트)
+      // 검정 강관 빔 — 두 점을 잇는 사각 빔(원통형 하이라이트 그라데이션 + 볼트)
       function drawBeam(x0, y0, x1, y1, th) {
         const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
         ctx.save(); ctx.translate(x0, y0); ctx.rotate(ang);
-        ctx.fillStyle = beamGrad(th); ctx.fillRect(0, -th / 2, len, th);
-        ctx.strokeStyle = '#8a4a08'; ctx.lineWidth = 1.5; ctx.strokeRect(0, -th / 2, len, th);
+        ctx.fillStyle = tubeGrad(th); ctx.fillRect(0, -th / 2, len, th);
+        ctx.strokeStyle = '#000'; ctx.lineWidth = 1.2; ctx.strokeRect(0, -th / 2, len, th);
         ctx.restore();
       }
-      function drawWheel(x, y, r) { // 바퀴(요소: 바퀴 2)
+      // 다리 한 쌍(요소: 다리 4개·2쌍) — 같은 두 점을 잇는 관을 살짝 벌려 앞/뒤 한 쌍처럼 보이게 함
+      function drawLegPair(x0, y0, x1, y1, th) {
+        const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len, ny = dx / len, off = 5;
+        drawBeam(x0 + nx * off, y0 + ny * off, x1 + nx * off, y1 + ny * off, th);
+        drawBeam(x0 - nx * off, y0 - ny * off, x1 - nx * off, y1 - ny * off, th);
+      }
+      function drawWheel(x, y, r) { // 소형 바퀴(요소: 바퀴 2)
         groundShadow(x, r + 8);
         const g = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.15, x, y, r);
         g.addColorStop(0, '#4a4e57'); g.addColorStop(1, '#16181c');
@@ -516,89 +530,183 @@ Scenes.mix = () => {
         ctx.beginPath(); ctx.arc(x, y, r * 0.36, 0, Math.PI * 2); ctx.fillStyle = '#9aa2b1'; ctx.fill();
         ctx.beginPath(); ctx.arc(x, y, r * 0.13, 0, Math.PI * 2); ctx.fillStyle = '#5b6472'; ctx.fill();
       }
-      function drawFrame() { // 주황 A자 프레임(요소: 주황 프레임)
-        drawBeam(axle.x, axle.y, apex.x, apex.y, 16);
-        drawBeam(foot.x, foot.y, apex.x, apex.y, 16);
-        drawBeam(axle.x - 8, axle.y - 34, foot.x - 46, foot.y - 44, 9); // 가로 보강대
+      function drawFrame() { // 검정 강관 A-프레임(요소: 검정 프레임) — 다리 2쌍(바퀴쪽/발쪽) + 가로 보강대
+        drawLegPair(axle.x, axle.y, apex.x, apex.y, 11);
+        drawLegPair(foot.x, foot.y, apex.x, apex.y, 11);
+        drawBeam(axle.x - 8, axle.y - 34, foot.x - 46, foot.y - 44, 8); // 가로 보강대
         for (const p of [apex, axle, foot]) {
-          ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2); ctx.fillStyle = '#6b3a08'; ctx.fill();
+          ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, Math.PI * 2); ctx.fillStyle = '#111214'; ctx.fill();
         }
         groundShadow(foot.x, 30);
-        ctx.fillStyle = '#5b6472'; ctx.fillRect(foot.x - 18, groundY - 6, 36, 10); // 안정 발판
+        ctx.fillStyle = '#24262b'; ctx.fillRect(foot.x - 18, groundY - 6, 36, 10); // 고정 발판
       }
-      function drawCradle() { // 드럼 하부를 감싸는 크래들 링 — 프레임과 드럼을 시각적으로 연결
+      function drawPowerCable() { // 전원 케이블(요소: 모터 케이블) — 모터 하우징에서 늘어져 지면 쪽으로
+        const sx = motorWorldX - 26, sy = motorWorldY + 22;
+        const ex = wheel1.x - 15, ey = groundY - 4;
+        ctx.strokeStyle = '#111214'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(sx, sy);
+        ctx.quadraticCurveTo(sx - 14, (sy + ey) / 2 + 26, ex, ey);
+        ctx.stroke();
+      }
+      function drawCradle() { // 드럼 벨리를 감싸는 크래들 링 — 프레임과 드럼을 시각적으로 연결
         ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(TILT);
-        ctx.strokeStyle = '#e8720c'; ctx.lineWidth = 11; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.ellipse(0, CRADLE_LY, R * 0.72, RY * 0.72, 0, Math.PI * 0.15, Math.PI * 0.85);
+        ctx.strokeStyle = '#2a2d33'; ctx.lineWidth = 11; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.ellipse(0, CRADLE_LY, R_BELLY * 0.72, R_BELLY * ASPECT * 0.72, 0, Math.PI * 0.15, Math.PI * 0.85);
         ctx.stroke();
         ctx.restore();
       }
-      function drawMotorHousing() { // 모터 하우징(요소: 모터 하우징) — 드럼 반대쪽 끝에 부착
+      function drawRivetRing(y, rx, spin, count, size) { // 리벳/볼트 점(회전) — 지정 y의 원주 단면을 따라 배치
+        const ry = rx * ASPECT;
+        for (let i = 0; i < count; i++) {
+          const a = (i / count) * Math.PI * 2 + spin;
+          const x = Math.cos(a) * rx, yy = y + Math.sin(a) * ry;
+          ctx.beginPath(); ctx.arc(x, yy, size, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(50,25,0,.55)'; ctx.fill();
+        }
+      }
+      // 드럼 몸통(요소: 뒤쪽 큰 벨리 + 앞쪽 좁아지는 목) — 로컬 y축(허브→벨리→목→개구부) 실루엣
+      function drumBodyPath() {
+        ctx.beginPath();
+        ctx.moveTo(R_HUB, Y_HUB);
+        ctx.quadraticCurveTo(R_BELLY * 1.05, (Y_HUB + Y_BELLY) / 2, R_BELLY, Y_BELLY);
+        ctx.quadraticCurveTo((R_BELLY + R_NECK) / 2, (Y_BELLY + Y_NECK) / 2, R_NECK, Y_NECK);
+        ctx.quadraticCurveTo((R_NECK + OPEN_RX + 6) / 2, (Y_NECK + OPEN_LY) / 2, OPEN_RX + 6, OPEN_LY);
+        ctx.lineTo(-(OPEN_RX + 6), OPEN_LY); // 개구부 쪽 절단면(뒤이어 그리는 개구부 콜라가 이 이음매를 덮음)
+        ctx.quadraticCurveTo(-(R_NECK + OPEN_RX + 6) / 2, (Y_NECK + OPEN_LY) / 2, -R_NECK, Y_NECK);
+        ctx.quadraticCurveTo(-(R_BELLY + R_NECK) / 2, (Y_BELLY + Y_NECK) / 2, -R_BELLY, Y_BELLY);
+        ctx.quadraticCurveTo(-R_BELLY * 1.05, (Y_HUB + Y_BELLY) / 2, -R_HUB, Y_HUB);
+        ctx.closePath(); // 허브 쪽 절단면(뒤이어 그리는 모터 하우징이 이 이음매를 덮음)
+      }
+      function drawDrumBody(spin) {
+        ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(TILT);
+        drumBodyPath();
+        ctx.fillStyle = drumGrad(OPEN_LY - 10, Y_HUB + 10); ctx.fill();
+        ctx.strokeStyle = '#7a3a06'; ctx.lineWidth = 3; ctx.stroke();
+
+        ctx.save(); drumBodyPath(); ctx.clip(); // 좌상단 하이라이트(광원 통일)
+        const hl = ctx.createLinearGradient(-R_BELLY, Y_BELLY, -R_BELLY * 0.1, Y_NECK);
+        hl.addColorStop(0, 'rgba(255,255,255,.45)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = hl; ctx.fillRect(-R_BELLY, Y_NECK - 20, R_BELLY * 0.95, (Y_HUB - Y_NECK) + 40);
+        // 명암 밴드(요소: 회전 표현) — 벨리 표면을 도는 은은한 세로 음영 줄무늬 2개(spin 위상만큼 이동)
+        for (let i = 0; i < 2; i++) {
+          const a = spin + i * Math.PI;
+          const bx = Math.sin(a) * R_BELLY * 0.82;
+          ctx.fillStyle = `rgba(60,28,0,${(0.12 + 0.12 * Math.max(0, Math.cos(a))).toFixed(3)})`;
+          ctx.beginPath();
+          ctx.ellipse(bx, Y_BELLY - 8, R_BELLY * 0.11, (Y_HUB - Y_NECK) * 0.55, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        drawRivetRing(Y_BELLY, R_BELLY * 0.97, spin, 12, 3.2); // 벨리 리벳(요소: 리벳/볼트 점, 회전)
+        ctx.restore();
+      }
+      function drawMotorHousing() { // 검정 모터 하우징(요소: 모터 하우징) — 드럼 허브(반대쪽 끝)에 부착
         ctx.save(); ctx.translate(motorWorldX, motorWorldY); ctx.rotate(TILT * 0.5);
         const w = 78, hh = 56;
         roundRectPath(-w / 2, -hh / 2, w, hh, 9);
         const g = ctx.createLinearGradient(0, -hh / 2, 0, hh / 2);
-        g.addColorStop(0, '#5b6472'); g.addColorStop(1, '#262a30');
-        ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#1c1e23'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = '#e8720c'; ctx.fillRect(-w / 2, hh / 2 - 9, w, 7); // 하단 오렌지 트림
-        ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth = 2.5; // 통풍구
-        for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(i * 11, -hh / 2 + 9); ctx.lineTo(i * 11, hh / 2 - 15); ctx.stroke(); }
-        ctx.beginPath(); ctx.arc(w / 2 + 3, 0, 10, 0, Math.PI * 2); ctx.fillStyle = '#9aa2b1'; ctx.fill(); // 풀리
-        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 2; ctx.stroke();
+        g.addColorStop(0, '#3a3d44'); g.addColorStop(1, '#131519');
+        ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 2.5; // 통풍구
+        for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(i * 11, -hh / 2 + 9); ctx.lineTo(i * 11, hh / 2 - 9); ctx.stroke(); }
+        ctx.beginPath(); ctx.arc(w / 2 + 3, 0, 10, 0, Math.PI * 2); ctx.fillStyle = '#5b6472'; ctx.fill(); // 풀리
+        ctx.strokeStyle = '#1c1e23'; ctx.lineWidth = 2; ctx.stroke();
         ctx.restore();
       }
-      // 드럼 몸통(요소: 기울어진 드럼) + 원주 리브(요소: 회전 표현 — spin 위상만큼 이동)
-      function drawDrumBody(spin) {
-        ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(TILT);
-        ctx.beginPath(); ctx.ellipse(0, 0, R, RY, 0, 0, Math.PI * 2);
-        ctx.fillStyle = steelGrad(-RY, RY); ctx.fill();
-        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 3; ctx.stroke();
-        ctx.save();
-        ctx.beginPath(); ctx.ellipse(0, 0, R, RY, 0, 0, Math.PI * 2); ctx.clip(); // 좌상단 하이라이트 밴드(광원 통일)
-        const hl = ctx.createLinearGradient(-R, -RY, -R * 0.1, -RY * 0.1);
-        hl.addColorStop(0, 'rgba(255,255,255,.5)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = hl; ctx.fillRect(-R, -RY, R * 0.9, RY * 1.4);
-        ctx.restore();
-        const RIBS = 10; // 원주 방향 리브(핀) — 드럼 회전 표현
-        for (let i = 0; i < RIBS; i++) {
-          const a = (i / RIBS) * Math.PI * 2 + spin;
-          const x = Math.cos(a) * R * 0.95, y = Math.sin(a) * RY * 0.95;
-          ctx.save(); ctx.translate(x, y); ctx.rotate(a + Math.PI / 2);
-          ctx.fillStyle = 'rgba(70,76,88,.6)'; ctx.fillRect(-2.5, -7, 5, 14);
-          ctx.restore();
+      function drawHandwheel() { // 측면 틸팅 핸드휠(요소: 핸드휠) — 스포크 4개 원형 크랭크 + 손잡이
+        groundShadow(handwheelHub.x, 18);
+        ctx.save(); ctx.translate(handwheelHub.x, handwheelHub.y);
+        ctx.strokeStyle = '#1c1e23'; ctx.lineWidth = 6; ctx.lineCap = 'round'; // 지지축
+        ctx.beginPath(); ctx.moveTo(-16, 8); ctx.lineTo(0, 0); ctx.stroke();
+        const rimR = 28;
+        ctx.beginPath(); ctx.arc(0, 0, rimR, 0, Math.PI * 2);
+        ctx.strokeStyle = '#111214'; ctx.lineWidth = 5; ctx.stroke();
+        for (let i = 0; i < 4; i++) { // 스포크
+          const a = (i / 4) * Math.PI * 2 + Math.PI / 8;
+          ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(Math.cos(a) * rimR, Math.sin(a) * rimR);
+          ctx.strokeStyle = '#2a2d33'; ctx.lineWidth = 4; ctx.stroke();
         }
+        ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fillStyle = '#4a4e57'; ctx.fill(); // 허브
+        const ha = Math.PI * 0.15; // 손잡이 레버 + 그립
+        const hx = Math.cos(ha) * rimR, hy = Math.sin(ha) * rimR;
+        const gx = Math.cos(ha) * (rimR + 22), gy = Math.sin(ha) * (rimR + 22);
+        ctx.strokeStyle = '#111214'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(gx, gy); ctx.stroke();
+        ctx.beginPath(); ctx.arc(gx, gy, 6, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill();
         ctx.restore();
       }
-      // 개구부(요소: 개구부 타원 + 내부 반죽) — 칼라 립 + 클리핑된 내부(골재 점 + w/c 광택, v1 동등 유지)
-      function drawDrumOpening(fill) {
+      // 믹싱 핀(블레이드) — 드럼과 함께 회전하며 반죽을 쓸어 올린다(요소: 믹싱 핀 2개)
+      function drawBlade(angle) {
+        const bx = Math.cos(angle) * OPEN_RX * 0.72, by = Math.sin(angle) * OPEN_RY * 0.72;
+        ctx.save(); ctx.translate(bx, by); ctx.rotate(angle + Math.PI / 2.3);
+        const g = ctx.createLinearGradient(-8, 0, 8, 0);
+        g.addColorStop(0, '#5b6472'); g.addColorStop(1, '#1c1e23');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(-9, -16); ctx.lineTo(9, -14); ctx.lineTo(6, 15); ctx.lineTo(-6, 15); ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.restore();
+        return { x: bx, y: by };
+      }
+      // 개구부(요소: 개구부 — 형태·위치 고정) — 칼라 립 + 클리핑된 내부(믹싱 핀 + 회전 반죽 + 골재 점 + w/c 광택)
+      function drawDrumOpening(fill, spin) {
         ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(TILT); ctx.translate(0, OPEN_LY);
         ctx.beginPath(); ctx.ellipse(0, 0, OPEN_RX + 7, OPEN_RY + 7, 0, 0, Math.PI * 2);
-        ctx.fillStyle = steelGrad(-OPEN_RY - 7, OPEN_RY + 7); ctx.fill();
-        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.fillStyle = drumGrad(-OPEN_RY - 7, OPEN_RY + 7); ctx.fill();
+        ctx.strokeStyle = '#7a3a06'; ctx.lineWidth = 2.5; ctx.stroke();
+        drawRivetRing(0, (OPEN_RX + 7) * 0.94, spin * 1.05, 10, 2.4); // 개구부 립 리벳(회전)
+
         ctx.save();
-        ctx.beginPath(); ctx.ellipse(0, 0, OPEN_RX, OPEN_RY, 0, 0, Math.PI * 2); ctx.clip();
-        ctx.fillStyle = '#2b2e35'; ctx.fillRect(-OPEN_RX, -OPEN_RY, OPEN_RX * 2, OPEN_RY * 2); // 빈 드럼 내부
-        const light = 58 - Math.min(18, Math.max(0, (wc - 0.4) * 40)); // 젖을수록 어둡게(v1 동등)
-        ctx.fillStyle = `hsl(220 6% ${light}%)`;
-        const fh = OPEN_RY * 2 * fill;
-        ctx.fillRect(-OPEN_RX, OPEN_RY - fh, OPEN_RX * 2, fh);
-        const rng = E.mulberry32(7); // 시드 고정 — 골재 점
-        for (let i = 0; i < 80; i++) {
-          const x = (rng() * 2 - 1) * OPEN_RX * 0.9, y = OPEN_RY - rng() * fh;
-          ctx.fillStyle = i % 3 ? '#7b7f88' : '#a9adb5';
-          ctx.beginPath(); ctx.arc(x, y, 2 + rng() * 3.2, 0, Math.PI * 2); ctx.fill();
-        }
-        if (wc > 0.62 && fill > 0.1) { // 과수 배합 광택(v1 동등 유지) — 현재 반죽 표면에 맞춰 위치
-          ctx.fillStyle = 'rgba(160,200,255,.28)';
-          ctx.beginPath(); ctx.ellipse(-OPEN_RX * 0.12, OPEN_RY - fh + 3, OPEN_RX * 0.62, OPEN_RY * 0.22, 0, 0, Math.PI * 2);
-          ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 0, OPEN_RX, OPEN_RY, 0, 0, Math.PI * 2); ctx.clip(); // 내부 — 고정 개구부 안쪽만 노출
+        ctx.fillStyle = '#232630'; ctx.fillRect(-OPEN_RX, -OPEN_RY, OPEN_RX * 2, OPEN_RY * 2); // 어두운 빈 드럼 내부
+
+        const CAP = 0.78; // 반죽이 다 차도 핀이 보이도록 최대 두께를 제한
+        const fh = OPEN_RY * 2 * fill * CAP;
+        const baseTopY = OPEN_RY - fh;
+        const tiltAmp = Math.min(fh, OPEN_RY * 0.7) * 0.4;
+        const tiltPhaseY = Math.sin(spin) * tiltAmp; // 회전에 따라 좌우로 기우는 반죽 표면
+        const surfY = (x) => baseTopY + tiltPhaseY * (x / OPEN_RX);
+
+        // 믹싱 핀 2개(180° 간격, spin과 함께 회전) — 먼저 그려서 반죽에 잠기는 아랫부분은 뒤이어 덮인다
+        const blades = [drawBlade(spin), drawBlade(spin + Math.PI)];
+
+        if (fill > 0) { // 반죽(회전에 따라 기운 표면 — 회전 방향으로 쓸려 올라갔다 떨어지는 표현)
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(-OPEN_RX, OPEN_RY); ctx.lineTo(-OPEN_RX, surfY(-OPEN_RX));
+          ctx.quadraticCurveTo(0, baseTopY - tiltPhaseY * 0.3, OPEN_RX, surfY(OPEN_RX));
+          ctx.lineTo(OPEN_RX, OPEN_RY); ctx.closePath(); ctx.clip();
+          const light = 58 - Math.min(18, Math.max(0, (wc - 0.4) * 40)); // 젖을수록 어둡게(v1 동등)
+          ctx.fillStyle = `hsl(220 6% ${light}%)`;
+          ctx.fillRect(-OPEN_RX, -OPEN_RY, OPEN_RX * 2, OPEN_RY * 2);
+          const rng = E.mulberry32(7); // 시드 고정 — 골재 점
+          for (let i = 0; i < 80; i++) {
+            const x = (rng() * 2 - 1) * OPEN_RX * 0.9, y = OPEN_RY - rng() * fh;
+            ctx.fillStyle = i % 3 ? '#7b7f88' : '#a9adb5';
+            ctx.beginPath(); ctx.arc(x, y, 2 + rng() * 3.2, 0, Math.PI * 2); ctx.fill();
+          }
+          if (wc > 0.62 && fill > 0.1) { // 과수 배합 광택(v1 동등 유지)
+            ctx.fillStyle = 'rgba(160,200,255,.28)';
+            ctx.beginPath(); ctx.ellipse(-OPEN_RX * 0.12, baseTopY + 3, OPEN_RX * 0.62, OPEN_RY * 0.22, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+          // 표면 위로 솟은 핀에 들러붙어 함께 올라가는 반죽 덩어리 — 표면 아래로 내려가면(잠기면) 자연히 사라짐
+          for (const b of blades) {
+            if (b.y < surfY(b.x) - 2) {
+              ctx.fillStyle = `hsl(220 6% ${light}%)`;
+              ctx.beginPath(); ctx.ellipse(b.x, b.y + 6, 9, 6, 0, 0, Math.PI * 2); ctx.fill();
+            }
+          }
         }
         ctx.restore();
         ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = 2.5; // 칼라 립 좌상단 하이라이트
         ctx.beginPath(); ctx.ellipse(0, 0, OPEN_RX + 4, OPEN_RY + 4, 0, Math.PI * 1.05, Math.PI * 1.55); ctx.stroke();
         ctx.restore();
       }
-      // 버킷/스쿱 투입 연출(요소: 버킷 투입) — 시멘트→물→골재 순으로 기울여 쏟아붓는다(캡션 순서 유지)
+      // 버킷/스쿱 투입 연출(요소: 버킷 투입) — 시멘트→물→골재 순으로 기울여 개구부 안으로 쏟아붓는다(캡션 순서 유지)
       const stageColor = (tt) => tt < 0.9 ? '#8f949c' : tt < 1.6 ? '#4f8ef0' : '#b7a98d';
       function drawBucket(t) {
         if (t >= 2.6) return; // 투입 종료 후에는 숨김
@@ -621,10 +729,10 @@ Scenes.mix = () => {
         ctx.moveTo(-topW + 3, -hh / 2 + 4); ctx.lineTo(topW - 3, -hh / 2 + 4);
         ctx.lineTo(botW - 2, hh / 2 - 3); ctx.lineTo(-botW + 2, hh / 2 - 3); ctx.closePath(); ctx.fill();
         ctx.restore();
-        if (Math.abs(tiltAngle) > 1.3) { // 크게 기울었을 때만 쏟아지는 스트림 표시
+        if (Math.abs(tiltAngle) > 1.3) { // 크게 기울었을 때만 개구부 안으로 쏟아지는 스트림 표시
           const [sdx, sdy] = rotPt(-topW, -hh / 2, tiltAngle);
           ctx.strokeStyle = color; ctx.lineWidth = 6; ctx.lineCap = 'round';
-          ctx.beginPath(); ctx.moveTo(bx + sdx, by + sdy); ctx.lineTo(openWorldX, openWorldY - 8); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(bx + sdx, by + sdy); ctx.lineTo(openWorldX, openWorldY + 6); ctx.stroke();
         }
       }
 
@@ -636,11 +744,14 @@ Scenes.mix = () => {
 
         drawFrame();
         drawWheel(wheel1.x, wheel1.y, wheel1.r); drawWheel(wheel2.x, wheel2.y, wheel2.r);
-        drawDrumBody(t * 1.6);
+        drawPowerCable();
+        const spin = t * 1.6;
+        drawDrumBody(spin);
         drawCradle();
         drawMotorHousing();
+        drawHandwheel();
         const fill = Math.min(1, t / 2.6);
-        drawDrumOpening(fill);
+        drawDrumOpening(fill, spin);
         drawBucket(t);
 
         ctx.fillStyle = '#5b6472'; ctx.font = '600 14px Inter, sans-serif'; ctx.textAlign = 'center';
