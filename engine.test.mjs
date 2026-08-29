@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
-const E = require('./engine.js');
+const E = require('./site/labs/mix-design/engine.js');
 
 test('DATA: ACI 표 기준점이 정확히 들어있다', () => {
   const D = E.DATA;
