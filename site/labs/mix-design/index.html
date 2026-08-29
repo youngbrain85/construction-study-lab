@@ -489,13 +489,20 @@ Scenes.mix = () => {
       const axle = { x: 365, y: groundY - 32 };
       const apex = { x: 496, y: groundY - 100 };
       const foot = { x: 630, y: groundY };
-      const handwheelHub = { x: foot.x - 4, y: drumCy + 26 }; // 측면 틸팅 핸드휠(요소: 핸드휠) — 발쪽 프레임 옆
+      // 측면 틸팅 핸드휠(요소: 핸드휠) — 드럼 틸트 축(크래들) 높이에 맞추고, 프레임에 브래킷으로 연결
+      const [cradleDx, cradleDy] = rotPt(0, CRADLE_LY, TILT);
+      const cradleWorldX = drumCx + cradleDx, cradleWorldY = drumCy + cradleDy;
+      const handwheelHub = { x: foot.x - 4, y: cradleWorldY - 4 };
+      // 브래킷이 다리(foot–apex) 빔 위의 실제 지점에서 뻗어나오도록 그 선 위의 한 점을 앵커로 사용
+      const bracketAnchor = { x: foot.x + (apex.x - foot.x) * 0.45, y: foot.y + (apex.y - foot.y) * 0.45 };
 
       // ── 재질 그라데이션(슬럼프 장면과 톤 통일) ──────────────────────
       const tubeGrad = (th) => { const g = ctx.createLinearGradient(0, -th / 2, 0, th / 2); // 검정 강관 원통형 하이라이트
         g.addColorStop(0, '#6b7280'); g.addColorStop(0.45, '#2a2d33'); g.addColorStop(1, '#0c0d10'); return g; };
       const drumGrad = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1); // 주황 드럼 도장
         g.addColorStop(0, '#ff9a4d'); g.addColorStop(0.5, '#e8720c'); g.addColorStop(1, '#8f3d06'); return g; };
+      const rimGrad = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1); // 개구부 림 전용 — 몸통보다 밝게(사진의 도드라진 림)
+        g.addColorStop(0, '#ffc98a'); g.addColorStop(0.5, '#ff9433'); g.addColorStop(1, '#c25f0c'); return g; };
       function groundShadow(cx, rx) { // 접지 그림자 — 상부 좌측 광원이므로 우하단으로 치우친 타원
         ctx.save(); ctx.fillStyle = 'rgba(30,34,44,.18)';
         ctx.beginPath(); ctx.ellipse(cx + 6, groundY + 5, rx, Math.max(4, rx * 0.2), 0, 0, Math.PI * 2);
@@ -540,13 +547,17 @@ Scenes.mix = () => {
         groundShadow(foot.x, 30);
         ctx.fillStyle = '#24262b'; ctx.fillRect(foot.x - 18, groundY - 6, 36, 10); // 고정 발판
       }
-      function drawPowerCable() { // 전원 케이블(요소: 모터 케이블) — 모터 하우징에서 늘어져 지면 쪽으로
-        const sx = motorWorldX - 26, sy = motorWorldY + 22;
+      function drawPowerCable() { // 전원 케이블(요소: 모터 케이블) — 하우징 하단 커넥터에서 나와 바닥까지 늘어짐
+        // 모터 하우징 하단 커넥터(하우징 로컬 좌표계 기준, TILT*0.5 회전 반영) → 월드 좌표
+        const [ccx, ccy] = rotPt(0, 28 + 4, TILT * 0.5);
+        const sx = motorWorldX + ccx, sy = motorWorldY + ccy;
         const ex = wheel1.x - 15, ey = groundY - 4;
-        ctx.strokeStyle = '#111214'; ctx.lineWidth = 3; ctx.lineCap = 'round';
-        ctx.beginPath(); ctx.moveTo(sx, sy);
-        ctx.quadraticCurveTo(sx - 14, (sy + ey) / 2 + 26, ex, ey);
-        ctx.stroke();
+        const midY = (sy + ey) / 2 + 26;
+        ctx.beginPath(); ctx.arc(sx, sy, 4, 0, Math.PI * 2); ctx.fillStyle = '#000'; ctx.fill(); // 커넥터 소켓
+        ctx.strokeStyle = '#14151a'; ctx.lineWidth = 5.5; ctx.lineCap = 'round'; // 외곽선 — 하우징/바닥 모두와 대비 확보
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(sx - 14, midY, ex, ey); ctx.stroke();
+        ctx.strokeStyle = '#aab0ba'; ctx.lineWidth = 3; ctx.lineCap = 'round'; // 밝은 회백색 케이블 본체(사진 톤)
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(sx - 14, midY, ex, ey); ctx.stroke();
       }
       function drawCradle() { // 드럼 벨리를 감싸는 크래들 링 — 프레임과 드럼을 시각적으로 연결
         ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(TILT);
@@ -614,6 +625,17 @@ Scenes.mix = () => {
         ctx.strokeStyle = '#1c1e23'; ctx.lineWidth = 2; ctx.stroke();
         ctx.restore();
       }
+      function drawHandwheelBracket() { // 핸드휠 지지 브래킷(요소: 브래킷) — 프레임 apex + 다리 빔 위 지점에서 뻗어나와 허브를 물리적으로 지지
+        drawBeam(apex.x, apex.y, handwheelHub.x, handwheelHub.y, 9);
+        drawBeam(bracketAnchor.x, bracketAnchor.y, handwheelHub.x, handwheelHub.y, 7);
+        for (const p of [apex, bracketAnchor]) {
+          ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fillStyle = '#111214'; ctx.fill();
+        }
+        ctx.save(); ctx.translate(handwheelHub.x, handwheelHub.y); // 마운트 플레이트(허브 밑판)
+        roundRectPath(-11, -5, 22, 16, 3);
+        ctx.fillStyle = '#1c1e23'; ctx.fill(); ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.restore();
+      }
       function drawHandwheel() { // 측면 틸팅 핸드휠(요소: 핸드휠) — 스포크 4개 원형 크랭크 + 손잡이
         groundShadow(handwheelHub.x, 18);
         ctx.save(); ctx.translate(handwheelHub.x, handwheelHub.y);
@@ -654,8 +676,9 @@ Scenes.mix = () => {
       function drawDrumOpening(fill, spin) {
         ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(TILT); ctx.translate(0, OPEN_LY);
         ctx.beginPath(); ctx.ellipse(0, 0, OPEN_RX + 7, OPEN_RY + 7, 0, 0, Math.PI * 2);
-        ctx.fillStyle = drumGrad(-OPEN_RY - 7, OPEN_RY + 7); ctx.fill();
+        ctx.fillStyle = rimGrad(-OPEN_RY - 7, OPEN_RY + 7); ctx.fill(); // 몸통보다 밝은 전용 그라데이션 — 사진처럼 림이 도드라짐
         ctx.strokeStyle = '#7a3a06'; ctx.lineWidth = 2.5; ctx.stroke();
+        // 1.05배: 벨리 리벳과 위상을 미세하게 어긋내 두 리벳 링이 항상 같은 자리에서 겹쳐 "고정된 무늬"처럼 보이는 것을 방지
         drawRivetRing(0, (OPEN_RX + 7) * 0.94, spin * 1.05, 10, 2.4); // 개구부 립 리벳(회전)
 
         ctx.save();
@@ -744,11 +767,12 @@ Scenes.mix = () => {
 
         drawFrame();
         drawWheel(wheel1.x, wheel1.y, wheel1.r); drawWheel(wheel2.x, wheel2.y, wheel2.r);
-        drawPowerCable();
         const spin = t * 1.6;
         drawDrumBody(spin);
         drawCradle();
         drawMotorHousing();
+        drawPowerCable(); // 하우징을 먼저 그린 뒤에 그려야 커넥터가 하우징에서 나오는 것처럼 보인다
+        drawHandwheelBracket();
         drawHandwheel();
         const fill = Math.min(1, t / 2.6);
         drawDrumOpening(fill, spin);
