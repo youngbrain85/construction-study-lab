@@ -837,7 +837,10 @@ Scenes.compression = () => {
           ctx.fillText(`Cylinder ${idx + 1} of 3`, W / 2, 36);
           const { eps } = drawUTM(280, r.cylinders[idx], prog, failMode);
           drawGraph(r.cylinders[idx], eps);
-          if (prog >= 1 && done.length === idx) done.push(r.cylinders[idx]);
+          // idx보다 낮은 회차는 시간상 재하가 이미 끝났음이 확정되므로(idx는 증가만 함),
+          // 프레임 점프(백그라운드 탭 스로틀·GC 히치 등)로 등식이 어긋나도 소프트락 없이 캐치업
+          while (done.length < idx && done.length < 3) done.push(r.cylinders[done.length]);
+          if (prog >= 1 && done.length === idx && done.length < 3) done.push(r.cylinders[idx]);
           // 완료 목록
           ctx.textAlign = 'left'; ctx.font = '600 14px Inter, sans-serif';
           done.forEach((s, i) => {
