@@ -13,6 +13,12 @@
 전혀 관여하지 않는다 — Netlify는 정적 자산의 MIME 타입을 별도로 올바르게
 서빙한다.
 
+추가 수정(리뷰 후속): 모든 응답에 `Cache-Control: no-store`를 강제한다.
+이 헤더가 없으면 브라우저가 과거(수정 전) 서버가 보낸 잘못된 응답을
+휴리스틱 캐시로 계속 재사용해, 서버를 고친 뒤에도 새 탭/재실행에서
+module 로드가 계속 실패하는 문제가 있었다. 로컬 전용 서버이므로
+캐시를 완전히 끄는 편이 안전하다.
+
 사용법: python tools/devserver.py [port] [directory]
   기본값: port=8123, directory=site
 """
@@ -28,13 +34,20 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         '.mjs': 'text/javascript',
     }
 
+    def end_headers(self):
+        # 모든 응답에 대해 브라우저/중간 캐시가 과거의(잘못된) 응답을
+        # 재사용하지 못하도록 캐시를 금지한다. 로컬 프리뷰 전용이며
+        # 배포(Netlify)의 캐시 정책과는 무관하다.
+        self.send_header('Cache-Control', 'no-store')
+        super().end_headers()
+
 
 def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8123
     directory = sys.argv[2] if len(sys.argv) > 2 else 'site'
     handler = functools.partial(Handler, directory=directory)
     with http.server.ThreadingHTTPServer(('', port), handler) as httpd:
-        print(f'Serving {directory!r} on http://localhost:{port} (.js MIME type fixed for ES modules)')
+        print(f'Serving {directory!r} on http://localhost:{port} (.js MIME type fixed, caching disabled)')
         httpd.serve_forever()
 
 
