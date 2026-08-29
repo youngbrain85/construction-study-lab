@@ -178,3 +178,27 @@ test('scoreMix: AE 미션 공기량 채점', () => {
     { measuredSlump: 3.5, avgStrength: 5000, airPct: 2.5, yieldVol: 27, behavior: beh, nmas: 0.75 }, bridge);
   assert.equal(miss.airPts, 0);
 });
+
+// ── 통합 평가 ───────────────────────────────────────────────────
+test('evaluateMix: 교과서 배합은 만점 A', () => {
+  const slab = E.MISSIONS.find(m => m.id === 'slab');
+  const r = E.evaluateMix(TEXTBOOK, slab, 42);
+  assert.equal(r.behavior.mode, 'true');
+  assert.ok(r.measuredSlump >= 3.25 && r.measuredSlump <= 3.75); // 3.5 ± 0.25
+  assert.ok(r.avgStrength > 3000);
+  assert.equal(r.score.total, 100);
+  assert.equal(r.score.grade, 'A');
+  // 같은 시드 → 완전 재현
+  assert.deepEqual(r, E.evaluateMix(TEXTBOOK, slab, 42));
+});
+
+test('evaluateMix: 물 +100 → collapse·F / 물 −100 → zero slump', () => {
+  const slab = E.MISSIONS.find(m => m.id === 'slab');
+  const wet = E.evaluateMix({ ...TEXTBOOK, water: 440 }, slab, 42);
+  assert.equal(wet.behavior.mode, 'collapse');
+  assert.equal(wet.score.slumpPts, 0);
+  assert.ok(wet.avgStrength < 3000);
+  const dry = E.evaluateMix({ ...TEXTBOOK, water: 240 }, slab, 42);
+  assert.equal(dry.behavior.mode, 'zero');
+  assert.ok(dry.measuredSlump <= 0.5);
+});

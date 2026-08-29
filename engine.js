@@ -175,6 +175,23 @@
     return WATER_TABLE.targetAir[nmas][EXPOSURE_IDX[mission.exposure]];
   }
 
+  // ── 통합 평가: 배합 → 시험 결과 일체 ─────────────────────────────
+  const quantizeQuarter = (x) => Math.round(x * 4) / 4;
+
+  function evaluateMix(mix, mission, seed = 42) {
+    const rng = mulberry32(seed);
+    const behavior = classifyBehavior(mix);
+    const measuredSlump = quantizeQuarter(clamp(behavior.slump + (rng() * 0.5 - 0.25), 0, 11));
+    const f28 = predictStrength(mix);
+    const cylinders = cylinderStrengths(f28, behavior.segregation, rng);
+    const avgStrength = (cylinders[0] + cylinders[1] + cylinders[2]) / 3;
+    const yieldVol = computeYield(mix);
+    const score = scoreMix(
+      { measuredSlump, avgStrength, airPct: mix.airPct, yieldVol, behavior, nmas: mix.nmas },
+      mission);
+    return { behavior, measuredSlump, f28, cylinders, avgStrength, yieldVol, score };
+  }
+
   // ── 채점 ─────────────────────────────────────────────────────────
   function scoreMix(results, mission) {
     const { measuredSlump, avgStrength, airPct, yieldVol, behavior } = results;
@@ -227,7 +244,7 @@
     DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, FRESH_WEIGHT_TABLE, MAT },
     MISSIONS,
     predictSlump, classifyBehavior, mulberry32, predictStrength, cylinderStrengths,
-    computeYield, targetAirFor, scoreMix,
+    computeYield, targetAirFor, scoreMix, quantizeQuarter, evaluateMix,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = MixEngine;
