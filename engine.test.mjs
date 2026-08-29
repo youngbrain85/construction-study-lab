@@ -205,6 +205,13 @@ test('evaluateMix: 물 +100 → collapse / 물 −100 → zero (새 기준)', ()
   assert.equal(dry.behavior.mode, 'zero');
 });
 
+test('predictSlump: 표 구간 사이 슬럼프(5 in.)도 연속 보간된다', () => {
+  // 1" NMAS 비AE crushed: 3-4행 325 ↔ 6-7행 340 의 중간 보간 → 332.5 lb ≈ 5.0 in.
+  const mix = { water: 332.5, cement: 544, ca: 1872, fa: 1292, airPct: 1.5,
+    nmas: 1.0, isAE: false, aggShape: 'crushed' };
+  assert.ok(Math.abs(E.predictSlump(mix) - 5.0) < 1e-9);
+});
+
 test('scoreMix: shear 배합은 슬럼프 점수 반감 → A등급 불가', () => {
   const slab = E.MISSIONS.find(m => m.id === 'slab');
   // 3/4" 기준 배합에서 shear 테스트 (v1 기대값 유지)

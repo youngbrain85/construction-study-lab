@@ -249,14 +249,20 @@ const STEP_DEFS = [
       const head = ['Slump (in.)', ...nmasCols.map(fmtNmas)];
       const slumpRows = ['1 to 2', '3 to 4', '6 to 7'];
       const body = (kind) => slumpRows.map((lbl, i) => [lbl, ...nmasCols.map(n => W[kind][n][i])]);
+      const MORE_THAN_7 = ['More than 7*', ...nmasCols.map(() => '—')];
+      const INTERP_NOTE = 'For slumps between the listed ranges, interpolate between rows. '
+        + 'Rule of thumb (ACI 6.3.9.1): ±10 lb of water per 1 in. of slump. '
+        + '*Slumps above 7 in. require water-reducing admixtures.';
       return [
         refTable('Approximate mixing water (lb/cu yd) — non-air-entrained', head,
-          [...body('nonAE'), ['Entrapped air (%)', ...nmasCols.map(n => W.entrappedAir[n])]]),
+          [...body('nonAE'), MORE_THAN_7, ['Entrapped air (%)', ...nmasCols.map(n => W.entrappedAir[n])]],
+          INTERP_NOTE),
         refTable('Approximate mixing water (lb/cu yd) — air-entrained', head,
-          [...body('ae'),
+          [...body('ae'), MORE_THAN_7,
            ['Target air, mild exposure (%)', ...nmasCols.map(n => W.targetAir[n][0])],
            ['Target air, moderate (%)', ...nmasCols.map(n => W.targetAir[n][1])],
-           ['Target air, severe (%)', ...nmasCols.map(n => W.targetAir[n][2])]]),
+           ['Target air, severe (%)', ...nmasCols.map(n => W.targetAir[n][2])]],
+          INTERP_NOTE),
         h('div', { class: 'card' },
           h('strong', {}, 'Aggregate shape correction: '),
           'Angular/crushed: use the table value as-is. Well-rounded gravel: start with an 8% reduction.'),
