@@ -84,3 +84,41 @@ test('classifyBehavior: 4가지 거동 모드', () => {
   assert.equal(rocky.harsh, true);
   assert.equal(rocky.mode, 'shear');
 });
+
+// ── 강도 모델 ───────────────────────────────────────────────────
+test('predictStrength: Abrams 곡선이 ACI 표 기준점을 ±5%로 재현', () => {
+  // 순수 w/c 효과만 보기 위해 정상 배합에서 cement만 조정
+  const at = (wc) => E.predictStrength({ ...TEXTBOOK, airPct: 2, cement: TEXTBOOK.water / wc });
+  const anchors = [[0.82, 2000], [0.68, 3000], [0.57, 4000], [0.48, 5000], [0.41, 6000]];
+  for (const [wc, fc] of anchors) {
+    const got = at(wc);
+    assert.ok(Math.abs(got - fc) / fc <= 0.05, `w/c=${wc}: ${got} vs ${fc}`);
+  }
+});
+
+test('predictStrength: 공기량 보정 — AE 열과 일치', () => {
+  // w/c 0.48 + 공기 6% → 4000 psi 부근 (ACI AE 열)
+  // AE 배합 3/4" 기준수량 305 lb 사용해서 segregation 없이 순수 효과 측정
+  const got = E.predictStrength({ ...TEXTBOOK, isAE: true, airPct: 6, water: 305, cement: 305 / 0.48 });
+  assert.ok(Math.abs(got - 4000) / 4000 <= 0.06, `got=${got}`);
+});
+
+test('predictStrength: 교과서 배합 ≈ 4,100 psi / 과수 배합은 미달', () => {
+  const ok = E.predictStrength(TEXTBOOK); // w/c=0.552 → ≈4098
+  assert.ok(ok > 3900 && ok < 4300, `got=${ok}`);
+  const wet = E.predictStrength({ ...TEXTBOOK, water: 440 }); // w/c=0.714, seg ×0.90 → ≈2387
+  assert.ok(wet > 2200 && wet < 2600, `got=${wet}`);
+  assert.equal(E.predictStrength({ ...TEXTBOOK, cement: 0 }), 0);
+});
+
+test('mulberry32 + cylinderStrengths: 결정적이고 산포가 합리적', () => {
+  const a = E.mulberry32(42), b = E.mulberry32(42);
+  assert.equal(a(), b()); // 같은 시드 → 같은 수열
+  const cyl = E.cylinderStrengths(4000, false, E.mulberry32(7));
+  assert.equal(cyl.length, 3);
+  for (const s of cyl) {
+    assert.ok(s > 3400 && s < 4600, `cv 4%에서 ±15% 밖: ${s}`); // 3.75σ 여유
+  }
+  // 같은 시드로 재현 가능
+  assert.deepEqual(cyl, E.cylinderStrengths(4000, false, E.mulberry32(7)));
+});

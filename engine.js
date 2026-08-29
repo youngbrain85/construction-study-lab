@@ -122,10 +122,47 @@
     return { mode, slump, segregation, harsh };
   }
 
+  // ── 결정적 RNG (mulberry32) + 정규분포 (Box-Muller) ───────────────
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(rng) {
+    let u = 0, v = 0;
+    while (u === 0) u = rng();
+    while (v === 0) v = rng();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  // ── 28일 강도: Abrams 곡선 (ACI Table 6.3.4(a) 캘리브레이션) ──────
+  const ABRAMS_A = 18000, ABRAMS_B = 14.6;
+  function predictStrength(mix) {
+    if (mix.cement <= 0) return 0;
+    const wc = mix.water / mix.cement;
+    const base = ABRAMS_A / Math.pow(ABRAMS_B, wc);
+    const airFactor = Math.pow(0.95, Math.max(0, mix.airPct - 2)); // 갇힌 공기 2% 기본선
+    const beh = classifyBehavior(mix);
+    let quality = 1;
+    if (beh.segregation) quality *= 0.90; // 재료분리 감점
+    if (beh.harsh) quality *= 0.88;       // 다짐 불량(honeycomb) 감점
+    return base * airFactor * quality;
+  }
+
+  // ── 공시체 3본 산포 ──────────────────────────────────────────────
+  function cylinderStrengths(f28, segregation, rng) {
+    const cv = segregation ? 0.08 : 0.04;
+    return [0, 1, 2].map(() => Math.max(0, f28 * (1 + cv * gauss(rng))));
+  }
+
   const MixEngine = {
     DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, FRESH_WEIGHT_TABLE, MAT },
     MISSIONS,
-    predictSlump, classifyBehavior,
+    predictSlump, classifyBehavior, mulberry32, predictStrength, cylinderStrengths,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = MixEngine;
