@@ -56,7 +56,7 @@ const game = {
 function designToMix() {
   const d = game.design;
   return { water: d.water, cement: d.cement, ca: d.ca, fa: d.fa,
-    airPct: d.airPct, nmas: d.nmas, isAE: d.isAE };
+    airPct: d.airPct, nmas: d.nmas, isAE: d.isAE, aggShape: game.mission.aggShape };
 }
 function bestScores() {
   try { return JSON.parse(localStorage.getItem('mixlab-best') || '{}'); }
@@ -156,26 +156,29 @@ function numField({ label, key, unit, min, max, step, hint }) {
 }
 
 // ── 재료 물성 카드 (상시 표시) ────────────────────────────────────
+// 미션의 굵은골재 형상(aggShape)에 따라 라벨에 형상 문구를 덧붙인다.
+const AGG_SHAPE_LABEL = { rounded: 'Well-rounded river gravel', crushed: 'Crushed stone (angular)' };
 function materialsCard() {
   const M = E.DATA.MAT;
+  const shape = game.mission ? AGG_SHAPE_LABEL[game.mission.aggShape] : null;
   return refTable('Materials Lab Report',
     ['Property', 'Value'],
     [['Cement specific gravity', M.sgCement],
-     ['Coarse agg. specific gravity (SSD)', M.sgCA],
+     ['Coarse aggregate', shape ? `${M.sgCA} SG (SSD) — ${shape}` : `${M.sgCA} SG (SSD)`],
      ['Coarse agg. dry-rodded unit weight', M.druwCA + ' lb/cu ft'],
+     ['Coarse agg. absorption', (M.absCA * 100).toFixed(1) + '%'],
      ['Fine agg. specific gravity (SSD)', M.sgFA],
-     ['Fine agg. fineness modulus', M.fmSand.toFixed(2)]],
+     ['Fine agg. fineness modulus', M.fmSand.toFixed(2)],
+     ['Fine agg. absorption', (M.absFA * 100).toFixed(1) + '%']],
     'All aggregates assumed at SSD condition.');
 }
 
 // ── 스텝 정의 (1–2) ───────────────────────────────────────────────
+// 강의 Slide 8 표: Member/placement별 권장 슬럼프 범위 (in.)
 const SLUMP_RECOMMEND = [
-  ['Reinforced foundation walls and footings', 1, 3],
-  ['Plain footings, caissons, substructure walls', 1, 3],
-  ['Beams and reinforced walls', 1, 4],
-  ['Building columns', 1, 4],
-  ['Pavements and slabs', 1, 3],
-  ['Mass concrete', 1, 2],
+  ['Footings and slabs', 2, 5],
+  ['Beams and reinforced walls', 3, 5],
+  ['Building columns', 3, 5],
 ];
 const STEP_DEFS = [
   {
@@ -187,8 +190,8 @@ const STEP_DEFS = [
         hint: `Mission requires ${game.mission.slumpRange[0]}–${game.mission.slumpRange[1]} in.` }));
     },
     refPanels: () => [refTable('Recommended slumps for various types of construction',
-      ['Types of construction', 'Max (in.)', 'Min (in.)'],
-      SLUMP_RECOMMEND.map(r => [r[0], r[2], r[1]]),
+      ['Member / placement', 'Min (in.)', 'Max (in.)'],
+      SLUMP_RECOMMEND.map(r => [r[0], r[1], r[2]]),
       'Maximum slump may be increased 1 in. when consolidation is not by vibration.')],
     ready: () => game.design.slumpTarget != null,
   },
@@ -206,7 +209,7 @@ const STEP_DEFS = [
     refPanels: () => [refTable('Nominal maximum sizes available at the plant',
       ['Size', 'Note'],
       game.mission.nmasAllowed.map(n => [fmtNmas(n), 'in stock']),
-      'Rule of thumb: NMAS ≤ 1/5 of the narrowest form dimension, ≤ 3/4 of clear rebar spacing.')],
+      'Rule of thumb: NMAS ≤ 1/5 of the narrowest form dimension, ≤ 3/4 of clear rebar spacing, ≤ 1/3 of slab depth.')],
     ready: () => game.design.nmas != null,
   },
   {
@@ -237,6 +240,9 @@ const STEP_DEFS = [
            ['Target air, mild exposure (%)', ...nmasCols.map(n => W.targetAir[n][0])],
            ['Target air, moderate (%)', ...nmasCols.map(n => W.targetAir[n][1])],
            ['Target air, severe (%)', ...nmasCols.map(n => W.targetAir[n][2])]]),
+        h('div', { class: 'card' },
+          h('strong', {}, 'Aggregate shape correction: '),
+          'Angular/crushed: use the table value as-is. Well-rounded gravel: start with an 8% reduction.'),
       ];
     },
     ready: () => game.design.water != null && game.design.airPct != null,
@@ -247,14 +253,19 @@ const STEP_DEFS = [
     render(box) {
       box.append(numField({ label: 'Water-cement ratio', key: 'wc', unit: 'by weight',
         min: 0.25, max: 1.0, step: 0.01,
-        hint: `Assume required average strength f'cr = f'c + 1,200 psi = ${(game.mission.fc + 1200).toLocaleString()} psi.` }));
+        hint: "Assume no acceptable strength record. Read the f'cr table first, then pick w/cm." }));
     },
     refPanels: () => {
       const T = E.DATA.WC_TABLE;
-      return [refTable('Relationship between w/c and compressive strength',
-        ["28-day f'c (psi)", 'Non-AE', 'Air-entrained'],
-        T.strengths.map((fc, i) => [fc.toLocaleString(), T.nonAE[i].toFixed(2), T.ae[i] == null ? '—' : T.ae[i].toFixed(2)]),
-        'Strengths are for concrete containing no more air than the table amounts.')];
+      return [
+        refTable("Required average strength f'cr (no strength record)",
+          ["Specified f'c (psi)", "Required f'cr (psi)"],
+          [["f'c < 3,000", "f'c + 1,000"], ["3,000 ≤ f'c ≤ 5,000", "f'c + 1,200"], ["f'c > 5,000", "1.1 × f'c + 700"]]),
+        refTable('Relationship between w/c and compressive strength',
+          ["28-day f'c (psi)", 'Non-AE', 'Air-entrained'],
+          T.strengths.map((fc, i) => [fc.toLocaleString(), T.nonAE[i].toFixed(2), T.ae[i] == null ? '—' : T.ae[i].toFixed(2)]),
+          'Strengths are for concrete containing no more air than the table amounts.'),
+      ];
     },
     ready: () => game.design.wc != null,
   },
@@ -276,8 +287,9 @@ const STEP_DEFS = [
     render(box) {
       box.append(
         h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin-bottom:4px' },
-          h('strong', {}, 'Formula: '), 'CA weight = fraction × 27 cu ft × dry-rodded unit weight'),
-        numField({ label: 'Coarse aggregate (dry-rodded basis)', key: 'ca', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
+          h('div', {}, h('strong', {}, 'Formula: '), 'OD weight = (b/b₀) × 27 cu ft × dry-rodded unit weight'),
+          h('div', {}, 'SSD weight = OD × (1 + absorption)')),
+        numField({ label: 'Coarse aggregate (SSD basis)', key: 'ca', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
     },
     refPanels: () => {
       const T = E.DATA.CA_VOLUME_TABLE;
