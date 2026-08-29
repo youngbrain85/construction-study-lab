@@ -231,6 +231,125 @@ Scenes.home = () => ({
   },
 });
 
+// ── 참고표 렌더러 ─────────────────────────────────────────────────
+function refTable(caption, head, rows, note) {
+  return h('div', { class: 'card' },
+    h('table', { class: 'ref-table' },
+      h('caption', {}, caption),
+      h('thead', {}, h('tr', {}, head.map(c => h('th', {}, c)))),
+      h('tbody', {}, rows.map(r => h('tr', {}, r.map(c => h('td', {}, String(c))))))),
+    note ? h('div', { class: 'ref-note' }, note) : null);
+}
+
+// ── 숫자 입력 (클램프 + NaN 복원) ─────────────────────────────────
+function numField({ label, key, unit, min, max, step, hint }) {
+  const input = h('input', { type: 'number', min, max, step: step || 'any',
+    value: game.design[key] ?? '' });
+  input.addEventListener('change', () => {
+    const v = parseFloat(input.value);
+    if (Number.isNaN(v)) { input.value = game.design[key] ?? ''; return; } // NaN → 복원
+    const c = Math.min(max, Math.max(min, v));
+    game.design[key] = c;
+    input.value = c;
+    renderDesign(); // Next 활성화 갱신
+  });
+  return h('div', { class: 'num-field' },
+    h('label', {}, label),
+    h('div', { class: 'wrap' }, input, h('span', { class: 'unit' }, unit)),
+    hint ? h('div', { class: 'hint' }, hint) : null);
+}
+
+// ── 재료 물성 카드 (상시 표시) ────────────────────────────────────
+function materialsCard() {
+  const M = E.DATA.MAT;
+  return refTable('Materials Lab Report',
+    ['Property', 'Value'],
+    [['Cement specific gravity', M.sgCement],
+     ['Coarse agg. specific gravity (SSD)', M.sgCA],
+     ['Coarse agg. dry-rodded unit weight', M.druwCA + ' lb/cu ft'],
+     ['Fine agg. specific gravity (SSD)', M.sgFA],
+     ['Fine agg. fineness modulus', M.fmSand.toFixed(2)]],
+    'All aggregates assumed at SSD condition.');
+}
+
+// ── 스텝 정의 (1–2) ───────────────────────────────────────────────
+const SLUMP_RECOMMEND = [
+  ['Reinforced foundation walls and footings', 1, 3],
+  ['Plain footings, caissons, substructure walls', 1, 3],
+  ['Beams and reinforced walls', 1, 4],
+  ['Building columns', 1, 4],
+  ['Pavements and slabs', 1, 3],
+  ['Mass concrete', 1, 2],
+];
+const STEP_DEFS = [
+  {
+    id: 'slump', title: 'Step 1 — Choose the target slump', sub:
+      'Consult the table and pick a slump consistent with your project. The mission spec is the governing requirement.',
+    render(box) {
+      box.append(numField({ label: 'Design slump', key: 'slumpTarget', unit: 'in.',
+        min: 0.5, max: 8, step: 0.25,
+        hint: `Mission requires ${game.mission.slumpRange[0]}–${game.mission.slumpRange[1]} in.` }));
+    },
+    refPanels: () => [refTable('Recommended slumps for various types of construction',
+      ['Types of construction', 'Max (in.)', 'Min (in.)'],
+      SLUMP_RECOMMEND.map(r => [r[0], r[2], r[1]]),
+      'Maximum slump may be increased 1 in. when consolidation is not by vibration.')],
+    ready: () => game.design.slumpTarget != null,
+  },
+  {
+    id: 'nmas', title: 'Step 2 — Maximum aggregate size', sub:
+      'Choose the largest nominal maximum size available for this project.',
+    render(box) {
+      box.append(h('div', { class: 'choice-row' },
+        game.mission.nmasAllowed.map(n =>
+          h('button', {
+            class: 'choice' + (game.design.nmas === n ? ' selected' : ''),
+            onclick: () => { game.design.nmas = n; renderDesign(); },
+          }, fmtNmas(n)))));
+    },
+    refPanels: () => [refTable('Nominal maximum sizes available at the plant',
+      ['Size', 'Note'],
+      game.mission.nmasAllowed.map(n => [fmtNmas(n), 'in stock']),
+      'Rule of thumb: NMAS ≤ 1/5 of the narrowest form dimension, ≤ 3/4 of clear rebar spacing.')],
+    ready: () => game.design.nmas != null,
+  },
+  // Task 8에서 스텝 3–7 추가
+];
+
+// ── DESIGN 장면 ───────────────────────────────────────────────────
+let designStep = 0;
+let designRoot = null;
+function renderDesign() {
+  if (!designRoot) return;
+  designRoot.innerHTML = '';
+  const total = STEP_DEFS.length; // summary는 별도 장면
+  const def = STEP_DEFS[designStep];
+  // 스텝퍼
+  designRoot.append(h('div', { class: 'stepper' },
+    STEP_DEFS.map((s, i) => h('div', {
+      class: 'step' + (i < designStep ? ' done' : i === designStep ? ' current' : '') },
+      h('div', { class: 'dot' }, i < designStep ? '✓' : String(i + 1)),
+      h('div', { class: 'lbl' }, s.id.toUpperCase())))));
+  // 본문 2컬럼
+  const box = h('div', { class: 'card' }, h('h2', {}, def.title), h('p', { class: 'sub' }, def.sub));
+  def.render(box);
+  const nextBtn = h('button', {
+    class: 'btn btn-primary',
+    onclick: () => { designStep + 1 < total ? (designStep++, renderDesign()) : go('summary'); },
+  }, designStep + 1 < total ? 'Next →' : 'Review mix →');
+  nextBtn.disabled = !def.ready(); // h()의 setAttribute는 undefined도 문자열로 세팅하므로 속성 대신 프로퍼티로 직접 제어
+  box.append(h('div', { class: 'wiz-nav' },
+    h('button', { class: 'btn', onclick: () => { designStep === 0 ? go('home') : (designStep--, renderDesign()); } },
+      '← Back'),
+    nextBtn));
+  designRoot.append(h('div', { class: 'wizard-grid' }, box,
+    h('div', { class: 'ref-panel' }, def.refPanels(), materialsCard())));
+}
+Scenes.design = () => ({
+  mount(root) { designStep = 0; designRoot = root; renderDesign(); },
+  unmount() { designRoot = null; },
+});
+
 go('home');
 </script>
 </body>
