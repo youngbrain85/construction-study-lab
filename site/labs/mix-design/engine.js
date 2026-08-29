@@ -40,36 +40,34 @@
     1.5: [0.75, 0.73, 0.71, 0.69],
   };
 
-  // Table 6.3.7.1 — 굳지 않은 콘크리트 추정 단위중량 (lb/yd³)
-  const FRESH_WEIGHT_TABLE = {
-    nonAE: { 0.375: 3840, 0.5: 3890, 0.75: 3960, 1.0: 4010, 1.5: 4070 },
-    ae: { 0.375: 3710, 0.5: 3760, 0.75: 3840, 1.0: 3900, 1.5: 3960 },
-  };
 
   // 재료 물성 (Materials Lab Report)
   const MAT = {
-    sgCement: 3.15, sgCA: 2.65, sgFA: 2.64, // 비중
+    sgCement: 3.15, sgCA: 2.68, absCA: 0.005, sgFA: 2.64, absFA: 0.007, // 비중·흡수율
     druwCA: 100,   // 굵은골재 건조봉다짐 단위중량 (lb/ft³)
-    fmSand: 2.70,  // 잔골재 조립률
+    fmSand: 2.60,  // 잔골재 조립률
     wUnit: 62.4,   // 물 단위중량 (lb/ft³)
   };
 
-  // 미션 5종
+  // 굵은골재 형상 계수 (1" 앵커 기준 비교)
+  const SHAPE_FACTOR = { rounded: 0.92, crushed: 1.0 };
+
+  // 미션 5종 (형상 계수 기준 지정)
   const MISSIONS = [
     { id: 'slab', name: 'Residential Slab', icon: '🏠', fc: 3000, slumpRange: [3, 4],
-      exposure: 'none', nmasAllowed: [0.75, 1.0, 1.5],
+      exposure: 'none', nmasAllowed: [0.75, 1.0, 1.5], aggShape: 'rounded',
       desc: 'A 4-in. slab-on-grade for a suburban home. Keep it workable for the finishing crew.' },
     { id: 'bridge', name: 'Bridge Deck', icon: '🌉', fc: 4500, slumpRange: [3, 4],
-      exposure: 'severe', nmasAllowed: [0.5, 0.75, 1.0],
+      exposure: 'severe', nmasAllowed: [0.5, 0.75, 1.0], aggShape: 'crushed',
       desc: 'Freeze-thaw and deicing salts. Air entrainment is mandatory.' },
     { id: 'column', name: 'High-rise Column', icon: '🏢', fc: 6000, slumpRange: [4, 5],
-      exposure: 'none', nmasAllowed: [0.5, 0.75],
+      exposure: 'none', nmasAllowed: [0.5, 0.75], aggShape: 'crushed',
       desc: 'Heavily reinforced columns need both strength and flow.' },
     { id: 'pavement', name: 'Sidewalk Pavement', icon: '🛣️', fc: 4000, slumpRange: [1, 3],
-      exposure: 'severe', nmasAllowed: [0.75, 1.0, 1.5],
+      exposure: 'severe', nmasAllowed: [0.75, 1.0, 1.5], aggShape: 'crushed',
       desc: 'A stiff mix for slip-form paving in a cold climate.' },
     { id: 'wall', name: 'Basement Wall', icon: '🧱', fc: 3500, slumpRange: [3, 6],
-      exposure: 'none', nmasAllowed: [0.75, 1.0],
+      exposure: 'none', nmasAllowed: [0.75, 1.0], aggShape: 'rounded',
       desc: 'Forgiving slump window, but keep the strength honest.' },
   ];
 
@@ -93,7 +91,10 @@
 
   // ── 슬럼프 예측: ACI 수량 표 역산 (조각별 선형 + 외삽) ─────────────
   function predictSlump(mix) {
-    const anchors = WATER_TABLE[mix.isAE ? 'ae' : 'nonAE'][mix.nmas];
+    // 형상 계수 적용: 같은 슬럼프를 얻기 위한 물의 양 조정 (누락 시 crushed 취급)
+    const shapeCoeff = SHAPE_FACTOR[mix.aggShape] ?? 1.0;
+    const baseAnchors = WATER_TABLE[mix.isAE ? 'ae' : 'nonAE'][mix.nmas];
+    const anchors = baseAnchors.map(a => a * shapeCoeff);
     const S = SLUMP_ANCHORS; // [1.5, 3.5, 6.5]
     const [W1, W2, W3] = anchors;
     const slope1 = (S[1] - S[0]) / (W2 - W1); // 아래 구간 기울기 (in. per lb)
@@ -166,6 +167,13 @@
       + mix.ca / (MAT.sgCA * MAT.wUnit)
       + mix.fa / (MAT.sgFA * MAT.wUnit)
       + 27 * (mix.airPct / 100);
+  }
+
+  // 필요 설계 강도 (ACI 211.1): fc → fcr (안전 계수 적용)
+  function fcrFor(fc) {
+    if (fc < 3000) return fc + 1000;
+    if (fc <= 5000) return fc + 1200;
+    return Math.round(1.1 * fc + 700);
   }
 
   // AE 미션의 목표 공기량 (노출등급 × NMAS)
@@ -243,8 +251,9 @@
   }
 
   const MixEngine = {
-    DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, FRESH_WEIGHT_TABLE, MAT },
+    DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, MAT, SHAPE_FACTOR },
     MISSIONS,
+    fcrFor,
     predictSlump, classifyBehavior, mulberry32, predictStrength, cylinderStrengths,
     computeYield, targetAirFor, scoreMix, quantizeQuarter, evaluateMix,
   };
