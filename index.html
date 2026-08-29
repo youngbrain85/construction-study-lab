@@ -864,6 +864,63 @@ Scenes.compression = () => {
   };
 };
 
+// ── RESULTS: 결과 리포트 ──────────────────────────────────────────
+Scenes.results = () => ({
+  mount(root) {
+    const r = game.result, m = game.mission, sc = r.score;
+    // 최고 기록 갱신
+    try {
+      const best = bestScores();
+      if (!best[m.id] || best[m.id] < sc.total) {
+        best[m.id] = sc.total;
+        localStorage.setItem('mixlab-best', JSON.stringify(best));
+      }
+    } catch (e) { /* 저장 불가 환경 무시 */ }
+
+    const gradeColor = { A: 'var(--green)', B: 'var(--primary)', C: 'var(--amber)',
+      D: 'var(--amber)', F: 'var(--red)' }[sc.grade];
+    const row = (label, detail, pts, max) => h('div', { class: 'score-row' },
+      h('div', { style: 'font-weight:600' }, label),
+      h('div', {},
+        h('div', { style: 'font-size:13px;color:var(--muted);margin-bottom:5px' }, detail),
+        h('div', { class: 'score-bar' },
+          h('div', { style: `width:${(pts / max) * 100}%;background:${pts === max ? 'var(--green)' : pts > 0 ? 'var(--amber)' : 'var(--red)'}` }))),
+      h('div', { style: 'text-align:right;font-weight:700;font-variant-numeric:tabular-nums' },
+        `${Math.round(pts)} / ${max}`));
+
+    const target = E.targetAirFor(m, designToMix().nmas);
+    root.append(
+      h('h1', {}, 'Inspection report'),
+      h('p', { class: 'sub' }, `${m.icon} ${m.name} — final verdict from the testing lab.`),
+      h('div', { class: 'wizard-grid' },
+        h('div', { class: 'card' },
+          h('div', { style: 'display:flex;gap:22px;align-items:center;margin-bottom:14px' },
+            h('div', { class: 'grade-badge', style: `background:${gradeColor}` }, sc.grade),
+            h('div', {},
+              h('div', { style: 'font-size:30px;font-weight:800' }, `${sc.total} / 100`),
+              h('div', { style: 'font-size:20px;letter-spacing:2px;color:var(--amber)' },
+                '★'.repeat(sc.stars) + '☆'.repeat(5 - sc.stars)))),
+          row('Slump', `Measured ${r.measuredSlump.toFixed(2)} in. · required ${m.slumpRange[0]}–${m.slumpRange[1]} in.`,
+            sc.slumpPts, 40),
+          row('Strength', `Average ${Math.round(r.avgStrength).toLocaleString()} psi · required f'c ${m.fc.toLocaleString()} psi`,
+            sc.strengthPts, 40),
+          row('Air content', `Batched ${designToMix().airPct}%` + (target ? ` · target ${target}%` : ' · non-AE mix'),
+            sc.airPts, 10),
+          row('Yield', `Absolute volume ${r.yieldVol.toFixed(2)} cu ft · target 27.0 cu ft`,
+            sc.yieldPts, 10),
+          h('div', { class: 'wiz-nav' },
+            h('button', { class: 'btn', onclick: () => { game.result = null; game.seed = Math.floor(Math.random() * 1e6); go('design'); } },
+              '↻ Retry mission'),
+            h('button', { class: 'btn btn-primary', onclick: () => { game.mission = null; go('home'); } },
+              'New mission →'))),
+        h('div', { class: 'ref-panel' },
+          h('div', { class: 'card' },
+            h('h2', {}, "Inspector's notes"),
+            h('ul', { style: 'margin:8px 0 0;padding-left:18px;color:var(--muted)' },
+              sc.notes.map(n => h('li', { style: 'margin-bottom:8px' }, n)))))));
+  },
+});
+
 go('home');
 </script>
 </body>
