@@ -159,10 +159,75 @@
     return [0, 1, 2].map(() => Math.max(0, f28 * (1 + cv * gauss(rng))));
   }
 
+  // ── 수율(절대용적) 검사: 1 yd³ = 27 ft³ ──────────────────────────
+  function computeYield(mix) {
+    return mix.cement / (MAT.sgCement * MAT.wUnit)
+      + mix.water / MAT.wUnit
+      + mix.ca / (MAT.sgCA * MAT.wUnit)
+      + mix.fa / (MAT.sgFA * MAT.wUnit)
+      + 27 * (mix.airPct / 100);
+  }
+
+  // AE 미션의 목표 공기량 (노출등급 × NMAS)
+  const EXPOSURE_IDX = { mild: 0, moderate: 1, severe: 2 };
+  function targetAirFor(mission, nmas) {
+    if (mission.exposure === 'none') return null;
+    return WATER_TABLE.targetAir[nmas][EXPOSURE_IDX[mission.exposure]];
+  }
+
+  // ── 채점 ─────────────────────────────────────────────────────────
+  function scoreMix(results, mission) {
+    const { measuredSlump, avgStrength, airPct, yieldVol, behavior } = results;
+    const [lo, hi] = mission.slumpRange;
+    const notes = [];
+
+    // 슬럼프 40점: 범위 밖 1인치당 −12
+    let slumpPts;
+    if (measuredSlump >= lo && measuredSlump <= hi) slumpPts = 40;
+    else {
+      const d = measuredSlump < lo ? lo - measuredSlump : measuredSlump - hi;
+      slumpPts = clamp(40 - 12 * d, 0, 40);
+    }
+
+    // 강도 40점: 미달 비율 ×100 감점
+    const ratio = avgStrength / mission.fc;
+    const strengthPts = ratio >= 1 ? 40 : clamp(40 - 100 * (1 - ratio), 0, 40);
+
+    // 공기량 10점
+    let airPts;
+    const target = targetAirFor(mission, results.nmas);
+    if (target === null) airPts = airPct <= 3 ? 10 : clamp(10 - 3 * (airPct - 3), 0, 10);
+    else {
+      const d = Math.abs(airPct - target);
+      airPts = d <= 1.5 ? 10 : clamp(10 - 5 * (d - 1.5), 0, 10);
+    }
+
+    // 수율 10점
+    const e = Math.abs(yieldVol - 27);
+    const yieldPts = e <= 0.5 ? 10 : clamp(10 - 8 * (e - 0.5), 0, 10);
+
+    const total = Math.round(slumpPts + strengthPts + airPts + yieldPts);
+    const grade = total >= 90 ? 'A' : total >= 80 ? 'B' : total >= 70 ? 'C' : total >= 60 ? 'D' : 'F';
+    const stars = Math.round(total / 20);
+
+    // 결과 해설 노트 (영어)
+    if (behavior.mode === 'collapse') notes.push('The cone collapsed into a puddle — far too much water for this mix.');
+    if (behavior.mode === 'zero') notes.push('Nearly zero slump — the mix is too dry to place.');
+    if (behavior.mode === 'shear') notes.push('Shear slump — the mix is harsh and lacks mortar. Check your aggregate proportions.');
+    if (behavior.segregation && behavior.mode !== 'collapse') notes.push('Signs of segregation — the mix is too wet to stay uniform.');
+    if (strengthPts < 40) notes.push("Compressive strength came in below the required f'c. Lower your w/c ratio.");
+    if (yieldPts < 10) notes.push("Your batch doesn't add up to 27 cu ft per cubic yard — check your quantities.");
+    if (airPts < 10 && target !== null) notes.push('Air content misses the target for this exposure condition.');
+    if (total >= 90) notes.push('Textbook mix. The inspector is impressed.');
+
+    return { slumpPts, strengthPts, airPts, yieldPts, total, grade, stars, notes };
+  }
+
   const MixEngine = {
     DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, FRESH_WEIGHT_TABLE, MAT },
     MISSIONS,
     predictSlump, classifyBehavior, mulberry32, predictStrength, cylinderStrengths,
+    computeYield, targetAirFor, scoreMix,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = MixEngine;

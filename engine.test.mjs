@@ -122,3 +122,59 @@ test('mulberry32 + cylinderStrengths: 결정적이고 산포가 합리적', () =
   // 같은 시드로 재현 가능
   assert.deepEqual(cyl, E.cylinderStrengths(4000, false, E.mulberry32(7)));
 });
+
+// ── 수율 + 채점 ────────────────────────────────────────────────
+test('computeYield: 교과서 배합 ≈ 27.3 ft³', () => {
+  const v = E.computeYield(TEXTBOOK);
+  // 3.134 + 5.449 + 10.287 + 7.909 + 0.54 = 27.32
+  assert.ok(Math.abs(v - 27.32) < 0.05, `got=${v}`);
+});
+
+test('targetAirFor: 노출등급 → 목표 공기량', () => {
+  const bridge = E.MISSIONS.find(m => m.id === 'bridge');
+  assert.equal(E.targetAirFor(bridge, 0.75), 6.0); // severe @ 3/4"
+  const slab = E.MISSIONS.find(m => m.id === 'slab');
+  assert.equal(E.targetAirFor(slab, 0.75), null);
+});
+
+test('scoreMix: 만점 시나리오와 감점 수식', () => {
+  const slab = E.MISSIONS.find(m => m.id === 'slab');
+  const beh = { mode: 'true', segregation: false, harsh: false };
+  const perfect = E.scoreMix(
+    { measuredSlump: 3.5, avgStrength: 4100, airPct: 2, yieldVol: 27.32, behavior: beh }, slab);
+  assert.equal(perfect.total, 100);
+  assert.equal(perfect.grade, 'A');
+  assert.equal(perfect.stars, 5);
+  assert.ok(perfect.notes.includes('Textbook mix. The inspector is impressed.'));
+  // 슬럼프 5.5 in (범위 [3,4]에서 1.5 초과) → 40 − 18 = 22
+  const s = E.scoreMix(
+    { measuredSlump: 5.5, avgStrength: 4100, airPct: 2, yieldVol: 27, behavior: beh }, slab);
+  assert.equal(s.slumpPts, 22);
+  // 강도 90% → 40 − 10 = 30
+  const st = E.scoreMix(
+    { measuredSlump: 3.5, avgStrength: 2700, airPct: 2, yieldVol: 27, behavior: beh }, slab);
+  assert.equal(st.strengthPts, 30);
+  assert.ok(st.notes.some(n => n.startsWith('Compressive strength')));
+});
+
+test('scoreMix: collapse 배합은 슬럼프 0점 + 노트', () => {
+  const slab = E.MISSIONS.find(m => m.id === 'slab');
+  const r = E.scoreMix(
+    { measuredSlump: 10.75, avgStrength: 2400, airPct: 2, yieldVol: 28.9,
+      behavior: { mode: 'collapse', segregation: true, harsh: false } }, slab);
+  assert.equal(r.slumpPts, 0); // d = 6.75 → 40 − 81 → 0
+  assert.equal(r.grade, 'F');
+  assert.ok(r.notes.some(n => n.includes('collapsed into a puddle')));
+});
+
+test('scoreMix: AE 미션 공기량 채점', () => {
+  const bridge = E.MISSIONS.find(m => m.id === 'bridge');
+  const beh = { mode: 'true', segregation: false, harsh: false };
+  const hit = E.scoreMix(
+    { measuredSlump: 3.5, avgStrength: 5000, airPct: 6, yieldVol: 27, behavior: beh, nmas: 0.75 }, bridge);
+  assert.equal(hit.airPts, 10);
+  // 목표 6.0에서 3.5%p 이탈 (air 2.5) → d−1.5 = 2 → 10 − 10 = 0
+  const miss = E.scoreMix(
+    { measuredSlump: 3.5, avgStrength: 5000, airPct: 2.5, yieldVol: 27, behavior: beh, nmas: 0.75 }, bridge);
+  assert.equal(miss.airPts, 0);
+});
