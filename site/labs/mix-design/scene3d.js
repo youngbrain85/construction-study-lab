@@ -518,6 +518,351 @@ function buildMixerScene({ wc = 0.5, rng } = {}) {
   return { group, update, stageBreaks: STAGE_BOUNDS.slice() };
 }
 
+// ── SLUMP 장면: ASTM C143 슬럼프 콘 시험 ────────────────────────────
+// 구조: 강철 베이스 플레이트(고정) 위에 시료 위치(x=0)와 뒤집은 콘 측정 위치
+// (x=GAP)를 나란히 둔다. 콘크리트 본체(bodyMesh)는 LatheGeometry 단면(profile)을
+// 매 프레임 보간해 모양을 바꾸는 방식으로 변형을 표현한다 — fill 중엔 "몰드 내부
+// 부분 채움" 단면, lift 중엔 몰드와 동일한 캐스트(cast) 단면(아직 미변형),
+// settle 중엔 캐스트 단면→모드별 최종 단면을 진행도 p로 선형 보간한다.
+// shear만 축대칭이 아니므로(본체 일부가 옆으로 미끄러짐) 축대칭 본체(bodyMesh)에
+// 더해 별도의 쐐기 메시(wedgeMesh)를 두어 옆으로 슬라이드+기울임을 표현한다.
+// update(phase, t, p) 계약: phase='fill'|'lift'|'settle'|'measure', t=해당 페이즈
+// 시작 후 경과초(호출부가 계산), p=해당 페이즈 진행도 0→1(호출부가 이징 적용해
+// 넘겨준다 — lift/settle/measure는 easeOutCubic 권장). fill 페이즈에서는 층/다짐
+// 카운터 계산이 이 함수 내부에 있으므로, update()가 오버레이 표시용 정보
+// { layerIdx, rodCount, rodding }를 반환한다(레이아웃 텍스트는 호출부 담당).
+/**
+ * @param {{mode:'zero'|'true'|'shear'|'collapse', slump:number, measuredSlump:number,
+ *           segregation:boolean, rng:() => number}} params
+ *   mode/segregation: game.result.behavior. slump: behavior.slump(연속값, 형상 산정 전용).
+ *   measuredSlump: game.result.measuredSlump(양자화값, 라벨·치수선 전용). rng: MixEngine.mulberry32 시드.
+ * @returns {{group:THREE.Group, timing:object, update:(phase:string,t:number,p:number)=>object}}
+ */
+function buildSlumpScene({ mode = 'true', slump = 3, measuredSlump = 3, segregation = false, rng } = {}) {
+  const rand = typeof rng === 'function' ? rng : Math.random; // 안전망(계약상 항상 전달되어야 함)
+  const group = new THREE.Group();
+  const v = (r, y) => new THREE.Vector2(r, y);
+
+  // ── 치수(ASTM C143 §6.1): 하단 8"⌀ / 상단 4"⌀ / 높이 12" — IN = 1인치의 월드유닛 환산 ──
+  const IN = 0.085;
+  const BOT_R = 4 * IN, TOP_R = 2 * IN, HGT = 12 * IN;
+  const GAP = 20 * IN; // 시료 중심 → 뒤집은 콘(측정용) 중심 간격
+  const s = THREE.MathUtils.clamp(slump, 0, 11); // 형상 산정 전용(연속값) — 라벨·치수선은 measuredSlump를 따로 쓴다
+
+  // ── 타이밍(2D 버전과 동일 값 유지 — 길이는 재량이나 검증 기준점을 안정적으로 재현) ──
+  const T_LAYERS = 3, T_POUR_T = 0.3, T_ROD_T = 1.3, T_PAUSE_T = 0.2;
+  const T_LAYER_T = T_POUR_T + T_ROD_T + T_PAUSE_T; // 1.8
+  const T_FILL_DUR = T_LAYERS * T_LAYER_T;          // 5.4
+  const LIFT_DUR = 5.0, SETTLE_DUR = 1.2, MEASURE_DUR = 0.6, ROD_TARGET = 25;
+
+  // ── 공용 재질 ──────────────────────────────────────────────────────
+  const steelMat = steelMaterial();
+  const wcApprox = { zero: 0.34, true: 0.5, shear: 0.42, collapse: 0.7 }[mode] ?? 0.5;
+  const concreteMat = concreteMaterial(wcApprox + (segregation ? 0.04 : 0));
+
+  // ── 강철 콘(금속 반사) — 손잡이 2 + 발판 2 + 상하 림, 정상/뒤집은 콘 공용 빌더 ──
+  // shellMat: 콘 본체(래스 셸)만 별도 재질 인스턴스로 둔다 — fill 페이즈에서 반투명
+  // 컷어웨이로 전환해 몰드 내부 콘크리트 상승·다짐을 보이게 하기 위함(2D 버전의
+  // alpha:0.5 컷어웨이와 동등한 효과). 림·손잡이·발판은 공용 steelMat(항상 불투명) 유지.
+  function buildConeGroup() {
+    const g = new THREE.Group();
+    const shellMat = steelMaterial();
+    shellMat.transparent = true; // opacity만 매 프레임 바꿀 수 있도록 항상 blend 가능하게 둔다
+    const profile = [
+      v(0, 0), v(BOT_R, 0), v(BOT_R * 0.995, HGT * 0.33),
+      v(THREE.MathUtils.lerp(BOT_R, TOP_R, 0.66), HGT * 0.66),
+      v(TOP_R * 1.01, HGT * 0.97), v(TOP_R, HGT),
+    ];
+    const mesh = new THREE.Mesh(new THREE.LatheGeometry(profile, 28), shellMat);
+    mesh.castShadow = true; mesh.receiveShadow = true;
+    g.add(mesh);
+    const rimTop = new THREE.Mesh(new THREE.TorusGeometry(TOP_R, IN * 0.1, 8, 24), steelMat);
+    rimTop.position.y = HGT; rimTop.rotation.x = Math.PI / 2; g.add(rimTop);
+    const rimBot = new THREE.Mesh(new THREE.TorusGeometry(BOT_R, IN * 0.13, 8, 28), steelMat);
+    rimBot.position.y = 0.01; rimBot.rotation.x = Math.PI / 2; g.add(rimBot);
+    for (const ang of [0, Math.PI]) { // 손잡이 2개(상단 측면)
+      const handle = new THREE.Mesh(new THREE.TorusGeometry(IN * 1.1, IN * 0.09, 6, 12, Math.PI), steelMat);
+      handle.position.set(Math.cos(ang) * (TOP_R + IN * 0.3), HGT - IN * 1.0, Math.sin(ang) * (TOP_R + IN * 0.3));
+      handle.rotation.y = ang; handle.rotation.z = Math.PI / 2;
+      g.add(handle);
+    }
+    for (const ang of [Math.PI / 2, -Math.PI / 2]) { // 발판 2개(하단 측면)
+      const foot = new THREE.Mesh(new THREE.BoxGeometry(IN * 1.6, IN * 0.3, IN * 0.7), steelMat);
+      foot.position.set(Math.cos(ang) * (BOT_R + IN * 0.6), IN * 1.2, Math.sin(ang) * (BOT_R + IN * 0.6));
+      foot.rotation.y = ang;
+      g.add(foot);
+    }
+    return { group: g, shellMat };
+  }
+  const coneBuild = buildConeGroup();
+  const coneGroup = coneBuild.group;
+  const coneShellMat = coneBuild.shellMat;
+  group.add(coneGroup);
+
+  // 뒤집은 콘(측정용): 로컬 X축 180° 회전 + HGT만큼 끌어올려 "제자리에서 뒤집힘"을 만든다
+  // (넓은 하단 림이 이제 위로 와서 다짐봉을 얹을 수 있는 평평한 상단 기준면이 된다)
+  const invertedBuild = buildConeGroup();
+  const invertedInner = invertedBuild.group;
+  invertedBuild.shellMat.opacity = 1; // 측정용 뒤집은 콘은 항상 불투명
+  invertedInner.rotation.x = Math.PI;
+  invertedInner.position.y = HGT;
+  const invertedGroup = new THREE.Group();
+  invertedGroup.add(invertedInner);
+  invertedGroup.position.set(GAP, 0, 0);
+  invertedGroup.visible = false;
+  group.add(invertedGroup);
+
+  // ── 다짐봉(steel rod) — 채움 중 왕복 다짐 + 측정 중 수평 거치 겸용 ──────
+  const ROD_LEN = 24 * IN, ROD_R = 0.3125 * IN; // ASTM 규정: 5/8"⌀ × 24"L
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(ROD_R, ROD_R, ROD_LEN, 12), steelMat);
+  rod.castShadow = true;
+  rod.visible = false;
+  group.add(rod);
+
+  // ── 강철 베이스 플레이트 + 클램프 2 + 발판 2 ───────────────────────
+  (function buildBasePlate() {
+    const plateW = GAP + BOT_R * 2 + IN * 6;
+    const plate = new THREE.Mesh(new THREE.BoxGeometry(plateW, IN * 0.5, BOT_R * 2 + IN * 3), steelMat);
+    plate.position.set(GAP / 2, -IN * 0.25, 0);
+    plate.receiveShadow = true; plate.castShadow = true;
+    group.add(plate);
+    for (const ang of [0, Math.PI]) { // 클램프 2개(시료측 콘 밑동 고정 걸쇠)
+      const clamp = new THREE.Mesh(new THREE.BoxGeometry(IN * 0.5, IN * 0.9, IN * 0.6), steelMat);
+      clamp.position.set(Math.cos(ang) * (BOT_R + IN * 0.5), IN * 0.2, Math.sin(ang) * (BOT_R + IN * 0.5));
+      group.add(clamp);
+    }
+    for (const dz of [-1, 1]) { // 발판 2개(오퍼레이터가 밟아 판을 고정)
+      const pedal = new THREE.Mesh(new THREE.BoxGeometry(IN * 3, IN * 0.3, IN * 1.2), steelMat);
+      pedal.position.set(GAP * 0.25, 0.02, dz * (BOT_R + IN * 1.3));
+      group.add(pedal);
+    }
+  })();
+
+  // ── 콘크리트 본체: LatheGeometry 단면 보간으로 변형 표현 ─────────────
+  const RADIAL_SEG = 28;
+  const CAST = [ // 몰드 내부 형상(캐스트 직후, 미변형) — 상하 평면 캡을 위해 반지름 0 지점을 각 끝에 둔다
+    v(0, 0), v(BOT_R, 0), v(THREE.MathUtils.lerp(BOT_R, TOP_R, 0.33), HGT * 0.33),
+    v(THREE.MathUtils.lerp(BOT_R, TOP_R, 0.66), HGT * 0.66),
+    v(THREE.MathUtils.lerp(BOT_R, TOP_R, 0.92), HGT * 0.92),
+    v(TOP_R, HGT), v(0, HGT),
+  ];
+  function endProfileFor(m) {
+    if (m === 'zero') { // 거의 원형 유지 — 높이만 살짝 줄고, 거친 표면은 지터로 별도 처리
+      const hgtE = HGT - 0.3 * IN;
+      return [v(0, 0), v(BOT_R, 0), v(THREE.MathUtils.lerp(BOT_R, TOP_R, 0.33), hgtE * 0.33),
+        v(THREE.MathUtils.lerp(BOT_R, TOP_R, 0.66), hgtE * 0.66),
+        v(THREE.MathUtils.lerp(BOT_R, TOP_R, 0.92), hgtE * 0.92), v(TOP_R, hgtE), v(0, hgtE)];
+    }
+    if (m === 'collapse') { // 팬케이크 — 반지름 크게 확산, 높이는 크게 낮아짐
+      const rBE = BOT_R + 13 * IN, hgtE = 1.6 * IN;
+      return [v(0, 0), v(rBE, 0), v(rBE * 0.95, hgtE * 0.4), v(rBE * 0.75, hgtE * 0.85),
+        v(rBE * 0.5, hgtE * 0.97), v(rBE * 0.2, hgtE), v(0, hgtE * 1.05)];
+    }
+    if (m === 'shear') { // 본체(남은 절반) — 웨지가 분리되어 나간 나머지 축대칭 몸통
+      const hgtE = HGT - s * 0.6 * IN, rBE = BOT_R * 0.9, rTE = TOP_R * 1.1;
+      return [v(0, 0), v(rBE, 0), v(THREE.MathUtils.lerp(rBE, rTE, 0.33), hgtE * 0.33),
+        v(THREE.MathUtils.lerp(rBE, rTE, 0.66), hgtE * 0.66),
+        v(THREE.MathUtils.lerp(rBE, rTE, 0.92), hgtE * 0.92), v(rTE, hgtE), v(0, hgtE)];
+    }
+    // true(기본값): 완만한 돔 — s(연속 슬럼프)가 클수록 낮고 넓게 퍼진다
+    const hgtE = Math.max(HGT * 0.2, HGT - s * IN);
+    const rBE = BOT_R + 0.45 * s * IN, rTE = TOP_R + 0.35 * s * IN, capE = (0.35 + 0.4 * s) * IN;
+    return [v(0, 0), v(rBE, 0), v(THREE.MathUtils.lerp(rBE, rTE, 0.35), hgtE * 0.4),
+      v(THREE.MathUtils.lerp(rBE, rTE, 0.7), hgtE * 0.75),
+      v(rTE, hgtE), v(rTE * 0.45, hgtE + capE * 0.85), v(0, hgtE + capE)];
+  }
+  const END = endProfileFor(mode);
+  function lerpProfile(a, b, t) {
+    const out = [];
+    for (let i = 0; i < a.length; i++) out.push(v(THREE.MathUtils.lerp(a[i].x, b[i].x, t), THREE.MathUtils.lerp(a[i].y, b[i].y, t)));
+    return out;
+  }
+  // zero 전용 결정적 지터(매 프레임 재사용) — 거칠고 뻑뻑한 표면 표현(축대칭을 깨는 유일한 예외)
+  const ZERO_JITTER = mode === 'zero'
+    ? Array.from({ length: CAST.length * (RADIAL_SEG + 1) }, () => rand() - 0.5)
+    : null;
+  function applyRadialJitter(geometry, jitterArr, amount) {
+    const pos = geometry.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), z = pos.getZ(i), rXZ = Math.hypot(x, z);
+      if (rXZ < 1e-6) continue; // 축 위 정점(중심점)은 지터 없음 — 구멍 방지
+      const ang = Math.atan2(z, x), nr = Math.max(0.001, rXZ + jitterArr[i % jitterArr.length] * amount);
+      pos.setX(i, Math.cos(ang) * nr); pos.setZ(i, Math.sin(ang) * nr);
+    }
+    pos.needsUpdate = true;
+    geometry.computeVertexNormals();
+  }
+
+  const bodyMesh = new THREE.Mesh(new THREE.LatheGeometry(CAST, RADIAL_SEG), concreteMat);
+  bodyMesh.castShadow = true; bodyMesh.receiveShadow = true;
+  group.add(bodyMesh);
+  function rebuildBody(points, radialSegments = RADIAL_SEG) {
+    bodyMesh.geometry.dispose();
+    bodyMesh.geometry = new THREE.LatheGeometry(points, radialSegments);
+  }
+
+  // shear 전용 — 분리된 쐐기(웨지) 2메시 중 하나. ExtrudeGeometry로 단순 쐐기 프리즘을 만들고
+  // settle 진행도에 따라 옆으로 슬라이드+기울인다(2D 코드의 wedge 폴리곤을 3D로 단순화).
+  const wedgeShape = new THREE.Shape();
+  [[-2.2, 0], [-0.6, 3.9], [1.8, 2.1], [2.6, 0]].forEach(([x, y], i) => {
+    const px = x * IN, py = y * IN;
+    i === 0 ? wedgeShape.moveTo(px, py) : wedgeShape.lineTo(px, py);
+  });
+  wedgeShape.closePath();
+  const wedgeDepth = BOT_R * 1.2;
+  const wedgeGeo = new THREE.ExtrudeGeometry(wedgeShape, { depth: wedgeDepth, bevelEnabled: false });
+  wedgeGeo.translate(0, 0, -wedgeDepth / 2);
+  const wedgeMesh = new THREE.Mesh(wedgeGeo, concreteMat);
+  wedgeMesh.castShadow = true; wedgeMesh.receiveShadow = true;
+  wedgeMesh.visible = false;
+  group.add(wedgeMesh);
+  const WEDGE_BASE_X = BOT_R + 0.3 * IN;
+  function updateWedge(p) {
+    wedgeMesh.position.set(WEDGE_BASE_X + (2.5 + s * 0.5) * IN * p, 0, 0);
+    wedgeMesh.rotation.z = -0.5 * p;
+  }
+
+  // collapse 전용 — 반사 수막(고광택 얇은 원판, 저 roughness로 스펙큘러 하이라이트를 낸다)
+  const filmMat = new THREE.MeshStandardMaterial({ color: 0xcfe3f2, roughness: 0.05, metalness: 0.05, transparent: true, opacity: 0.8 });
+  const filmMesh = new THREE.Mesh(new THREE.CircleGeometry(1, 40), filmMat);
+  filmMesh.rotation.x = -Math.PI / 2;
+  filmMesh.visible = false;
+  group.add(filmMesh);
+  function updateFilm(p) {
+    filmMesh.scale.setScalar(Math.max(0.001, (BOT_R + 13 * IN * p) * 1.05));
+    filmMesh.position.y = 1.6 * IN * p + 0.006;
+  }
+
+  // ── 골재 필드 — 표면 분포(collapse/재료분리는 가장자리로 쏠리게 edgeBias<1) ──
+  const edgeBias = mode === 'collapse' ? 0.4 : (segregation ? 0.7 : 1.0);
+  const finalRadius = mode === 'collapse' ? BOT_R + 13 * IN
+    : mode === 'true' ? BOT_R + 0.45 * s * IN
+      : mode === 'shear' ? BOT_R * 0.9 : BOT_R;
+  const finalHeight = mode === 'collapse' ? 1.6 * IN
+    : mode === 'true' ? Math.max(HGT * 0.2, HGT - s * IN)
+      : mode === 'shear' ? HGT - s * 0.6 * IN : HGT - 0.3 * IN;
+  const aggregates = aggregateField(rand, 50, () => {
+    let u = rand() * 2 - 1; const sign = u < 0 ? -1 : 1; u = sign * Math.pow(Math.abs(u), edgeBias);
+    const rr = Math.abs(u) * finalRadius * 0.92, ang = rand() * Math.PI * 2;
+    return {
+      pos: { x: Math.cos(ang) * rr, y: finalHeight * (0.15 + 0.8 * rand()), z: Math.sin(ang) * rr },
+      scale: 0.018 + rand() * 0.022,
+      rot: { x: rand() * Math.PI, y: rand() * Math.PI, z: rand() * Math.PI },
+    };
+  });
+  const aggGroup = new THREE.Group();
+  aggGroup.add(aggregates);
+  aggGroup.scale.setScalar(0.001);
+  group.add(aggGroup);
+
+  // ── 측정 3D 치수선: 봉 아래(y=HGT) → 변위된 원중심(y=HGT-measuredSlump) ──
+  const dimMat = new THREE.LineBasicMaterial({ color: 0x2b3040 });
+  const dimGroup = new THREE.Group();
+  const dispY = HGT - measuredSlump * IN;
+  dimGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+    [new THREE.Vector3(0, HGT, 0), new THREE.Vector3(0, dispY, 0)]), dimMat));
+  function tickCap(y) {
+    return new THREE.Line(new THREE.BufferGeometry().setFromPoints(
+      [new THREE.Vector3(-IN * 0.5, y, 0), new THREE.Vector3(IN * 0.5, y, 0)]), dimMat);
+  }
+  dimGroup.add(tickCap(HGT), tickCap(dispY));
+  const capMat = new THREE.MeshStandardMaterial({ color: 0x2b3040, roughness: 0.4, metalness: 0.2 });
+  const capTop = new THREE.Mesh(new THREE.SphereGeometry(IN * 0.16, 8, 8), capMat);
+  capTop.position.set(0, HGT, 0);
+  const capBot = capTop.clone();
+  capBot.position.y = dispY;
+  dimGroup.add(capTop, capBot);
+  dimGroup.visible = false;
+  group.add(dimGroup);
+
+  // ── update(phase, t, p): 페이즈별 지오메트리·가시성 갱신, fill은 오버레이용 정보 반환 ──
+  function update(phase, t, p) {
+    if (phase === 'fill') {
+      coneGroup.visible = true; coneGroup.position.y = 0;
+      coneShellMat.opacity = 0.4; // 반투명 컷어웨이 — 몰드 내부 콘크리트 상승·다짐이 보이게
+      invertedGroup.visible = false; dimGroup.visible = false;
+      wedgeMesh.visible = false; filmMesh.visible = false; aggGroup.scale.setScalar(0.001);
+      bodyMesh.position.x = 0;
+
+      const layerH = HGT / T_LAYERS;
+      const layerIdx = Math.min(T_LAYERS - 1, Math.floor(t / T_LAYER_T));
+      const tl = t - layerIdx * T_LAYER_T;
+      const pourFrac = THREE.MathUtils.clamp(tl / T_POUR_T, 0, 1);
+      const rodProg = tl <= T_POUR_T ? 0 : THREE.MathUtils.clamp((tl - T_POUR_T) / T_ROD_T, 0, 1);
+      const filledH = Math.max(0.002, layerIdx * layerH + pourFrac * layerH);
+      const rFill = (y) => THREE.MathUtils.lerp(BOT_R, TOP_R, y / HGT);
+      rebuildBody([v(0, 0), v(BOT_R, 0), v(rFill(filledH * 0.5), filledH * 0.5), v(rFill(filledH), filledH), v(0, filledH)], 24);
+
+      let rodCount = 0, rodding = false;
+      if (rodProg > 0) {
+        rodding = true;
+        const rodPos = rodProg * ROD_TARGET;
+        rodCount = Math.min(ROD_TARGET, Math.floor(rodPos));
+        const poke = Math.sin(Math.min(1, rodPos - rodCount) * Math.PI);
+        const rodX = Math.sin(rodCount * 2.3) * (BOT_R * 0.5);
+        const rodTopY = HGT + IN * 1.5, rodTipY = filledH + IN * 0.6 - poke * IN;
+        rod.visible = true; rod.rotation.set(0, 0, 0);
+        rod.position.set(rodX, (rodTopY + rodTipY) / 2, 0);
+        rod.scale.y = Math.max(0.05, (rodTopY - rodTipY) / ROD_LEN);
+      } else {
+        rod.visible = false; rod.scale.y = 1;
+      }
+      return { phase, layerIdx, rodCount, rodding };
+    }
+
+    if (phase === 'lift') {
+      coneGroup.visible = true; coneGroup.position.y = p * HGT * 1.15;
+      coneShellMat.opacity = 1; // 인발 중엔 불투명한 금속 콘으로 복귀
+      rod.visible = false; invertedGroup.visible = false; dimGroup.visible = false;
+      wedgeMesh.visible = false; filmMesh.visible = false; aggGroup.scale.setScalar(0.001);
+      bodyMesh.position.x = 0;
+      rebuildBody(CAST, RADIAL_SEG);
+      return { phase };
+    }
+
+    if (phase === 'settle') {
+      coneGroup.visible = false; rod.visible = false; invertedGroup.visible = false; dimGroup.visible = false;
+      const live = lerpProfile(CAST, END, p);
+      rebuildBody(live, RADIAL_SEG);
+      if (mode === 'zero') applyRadialJitter(bodyMesh.geometry, ZERO_JITTER, 0.05 * IN * p);
+      bodyMesh.position.x = mode === 'shear' ? -0.8 * IN * p : 0;
+      wedgeMesh.visible = mode === 'shear'; if (mode === 'shear') updateWedge(p);
+      filmMesh.visible = mode === 'collapse'; if (mode === 'collapse') updateFilm(p);
+      aggGroup.scale.setScalar(THREE.MathUtils.lerp(0.001, 1, p));
+      return { phase };
+    }
+
+    // measure: 콘크리트는 settle 최종 형상(p=1)에 고정, 뒤집은 콘+봉+치수선이 함께 자리잡는다
+    coneGroup.visible = false;
+    const live = lerpProfile(CAST, END, 1);
+    rebuildBody(live, RADIAL_SEG);
+    if (mode === 'zero') applyRadialJitter(bodyMesh.geometry, ZERO_JITTER, 0.05 * IN);
+    bodyMesh.position.x = mode === 'shear' ? -0.8 * IN : 0;
+    wedgeMesh.visible = mode === 'shear'; if (mode === 'shear') updateWedge(1);
+    filmMesh.visible = mode === 'collapse'; if (mode === 'collapse') updateFilm(1);
+    aggGroup.scale.setScalar(1);
+
+    invertedGroup.visible = true;
+    invertedGroup.scale.setScalar(THREE.MathUtils.lerp(0.15, 1, p));
+    rod.visible = true;
+    rod.rotation.set(0, 0, Math.PI / 2);
+    rod.scale.y = 1;
+    rod.position.set(GAP / 2, HGT, 0);
+    dimGroup.visible = p >= 1;
+    return { phase };
+  }
+  update('fill', 0, 0);
+
+  return {
+    group,
+    timing: {
+      POUR_T: T_POUR_T, ROD_T: T_ROD_T, PAUSE_T: T_PAUSE_T, LAYER_T: T_LAYER_T,
+      LAYERS: T_LAYERS, ROD_TARGET, FILL_DUR: T_FILL_DUR, LIFT_DUR, SETTLE_DUR, MEASURE_DUR,
+    },
+    update,
+  };
+}
+
 // ── GPU 리소스 재귀 해제 ────────────────────────────────────────────
 const TEXTURE_KEYS = [
   'map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap',
@@ -556,4 +901,5 @@ window.Scene3D = {
   darkMetalMaterial,
   disposeDeep,
   buildMixerScene,
+  buildSlumpScene,
 };
