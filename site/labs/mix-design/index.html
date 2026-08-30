@@ -461,8 +461,8 @@ function canvasFallback(root, title, sub, resultNodes, nextLabel, onNext) {
 // ── MIX: 드럼 믹서(Scene3D 3D 소비) ──────────────────────────────────
 // 3D 지오메트리·애니메이션은 scene3d.js의 Scene3D.buildMixerScene()이 전담한다.
 // 이 파일은 스테이지 생성 + HTML 오버레이(캡션) + 버튼 계약 + 폴백만 담당한다.
-// 캡션 경계(0.9/1.6/2.6초)는 buildMixerScene 내부 STAGE_BOUNDS와 반드시 동기화한다.
-const MIX_CAPTION_BOUNDS = [0.9, 1.6, 2.6];
+// 캡션 경계는 buildMixerScene()이 반환하는 mixer.stageBreaks를 그대로 소비한다
+// (하드코딩 배열과 STAGE_BOUNDS를 따로 유지하며 생기던 동기화 위험 제거).
 const MIX_CAPTIONS = ['Adding cement…', 'Adding water…', 'Adding aggregates…', 'Mixing…'];
 Scenes.mix = () => {
   let stage = null, start = 0;
@@ -494,6 +494,7 @@ Scenes.mix = () => {
       const rng = E.mulberry32(7); // 시드 고정 — 골재 배치(계약: MixEngine.mulberry32만 사용)
       const mixer = S3.buildMixerScene({ wc, rng });
       stage.scene.add(mixer.group);
+      const captionBounds = mixer.stageBreaks; // buildMixerScene 내부 STAGE_BOUNDS 실값(하드코딩 대신 직접 소비)
 
       const caption = h('div', { style: 'position:absolute;left:0;right:0;top:10px;text-align:center;' +
         'font:600 14px Inter,sans-serif;color:#5b6472;pointer-events:none' }, MIX_CAPTIONS[0]);
@@ -523,7 +524,7 @@ Scenes.mix = () => {
         mixer.update(t);
         applyCameraOrbit(t);
         stage.renderer.render(stage.scene, stage.camera);
-        const idx = t < MIX_CAPTION_BOUNDS[0] ? 0 : t < MIX_CAPTION_BOUNDS[1] ? 1 : t < MIX_CAPTION_BOUNDS[2] ? 2 : 3;
+        const idx = t < captionBounds[0] ? 0 : t < captionBounds[1] ? 1 : t < captionBounds[2] ? 2 : 3;
         caption.textContent = MIX_CAPTIONS[idx];
         if (t >= 4 && nextBtn.disabled) nextBtn.disabled = false;
       }
@@ -585,7 +586,7 @@ Scenes.slump = () => {
       stage.scene.add(slumpScene.group);
       const T = slumpScene.timing;
       const FILL_END = T.FILL_DUR, LIFT_END = FILL_END + T.LIFT_DUR,
-        SETTLE_END = LIFT_END + T.SETTLE_DUR, MEASURE_END = SETTLE_END + T.MEASURE_DUR;
+        SETTLE_END = LIFT_END + T.SETTLE_DUR;
 
       const overlay = h('div', { style: 'position:absolute;left:0;right:0;top:10px;text-align:center;' +
         'font:600 14px Inter,sans-serif;color:#5b6472;pointer-events:none' });

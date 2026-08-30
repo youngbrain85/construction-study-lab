@@ -218,7 +218,7 @@ function darkMetalMaterial() {
 //              드럼과 함께 스핀하지 않는다(액체가 드럼과 한 몸으로 돌면
 //              믹싱처럼 보이지 않기 때문).
 // 핸드휠은 프레임에 브래킷으로 연결하지 않는다(v2 지적 사항) — 크래들 링에서
-// 곧장 뻗어나온 트러니언 축(로컬 X) 끝에 달아, 드럼 틸트 축과 동축이 되게 한다.
+// 곧장 뻗어나온 트러니언 축(로컬 Z) 끝에 달아, 드럼 틸트 축과 동축이 되게 한다.
 /**
  * @param {{wc:number, rng:() => number}} params - wc: 물-시멘트비, rng: MixEngine.mulberry32 시드 생성기
  * @returns {{group:THREE.Group, update:(t:number)=>void, stageBreaks:number[]}}
@@ -348,6 +348,32 @@ function buildMixerScene({ wc = 0.5, rng } = {}) {
   }
   drumShell.add(rivetRing(Y_BELLY, R_BELLY * 0.97, 14));
   drumShell.add(rivetRing(Y_NECK, R_NECK * 0.97, 12));
+
+  // ── 믹싱 블레이드(내부 패들) 2개, 180° 간격 — drumShell 자식이라 스핀과 함께 돈다 ──
+  // 리벳 링만으로는 회전 가독성이 낮았다(0.2초 프레임 diff 1.4%뿐 — 검증 중 확인).
+  // 레퍼런스 실사진(hotfix/mixer-ref.jpg)의 내부 나선 패들을 단순화해, 허브 쪽
+  // 벽면에서 개구부 쪽 벽면까지 살짝 비틀린(BLADE_TWIST) 얇은 판으로 표현한다.
+  function bladeRadiusAt(y) { // drumMesh profile(허브→벨리→목→림)과 동일한 반지름 보간
+    if (y <= Y_BELLY) return THREE.MathUtils.lerp(R_HUB, R_BELLY, (y - Y_HUB) / (Y_BELLY - Y_HUB));
+    if (y <= Y_NECK) return THREE.MathUtils.lerp(R_BELLY, R_NECK, (y - Y_BELLY) / (Y_NECK - Y_BELLY));
+    return THREE.MathUtils.lerp(R_NECK, R_RIM, (y - Y_NECK) / (Y_RIM - Y_NECK));
+  }
+  const bladeMat = new THREE.MeshStandardMaterial({ color: 0x1c1e22, roughness: 0.65, metalness: 0.25 });
+  const BLADE_TWIST = THREE.MathUtils.degToRad(55);
+  const BLADE_Y_LO = Y_HUB + 0.06, BLADE_Y_HI = Y_RIM - 0.03; // 허브 쪽 벽 → 개구부 바로 안쪽까지(개구부에서 보이는 위치)
+  [0, Math.PI].forEach((baseAngle) => {
+    const rLo = bladeRadiusAt(BLADE_Y_LO) - 0.015, rHi = bladeRadiusAt(BLADE_Y_HI) - 0.015; // 벽에 거의 밀착(살짝만 파묻어 접합부 표현)
+    const a = new THREE.Vector3(Math.cos(baseAngle) * rLo, BLADE_Y_LO, Math.sin(baseAngle) * rLo);
+    const angHi = baseAngle + BLADE_TWIST;
+    const b = new THREE.Vector3(Math.cos(angHi) * rHi, BLADE_Y_HI, Math.sin(angHi) * rHi);
+    const dir = new THREE.Vector3().subVectors(b, a);
+    const len = dir.length() || 0.001;
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.03, len, 0.34), bladeMat); // 폭(0.2→0.34)을 넓혀 개구부에서 더 크게 보이게 한다
+    blade.position.copy(a).lerp(b, 0.5);
+    blade.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+    blade.castShadow = true; blade.receiveShadow = true;
+    drumShell.add(blade);
+  });
 
   // ── 모터 하우징(드럼 후단) — 드럼과 함께 틸트되지만 스핀은 하지 않는다 ──
   const motorHousing = new THREE.Group();
@@ -481,7 +507,7 @@ function buildMixerScene({ wc = 0.5, rng } = {}) {
     paste.scale.y = 0.16 + fill * 0.34;
     paste.position.y = -0.12 + fill * 0.06;
     const tiltAmp = THREE.MathUtils.degToRad(9) * Math.min(1, fill + 0.15);
-    mixGroup.rotation.x = -TILT * 0 + Math.sin(spin) * tiltAmp; // 스핀에 동조하지 않는 출렁임
+    mixGroup.rotation.x = Math.sin(spin) * tiltAmp; // 스핀에 동조하지 않는 출렁임
     mixGroup.rotation.z = Math.cos(spin * 0.7) * tiltAmp * 0.6;
 
     if (t < STAGE_BOUNDS[2]) {
@@ -549,6 +575,11 @@ function buildSlumpScene({ mode = 'true', slump = 3, measuredSlump = 3, segregat
   const GAP = 20 * IN; // 시료 중심 → 뒤집은 콘(측정용) 중심 간격
   const s = THREE.MathUtils.clamp(slump, 0, 11); // 형상 산정 전용(연속값) — 라벨·치수선은 measuredSlump를 따로 쓴다
 
+  // 베이스 플레이트(두께 IN*0.5)가 y∈[-IN*0.5, 0]에 놓여 스테이지 ground(y=0)와
+  // 겹쳐 완전히 가려지던 문제 — 장면 전체를 판 두께의 절반만큼 올려 판 밑면이
+  // ground(y=0)에 닿고 윗면(콘·콘크리트·봉의 y=0 기준면)이 그 위로 드러나게 한다.
+  group.position.y = IN * 0.5;
+
   // ── 타이밍(2D 버전과 동일 값 유지 — 길이는 재량이나 검증 기준점을 안정적으로 재현) ──
   const T_LAYERS = 3, T_POUR_T = 0.3, T_ROD_T = 1.3, T_PAUSE_T = 0.2;
   const T_LAYER_T = T_POUR_T + T_ROD_T + T_PAUSE_T; // 1.8
@@ -557,6 +588,11 @@ function buildSlumpScene({ mode = 'true', slump = 3, measuredSlump = 3, segregat
 
   // ── 공용 재질 ──────────────────────────────────────────────────────
   const steelMat = steelMaterial();
+  // steelMaterial()의 기본 metalness(0.85)는 envMap이 없는 이 장면에서 대부분
+  // 검게 렌더링된다(UTM 장면에서 동일 문제를 겪고 로컬 완화로 해결한 선례 —
+  // buildUtmScene 참조). 공용 팩토리 steelMaterial() 자체는 그대로 두고, 이
+  // 로컬 인스턴스만 완화한다.
+  steelMat.metalness = 0.35; steelMat.roughness = 0.55;
   const wcApprox = { zero: 0.34, true: 0.5, shear: 0.42, collapse: 0.7 }[mode] ?? 0.5;
   const concreteMat = concreteMaterial(wcApprox + (segregation ? 0.04 : 0));
 
@@ -567,6 +603,7 @@ function buildSlumpScene({ mode = 'true', slump = 3, measuredSlump = 3, segregat
   function buildConeGroup() {
     const g = new THREE.Group();
     const shellMat = steelMaterial();
+    shellMat.metalness = 0.35; shellMat.roughness = 0.55; // steelMat과 동일한 이유로 완화(위 주석 참조)
     shellMat.transparent = true; // opacity만 매 프레임 바꿀 수 있도록 항상 blend 가능하게 둔다
     const profile = [
       v(0, 0), v(BOT_R, 0), v(BOT_R * 0.995, HGT * 0.33),
@@ -723,13 +760,17 @@ function buildSlumpScene({ mode = 'true', slump = 3, measuredSlump = 3, segregat
   }
 
   // collapse 전용 — 반사 수막(고광택 얇은 원판, 저 roughness로 스펙큘러 하이라이트를 낸다)
-  const filmMat = new THREE.MeshStandardMaterial({ color: 0xcfe3f2, roughness: 0.05, metalness: 0.05, transparent: true, opacity: 0.8 });
+  // 팬케이크(반지름 BOT_R+13*IN*p)보다 5% 더 크고 opacity 0.8이라 콘크리트 전체를
+  // 덮어버리던 문제 — 반지름을 팬케이크의 ~0.75배로 줄이고 opacity를 낮춰
+  // "콘크리트 표면의 광택(수막 반사)"으로 읽히게 한다. 저 roughness는 유지해
+  // 스펙큘러 하이라이트 자체는 그대로 살린다.
+  const filmMat = new THREE.MeshStandardMaterial({ color: 0xcfe3f2, roughness: 0.05, metalness: 0.05, transparent: true, opacity: 0.45 });
   const filmMesh = new THREE.Mesh(new THREE.CircleGeometry(1, 40), filmMat);
   filmMesh.rotation.x = -Math.PI / 2;
   filmMesh.visible = false;
   group.add(filmMesh);
   function updateFilm(p) {
-    filmMesh.scale.setScalar(Math.max(0.001, (BOT_R + 13 * IN * p) * 1.05));
+    filmMesh.scale.setScalar(Math.max(0.001, (BOT_R + 13 * IN * p) * 0.75));
     filmMesh.position.y = 1.6 * IN * p + 0.006;
   }
 
@@ -1011,7 +1052,10 @@ function buildUtmScene({ failMode = 'cone', rng } = {}) {
     };
   } else if (failMode === 'crumble') {
     // 부스러짐 — 하부 플래튼 위로 낙하해 쌓이는 파편(InstancedMesh, 결정적 시드).
-    const FRAG_N = 24;
+    // 파편이 3~5px(specR*0.09~0.18)×24개로 너무 작아 cone 대비 파괴 유형 구분이
+    // 안 되던 문제 — 크기를 2.5배로 키우고(아래 size 산식) 개수도 소폭 늘린다
+    // (40개, aggregateField 인스턴스 예산 ≤400 이내).
+    const FRAG_N = 40;
     const fragGeo = new THREE.IcosahedronGeometry(1, 0);
     const fp = fragGeo.attributes.position;
     const fv = new THREE.Vector3();
@@ -1027,8 +1071,11 @@ function buildUtmScene({ failMode = 'cone', rng } = {}) {
     group.add(fragMesh);
     const fragSeed = Array.from({ length: FRAG_N }, () => ({
       angle: rand() * Math.PI * 2,
-      radius: specR * (0.25 + rand() * 0.95),
-      size: specR * (0.09 + rand() * 0.09),
+      // 기존 반경(0.25~1.2×specR)은 대부분 불투명한 bodyMesh(공시체 실린더) 반경(specR)
+      // 안쪽이라 파편이 몸체 뒤에 가려 크기를 키워도 잘 안 보였다 — 플래튼 위, 공시체
+      // 바깥으로 퍼져 실제로 보이는 반경(1.0~1.8×specR)으로 조정.
+      radius: specR * (1.0 + rand() * 0.8),
+      size: specR * (0.27 + rand() * 0.27), // 기존(0.09~0.18)의 3배 — cone/columnar와 뚜렷이 구분되는 파편 크기
       reveal: rand() * 0.7,                       // 등장 임계값(crackProgress) — 단계적 낙하 연출
       spawnDrop: specR * (1.5 + rand() * 1.8),      // 낙하 시작 높이(플래튼 기준 오프셋)
       axis: new THREE.Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).normalize(),
