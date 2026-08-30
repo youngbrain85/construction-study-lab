@@ -691,7 +691,7 @@ Scenes.compression = () => {
       });
       if (!stage) { fallback(); return; }
       stage.renderer.domElement.setAttribute('role', 'img');
-      stage.renderer.domElement.setAttribute('aria-label', 'Concrete compression test animation');
+      stage.renderer.domElement.setAttribute('aria-label', 'Concrete cylinder compression test animation');
 
       const rng = E.mulberry32(41); // 시드 고정 — 파편/골재 배치(계약: MixEngine.mulberry32만 사용)
       const utm = S3.buildUtmScene({ failMode, rng });
