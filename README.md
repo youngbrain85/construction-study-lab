@@ -2,6 +2,8 @@
 
 Interactive labs for construction materials (CNST-111). First module: **Mix Design Lab** — proportion a concrete mix with the ACI PRC-211.1-22 tables, then run virtual slump (ASTM C143) and compression (ASTM C39) tests.
 
+The three test scenes (mixing, slump, compression) render in real-time 3D via a self-hosted three.js (site/shared/vendor/).
+
 ## Play
 
 https://mixlab-concrete-game.netlify.app
@@ -17,7 +19,7 @@ To add a new lab: create a folder in `site/labs/`, add lab files, then register 
 ## Dev
 
 ```sh
-python -m http.server 8123 --directory site
+python tools/devserver.py 8123 site
 ```
 
 Then open http://localhost:8123
