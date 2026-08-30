@@ -13,6 +13,21 @@
    공통 디자인 시스템은 shared/theme.css 로 이동했다. 이 모듈에 남은
    CSS는 현재 없으며(모든 클래스가 다른 랩과 공유되는 범용 컴포넌트),
    추후 이 모듈만의 스타일이 필요해지면 여기에 추가한다. */
+
+/* COMPRESSION 장면 전용: 디지털 로드 인디케이터(7-seg풍 어두운 패널, 스펙 §3.3) */
+.utm-load-panel { position:absolute; right:16px; top:16px; width:190px;
+  background:#12151b; border:2px solid #3d414a; border-radius:8px; padding:10px 12px;
+  font-family:'Courier New', monospace; pointer-events:none; }
+.utm-load-panel .title { color:#7d8797; font:700 11px/1.4 Inter, sans-serif; letter-spacing:.04em; }
+.utm-load-panel .readout { font-size:26px; font-weight:700; letter-spacing:.06em; margin-top:4px;
+  text-shadow:0 0 6px currentColor; }
+.utm-load-panel .readout.psi { color:#5ee88a; }
+.utm-load-panel .readout.lbf { color:#ffb454; font-size:19px; margin-top:8px; }
+.utm-load-panel .label { color:#6b7484; font:500 12px Inter, sans-serif; margin-top:2px; }
+.utm-graph-wrap { position:absolute; right:16px; top:172px; }
+.utm-done-list { position:absolute; right:16px; bottom:14px; text-align:right;
+  font:600 14px Inter, sans-serif; color:#12855f; pointer-events:none; }
+.utm-done-list .avg { color:#141c2b; font-weight:700; margin-top:2px; }
 </style>
 </head>
 <body>
@@ -636,297 +651,180 @@ Scenes.slump = () => {
   };
 };
 
-// ── COMPRESSION: 압축강도 시험(ASTM C39) ──────────────────────────
-// 2포스트 UTM 프레임(스펙 §5.3): 상부 크로스헤드+로드셀 컬럼(고정) + 기둥 2 +
-// 유압 하부 램(상승 표현 — 하부 플래튼이 램에 밀려 올라가며 공시체를 압축) +
-// 별도 디지털 로드 인디케이터 패널(어두운 박스 + 7-seg풍 psi·lbf 판독) +
-// 공시체 캡핑(상하 밝은 띠) + 파괴 유형 정밀화(원추/기둥형 쪼개짐/부스러짐).
-// 슬럼프·믹서 장면과 톤 통일: 상부 좌측 광원, steelGrad 금속 그라데이션, 접지 그림자.
+// ── COMPRESSION: 압축강도 시험(ASTM C39, Scene3D 3D 소비) ──────────
+// 3D 지오메트리·애니메이션(2포스트 UTM 프레임·유압 램·공시체·파괴 유형·양생
+// 몰드)은 scene3d.js의 Scene3D.buildUtmScene()이 전담한다. 이 파일은 스테이지
+// 생성 + 타임라인(cast→cure→3본 순차 재하) 판정 + stressAt·피크 고정·done
+// 캐치업 로직(불변 계약 — 구 2D 버전에서 값 그대로 이식) + HTML 오버레이
+// (7-seg풍 판독 패널·그래프 캔버스·Day 카운터·완료 목록) + 버튼 계약 + 폴백만
+// 담당한다(믹서·슬럼프 장면과 동일한 역할 분리 패턴).
 Scenes.compression = () => {
-  let raf = 0, start = 0, finished = false; // finished: 3본 완료+Average 표시 후 rAF 재큐잉 중단
-  const W = 900, H = 470;
+  let stage = null, start = 0, finished = false; // finished: 3본 완료+Average 표시 후 루프 정지
   const r = game.result; // 불변 계약: game.result만 소비(f28, cylinders[3], avgStrength, behavior.segregation) — 엔진 재계산 금지
-  const AREA = 28.27; // 6" 지름 공시체 단면적 (in²)
+  const AREA = 28.27; // 6" 지름 공시체 단면적 (in²) — 불변 계약
   function stressAt(fp, eps) { // Hognestad 응력-변형률 모델(불변 계약) — 상승 포물선(e0=0.002) / 하강 선형(기울기 0.35)
     const e0 = 0.002, x = eps / e0;
     if (x <= 1) return fp * (2 * x - x * x);
     return Math.max(0, fp * (1 - 0.35 * (eps - e0) / 0.0018));
   }
+  const failMode = r.behavior.segregation ? 'crumble' : (r.f28 >= 5000 ? 'columnar' : 'cone'); // 불변 계약 로직 유지
+  const CYL_T = 2.6;      // 공시체당 재하 시간(초) — 불변 계약
+  const testStart = 3.5;  // cast(1.5s)+cure(2s) — 불변 계약
+  const done = [];        // 파괴 완료된 공시체 강도 — 불변 계약
+
   return {
     mount(root) {
-      const { canvas, ctx } = canvasStage(W, H, 'Concrete cylinder compression test animation');
-      if (!ctx) {
-        canvasFallback(root, 'Compression test (ASTM C39)',
-          'Three 6×12 cylinders, 28 days moist-cured, loaded to failure.',
-          h('div', {},
-            r.cylinders.map((s, i) => h('p', {}, `#${i + 1}: ${Math.round(s).toLocaleString()} psi`)),
-            h('p', { style: 'font-weight:700' }, `Average: ${Math.round(r.avgStrength).toLocaleString()} psi`)),
-          'See Final Report →', () => go('results'));
-        return;
-      }
+      const fallback = () => canvasFallback(root, 'Compression test (ASTM C39)',
+        'Three 6×12 cylinders, 28 days moist-cured, loaded to failure.',
+        h('div', {},
+          r.cylinders.map((s, i) => h('p', {}, `#${i + 1}: ${Math.round(s).toLocaleString()} psi`)),
+          h('p', { style: 'font-weight:700' }, `Average: ${Math.round(r.avgStrength).toLocaleString()} psi`)),
+        'See Final Report →', () => go('results'));
+
+      const S3 = window.Scene3D;
+      if (!S3 || !S3.ready) { fallback(); return; }
+      const container = h('div', { class: 'canvas-stage',
+        style: 'position:relative;width:100%;max-width:900px;aspect-ratio:900/470;overflow:hidden' });
+      stage = S3.createStage(container, {
+        w: 900, h: 470, fov: 38,
+        cameraPos: { x: 2.4, y: 1.7, z: 3.0 }, target: { x: 0, y: 0.65, z: 0.2 },
+      });
+      if (!stage) { fallback(); return; }
+      stage.renderer.domElement.setAttribute('role', 'img');
+      stage.renderer.domElement.setAttribute('aria-label', 'Concrete compression test animation');
+
+      const rng = E.mulberry32(41); // 시드 고정 — 파편/골재 배치(계약: MixEngine.mulberry32만 사용)
+      const utm = S3.buildUtmScene({ failMode, rng });
+      stage.scene.add(utm.group);
+
+      // ── 오버레이: 상단 캡션 + Day 카운터(양생 중) + 로드 패널 + 그래프 + 완료 목록 ──
+      const caption = h('div', { style: 'position:absolute;left:0;right:0;top:10px;text-align:center;' +
+        'font:600 14px Inter,sans-serif;color:#5b6472;pointer-events:none' });
+      const dayNum = h('div', { style: 'font:800 44px Inter,sans-serif;color:#141c2b' });
+      const dayBox = h('div', { style: 'position:absolute;left:0;right:0;top:42%;transform:translateY(-50%);' +
+        'text-align:center;pointer-events:none;display:none' },
+        dayNum, h('div', { style: 'font:500 13px Inter,sans-serif;color:#5b6472;margin-top:4px' }, '73 °F · 100% RH'));
+
+      const psiReadout = h('div', { class: 'readout psi' }, '0');
+      const psiLabel = h('div', { class: 'label' }, '0 psi');
+      const lbfReadout = h('div', { class: 'readout lbf' }, '0');
+      const lbfLabel = h('div', { class: 'label' }, '0 lbf');
+      const loadPanel = h('div', { class: 'utm-load-panel', style: 'display:none' },
+        h('div', { class: 'title' }, 'LOAD INDICATOR'), psiReadout, psiLabel, lbfReadout, lbfLabel);
+
+      // 응력-변형률 그래프: 오버레이 내 2D <canvas>(구 drawGraph 로직 이식, 클리핑 유지)
+      const { canvas: graphCanvas, ctx: graphCtx } = canvasStage(190, 130, 'Stress-strain graph');
+      graphCanvas.style.width = '190px'; graphCanvas.style.height = '130px'; // .canvas-stage의 width:100% 상쇄
+      const graphWrap = h('div', { class: 'utm-graph-wrap', style: 'display:none' }, graphCanvas);
+
+      const doneList = h('div', { class: 'utm-done-list' });
+
+      container.append(caption, dayBox, loadPanel, graphWrap, doneList);
+
       const nextBtn = h('button', { class: 'btn btn-primary', onclick: () => go('results') },
         'See Final Report →');
       nextBtn.style.display = 'none';
       sceneShell(root, 'Compression test (ASTM C39)',
-        'Three 6×12 cylinders, 28 days moist-cured, loaded to failure.', canvas, [nextBtn]);
-
-      const CYL_T = 2.6; // 공시체당 재하 시간(초) — 불변 계약
-      const testStart = 3.5;
-      const done = [];   // 파괴 완료된 공시체 강도 — 불변 계약
-
-      // ── 재질 그라데이션·그림자(슬럼프·믹서 장면과 톤 통일: 상부 좌측 광원) ──
-      const steelGrad = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1);
-        g.addColorStop(0, '#eef1f6'); g.addColorStop(0.45, '#c3cad6'); g.addColorStop(1, '#8b93a3'); return g; };
-      function groundShadow(cx, rx, gy) {
-        ctx.save(); ctx.fillStyle = 'rgba(30,34,44,.18)';
-        ctx.beginPath(); ctx.ellipse(cx + 6, gy + 5, rx, Math.max(4, rx * 0.16), 0, 0, Math.PI * 2);
-        ctx.fill(); ctx.restore();
-      }
-
-      // ── 2포스트 UTM 프레임 배치 상수 ──────────────────────────────
-      const fcx = 210;                                    // 프레임 중심 x
-      const headTop = 50, headBot = 78;                   // 상부 크로스헤드(고정)
-      const cellTop = 78, cellBot = 128;                  // 로드셀 컬럼(크로스헤드~상부 플래튼, 고정)
-      const specTop = 140;                                // 공시체 상단(고정 — 상부 플래튼에 맞닿음)
-      const cw = 48, ch = 120;                             // 공시체 48×120 px(6"×12" 비율)
-      const postGap = 190, postW = 14;                     // 기둥 2개(요소: 2포스트) 중심 간격·두께
-      const postLx = fcx - postGap / 2, postRx = fcx + postGap / 2;
-      const beamX0 = postLx - postW / 2 - 20, beamX1 = postRx + postW / 2 + 20; // 크로스헤드/베드 폭
-      const bedTop = 400, bedBot = 428;                    // 하부 베드(고정, 바닥에 놓임)
-      const ramW = 50, ramHouseTop = 360, ramHouseBot = bedTop; // 유압 램 하우징(고정, 베드 위)
-
-      function drawFrame() { // 프레임(요소: 2포스트) — 크로스헤드+기둥2+베드+로드셀 컬럼(전부 고정)
-        groundShadow(fcx, 140, bedBot);
-        ctx.fillStyle = steelGrad(bedTop, bedBot); // 하부 베드
-        ctx.fillRect(beamX0, bedTop, beamX1 - beamX0, bedBot - bedTop);
-        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 1.5; ctx.strokeRect(beamX0, bedTop, beamX1 - beamX0, bedBot - bedTop);
-        ctx.fillStyle = steelGrad(headBot, bedTop); // 기둥 2개
-        ctx.fillRect(postLx - postW / 2, headBot, postW, bedTop - headBot);
-        ctx.fillRect(postRx - postW / 2, headBot, postW, bedTop - headBot);
-        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 1.2;
-        ctx.strokeRect(postLx - postW / 2, headBot, postW, bedTop - headBot);
-        ctx.strokeRect(postRx - postW / 2, headBot, postW, bedTop - headBot);
-        ctx.fillStyle = steelGrad(headTop, headBot); // 상부 크로스헤드
-        ctx.fillRect(beamX0, headTop, beamX1 - beamX0, headBot - headTop);
-        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 1.5; ctx.strokeRect(beamX0, headTop, beamX1 - beamX0, headBot - headTop);
-        ctx.fillStyle = '#6b7484'; // 로드셀 컬럼
-        ctx.fillRect(fcx - 15, cellTop, 30, cellBot - cellTop);
-        ctx.strokeStyle = '#3d414a'; ctx.lineWidth = 1; ctx.strokeRect(fcx - 15, cellTop, 30, cellBot - cellTop);
-        ctx.save(); ctx.fillStyle = 'rgba(255,255,255,.35)'; // 좌상단 하이라이트(광원 통일)
-        ctx.fillRect(postLx - postW / 2, headBot, 4, bedTop - headBot);
-        ctx.fillRect(beamX0, headTop, 4, headBot - headTop);
-        ctx.restore();
-      }
-      function drawRam(squash) { // 유압 하부 램(요소: 상승 표현) — 하우징 고정, 로드가 squash만큼 늘어나 하부 플래튼을 밀어올린다
-        const platenY = specTop + ch - squash;
-        ctx.fillStyle = steelGrad(ramHouseTop, ramHouseBot);
-        ctx.fillRect(fcx - ramW / 2, ramHouseTop, ramW, ramHouseBot - ramHouseTop);
-        ctx.strokeStyle = '#3d414a'; ctx.lineWidth = 1.5; ctx.strokeRect(fcx - ramW / 2, ramHouseTop, ramW, ramHouseBot - ramHouseTop);
-        ctx.fillStyle = '#e8720c'; ctx.fillRect(fcx - ramW / 2, ramHouseTop, ramW, 6); // 유압 라인 트림(믹서 장면과 오렌지 포인트 통일)
-        const rodTop = platenY + 12, rodBot = ramHouseTop, rodH = Math.max(0, rodBot - rodTop);
-        ctx.fillStyle = steelGrad(rodTop, rodBot); ctx.fillRect(fcx - 10, rodTop, 20, rodH);
-        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 1; ctx.strokeRect(fcx - 10, rodTop, 20, rodH);
-      }
-      // 파괴 유형 정밀화(요소): Type 1 원추(상하 원추형 파괴면) / 기둥형 쪼개짐(수직 균열, 고강도) /
-      // 부스러짐(불규칙 파편 + 하단 잔해, 재료분리). failMode 판정 로직은 불변 계약 그대로 유지.
-      function drawFracture(mode, cx, top, bodyH, cwid, eps) {
-        const cp = Math.min(1, (eps - 0.002) / 0.0016);
-        ctx.save(); ctx.beginPath(); ctx.rect(cx - cwid / 2, top, cwid, bodyH); ctx.clip();
-        if (mode === 'columnar') { // 기둥형 쪼개짐 — 수직 균열이 캡핑까지 관통
-          ctx.strokeStyle = '#3d414a'; ctx.lineWidth = 2;
-          for (const dx of [-14, 0, 15]) {
-            ctx.beginPath(); ctx.moveTo(cx + dx * 0.3, top); ctx.lineTo(cx + dx, top + bodyH * cp); ctx.stroke();
-          }
-          ctx.strokeStyle = 'rgba(61,65,74,.5)'; ctx.lineWidth = 1; // 쪼개진 기둥 사이 미세 벌어짐
-          ctx.beginPath(); ctx.moveTo(cx - cwid * 0.15, top); ctx.lineTo(cx - cwid * 0.22, top + bodyH * cp); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(cx + cwid * 0.15, top); ctx.lineTo(cx + cwid * 0.22, top + bodyH * cp); ctx.stroke();
-        } else if (mode === 'crumble') { // 부스러짐 — 불규칙 파편선(시드 고정)
-          const rng = E.mulberry32(31);
-          ctx.strokeStyle = '#3d414a'; ctx.lineWidth = 1.6;
-          for (let i = 0; i < 8; i++) {
-            const x0 = cx - cwid / 2 + rng() * cwid, y0 = top + rng() * bodyH;
-            ctx.beginPath(); ctx.moveTo(x0, y0);
-            ctx.lineTo(x0 + (rng() - 0.5) * 30 * cp, y0 + rng() * 26 * cp); ctx.stroke();
-          }
-        } else { // cone: Type 1 원추 — 상하 원추형 파괴면(음영 채움 + 윤곽선으로 파편 분리 표현)
-          ctx.fillStyle = 'rgba(61,65,74,.28)';
-          ctx.beginPath(); ctx.moveTo(cx - cwid / 2, top + 8); ctx.lineTo(cx, top + bodyH / 2 + 20);
-          ctx.lineTo(cx + cwid / 2, top + 8); ctx.closePath(); ctx.fill();
-          ctx.beginPath(); ctx.moveTo(cx - cwid / 2, top + bodyH - 8); ctx.lineTo(cx, top + bodyH / 2 - 10);
-          ctx.lineTo(cx + cwid / 2, top + bodyH - 8); ctx.closePath(); ctx.fill();
-          ctx.strokeStyle = '#3d414a'; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.moveTo(cx - cwid / 2, top + 8); ctx.lineTo(cx, top + bodyH / 2 + 20);
-          ctx.lineTo(cx + cwid / 2, top + 8); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(cx - cwid / 2, top + bodyH - 8); ctx.lineTo(cx, top + bodyH / 2 - 10);
-          ctx.lineTo(cx + cwid / 2, top + bodyH - 8); ctx.stroke();
-        }
-        ctx.restore();
-      }
-      // 부스러짐 잔해(요소) — 하부 플래튼 "위"에 떨어져 쌓인 것처럼 보이도록, 플래튼을 그린
-      // 뒤에 별도로 호출한다(플래튼보다 먼저 그리면 불투명한 플래튼 사각형에 가려져 버린다).
-      function drawDebris(cx, platenBot, cwid, cp) {
-        const rng2 = E.mulberry32(37), n = Math.round(6 * cp);
-        for (let i = 0; i < n; i++) {
-          const dx = (rng2() - 0.5) * (cwid + 30), dy = rng2() * 10;
-          ctx.fillStyle = i % 2 ? 'rgba(120,124,131,.85)' : 'rgba(141,145,153,.85)';
-          ctx.beginPath(); ctx.arc(cx + dx, platenBot + 3 + dy, 2 + rng2() * 2.5, 0, Math.PI * 2); ctx.fill();
-        }
-      }
-      function drawSpecimen(squash, eps) { // 공시체 + 캡핑(요소: 상하 밝은 띠) + 플래튼 2(상부 고정/하부 램 상승)
-        const platenY = specTop + ch - squash;
-        ctx.fillStyle = steelGrad(specTop - 12, specTop); // 상부 플래튼(고정)
-        ctx.fillRect(fcx - 45, specTop - 12, 90, 12);
-        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 1; ctx.strokeRect(fcx - 45, specTop - 12, 90, 12);
-        const bodyH = ch - squash, capT = Math.min(7, bodyH * 0.12);
-        ctx.fillStyle = '#8d9199'; ctx.strokeStyle = '#6a6e76'; ctx.lineWidth = 1.5; // 공시체 본체
-        ctx.fillRect(fcx - cw / 2, specTop, cw, bodyH); ctx.strokeRect(fcx - cw / 2, specTop, cw, bodyH);
-        ctx.fillStyle = '#f1efe8'; // 캡핑재(유황/네오프렌) — 상하 밝은 띠
-        ctx.fillRect(fcx - cw / 2, specTop, cw, capT);
-        ctx.fillRect(fcx - cw / 2, specTop + bodyH - capT, cw, capT);
-        ctx.strokeStyle = '#c8c4b6'; ctx.lineWidth = 1;
-        ctx.strokeRect(fcx - cw / 2, specTop, cw, capT);
-        ctx.strokeRect(fcx - cw / 2, specTop + bodyH - capT, cw, capT);
-        ctx.save(); ctx.fillStyle = 'rgba(255,255,255,.18)'; // 좌측 하이라이트(광원 통일)
-        ctx.fillRect(fcx - cw / 2, specTop, 6, bodyH); ctx.restore();
-        if (eps > 0.002) drawFracture(failMode, fcx, specTop, bodyH, cw, eps); // 피크 이후 균열(파괴 유형 정밀화)
-        ctx.fillStyle = steelGrad(platenY, platenY + 12); // 하부 플래튼(램에 의해 상승)
-        ctx.fillRect(fcx - 45, platenY, 90, 12);
-        ctx.strokeStyle = '#5b6472'; ctx.lineWidth = 1; ctx.strokeRect(fcx - 45, platenY, 90, 12);
-        if (eps > 0.002 && failMode === 'crumble') { // 부스러짐 잔해는 플래튼 위에 그려야 가려지지 않는다
-          drawDebris(fcx, platenY + 12, cw, Math.min(1, (eps - 0.002) / 0.0016));
-        }
-      }
-
-      // ── 별도 디지털 로드 인디케이터 패널(요소): 어두운 박스 + 7-seg풍 psi·lbf 판독 ──
-      const SEVEN_SEG = { '0': 'abcdef', '1': 'bc', '2': 'abged', '3': 'abgcd', '4': 'fgbc',
-        '5': 'afgcd', '6': 'afgecd', '7': 'abc', '8': 'abcdefg', '9': 'abcdfg' };
-      function segShape(cx, cy, len, thick, horizontal) { // 세그먼트 1개(모서리를 사선으로 깎은 막대) 채움
-        const half = len / 2, halfT = thick / 2, bevel = thick * 0.55;
-        ctx.beginPath();
-        if (horizontal) {
-          ctx.moveTo(cx - half + bevel, cy - halfT); ctx.lineTo(cx + half - bevel, cy - halfT);
-          ctx.lineTo(cx + half, cy); ctx.lineTo(cx + half - bevel, cy + halfT);
-          ctx.lineTo(cx - half + bevel, cy + halfT); ctx.lineTo(cx - half, cy);
-        } else {
-          ctx.moveTo(cx - halfT, cy - half + bevel); ctx.lineTo(cx + halfT, cy - half + bevel);
-          ctx.lineTo(cx + halfT, cy + half - bevel); ctx.lineTo(cx, cy + half);
-          ctx.lineTo(cx - halfT, cy + half - bevel); ctx.lineTo(cx - halfT, cy - half + bevel);
-        }
-        ctx.closePath(); ctx.fill();
-      }
-      function drawDigit(x, y, w, hgt, chr, onColor, offColor) { // 세그먼트 7개를 항상 그려(켜짐/꺼짐 색 대비) LCD 고스트 표현
-        const segs = SEVEN_SEG[chr] || '', midY = y + hgt / 2, thick = w * 0.26;
-        const set = (k) => { ctx.fillStyle = segs.indexOf(k) >= 0 ? onColor : offColor; };
-        set('a'); segShape(x + w / 2, y, w, thick, true);
-        set('g'); segShape(x + w / 2, midY, w, thick, true);
-        set('d'); segShape(x + w / 2, y + hgt, w, thick, true);
-        set('f'); segShape(x, y + hgt * 0.25, hgt / 2, thick, false);
-        set('b'); segShape(x + w, y + hgt * 0.25, hgt / 2, thick, false);
-        set('e'); segShape(x, y + hgt * 0.75, hgt / 2, thick, false);
-        set('c'); segShape(x + w, y + hgt * 0.75, hgt / 2, thick, false);
-      }
-      function drawDigitString(x, y, w, hgt, str, onColor, offColor, gap) {
-        for (let i = 0; i < str.length; i++) drawDigit(x + i * (w + gap), y, w, hgt, str[i], onColor, offColor);
-      }
-      function drawLoadPanel(px, py, pw, ph, sigma, lbf) {
-        ctx.fillStyle = '#12151b'; ctx.fillRect(px, py, pw, ph); // 어두운 박스(요소)
-        ctx.strokeStyle = '#3d414a'; ctx.lineWidth = 2; ctx.strokeRect(px, py, pw, ph);
-        ctx.fillStyle = '#7d8797'; ctx.font = '700 11px Inter, sans-serif'; ctx.textAlign = 'left';
-        ctx.fillText('LOAD INDICATOR', px + 12, py + 18);
-        const psiInt = Math.round(sigma), lbfInt = Math.round(lbf);
-        const psiStr = String(psiInt), lbfStr = String(lbfInt);
-        drawDigitString(px + 12, py + 26, 24, 34, psiStr, '#5ee88a', '#1c2a22', 4); // psi 7-seg 판독
-        ctx.fillStyle = '#9fb0c9'; ctx.font = '600 12px Inter, sans-serif';
-        ctx.fillText('psi', px + 12 + psiStr.length * 28, py + 52);
-        ctx.fillStyle = '#6b7484'; ctx.font = '500 12px Inter, sans-serif'; // 정확한 콤마 포맷 라벨(불변 계약 포맷)
-        ctx.fillText(`${psiInt.toLocaleString()} psi`, px + 12, py + 78);
-        drawDigitString(px + 12, py + 92, 17, 22, lbfStr, '#ffb454', '#2a2318', 3); // lbf 7-seg 판독
-        ctx.fillStyle = '#9fb0c9'; ctx.font = '600 11px Inter, sans-serif';
-        ctx.fillText('lbf', px + 12 + lbfStr.length * 20, py + 108);
-        ctx.fillStyle = '#6b7484'; ctx.font = '500 12px Inter, sans-serif';
-        ctx.fillText(`${lbfInt.toLocaleString()} lbf`, px + 12, py + 134);
-      }
+        'Three 6×12 cylinders, 28 days moist-cured, loaded to failure.', container, [nextBtn]);
 
       function drawGraph(fp, epsNow) {
-        // 우측 응력-변형률 미니 그래프(하강부는 실제 eps로 그린다 — 불변 계약)
-        const gx = 610, gy = 110, gw = 250, gh = 220;
-        ctx.strokeStyle = '#c9cfda'; ctx.lineWidth = 1.5;
-        ctx.strokeRect(gx, gy, gw, gh);
-        ctx.fillStyle = '#98a1b0'; ctx.font = '500 11px Inter, sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('strain', gx + gw / 2, gy + gh + 16);
-        ctx.save(); ctx.translate(gx - 8, gy + gh / 2); ctx.rotate(-Math.PI / 2);
-        ctx.fillText('stress (psi)', 0, 0); ctx.restore();
-        ctx.save(); ctx.beginPath(); ctx.rect(gx, gy, gw, gh); ctx.clip(); // 산포로 fp가 yMax 초과 시 곡선이 그래프 박스 밖으로 새는 것을 방지
-        ctx.strokeStyle = '#1b66f0'; ctx.lineWidth = 2.5; ctx.beginPath();
+        // 응력-변형률 미니 그래프(하강부는 실제 eps로 그린다 — 불변 계약, 구 drawGraph 로직 이식)
+        if (!graphCtx) return;
+        const gw = 190, gh = 130, gx = 4, gy = 4, pw = gw - 34, ph = gh - 26;
+        graphCtx.clearRect(0, 0, gw, gh);
+        graphCtx.strokeStyle = '#c9cfda'; graphCtx.lineWidth = 1.5;
+        graphCtx.strokeRect(gx, gy, pw, ph);
+        graphCtx.fillStyle = '#98a1b0'; graphCtx.font = '500 10px Inter, sans-serif'; graphCtx.textAlign = 'center';
+        graphCtx.fillText('strain', gx + pw / 2, gy + ph + 14);
+        graphCtx.save(); graphCtx.translate(gx - 10, gy + ph / 2); graphCtx.rotate(-Math.PI / 2);
+        graphCtx.fillText('stress (psi)', 0, 0); graphCtx.restore();
+        graphCtx.save(); graphCtx.beginPath(); graphCtx.rect(gx, gy, pw, ph); graphCtx.clip(); // 산포로 fp가 yMax 초과 시 곡선이 그래프 박스 밖으로 새는 것을 방지(클리핑 유지)
+        graphCtx.strokeStyle = '#1b66f0'; graphCtx.lineWidth = 2; graphCtx.beginPath();
         const yMax = r.f28 * 1.15 || 1000;
         for (let e = 0; e <= epsNow; e += 0.00004) {
-          const px2 = gx + (e / 0.0038) * gw;
-          const py = gy + gh - (stressAt(fp, e) / yMax) * gh;
-          e === 0 ? ctx.moveTo(px2, py) : ctx.lineTo(px2, py);
+          const px2 = gx + (e / 0.0038) * pw;
+          const py2 = gy + ph - (stressAt(fp, e) / yMax) * ph;
+          e === 0 ? graphCtx.moveTo(px2, py2) : graphCtx.lineTo(px2, py2);
         }
-        ctx.stroke();
-        ctx.restore();
+        graphCtx.stroke();
+        graphCtx.restore();
       }
-      const failMode = r.behavior.segregation ? 'crumble' : (r.f28 >= 5000 ? 'columnar' : 'cone'); // 불변 계약 로직 유지
 
-      const draw = (now) => {
-        if (!start) start = now;
-        const t = (now - start) / 1000;
-        ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = '#d7dde6'; ctx.fillRect(0, bedBot, W, H - bedBot); // 바닥(슬럼프·믹서 장면과 지면색 통일)
-        ctx.fillStyle = '#5b6472'; ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'center';
-        if (t < 1.5) { // cast
-          ctx.fillText('Casting cylinders…', W / 2, 36);
-          for (let i = 0; i < 3; i++) {
-            const cx = W / 2 - 140 + i * 140, fillH = Math.min(1, t / 1.2 - i * 0.15) * 110;
-            ctx.strokeStyle = '#7d8797'; ctx.lineWidth = 2; ctx.strokeRect(cx - 24, 200, 48, 120);
-            if (fillH > 0) { ctx.fillStyle = '#83878f'; ctx.fillRect(cx - 22, 320 - Math.max(0, fillH), 44, Math.max(0, fillH)); }
-          }
-        } else if (t < testStart) { // cure
-          const day = Math.min(28, Math.max(1, Math.round(((t - 1.5) / 2) * 28)));
-          ctx.fillText('Moist curing…', W / 2, 36);
-          ctx.font = '800 46px Inter, sans-serif'; ctx.fillStyle = '#141c2b';
-          ctx.fillText(`Day ${day}`, W / 2, H / 2 - 10);
-          ctx.font = '500 14px Inter, sans-serif'; ctx.fillStyle = '#5b6472';
-          ctx.fillText('73 °F · 100% RH', W / 2, H / 2 + 18);
-        } else { // 3본 순차 재하 — UTM 프레임 + 램 + 캡핑 + 디지털 패널 + 파괴 유형 + 그래프
-          const idx = Math.min(2, Math.floor((t - testStart) / CYL_T));
-          const prog = Math.min(1, ((t - testStart) - idx * CYL_T) / (CYL_T * 0.92));
-          const fp = r.cylinders[idx];
-          const eps = prog * 0.0038; // 그래프용 실제 변형률(하강부 포함)
-          // 큰 판독기(psi/lbf)는 피크(0.002) 이후에도 값이 되돌아 내려가지 않도록 고정 표시한다(v1 fix, 불변 계약).
-          const displaySigma = stressAt(fp, Math.min(eps, 0.002));
-          const squash = Math.min(10, prog * 12);
-          ctx.fillText(`Cylinder ${idx + 1} of 3`, W / 2, 36);
-          drawFrame();
-          drawRam(squash);
-          drawSpecimen(squash, eps);
-          drawLoadPanel(345, 118, 225, 150, displaySigma, displaySigma * AREA);
+      function updateDoneList() {
+        doneList.innerHTML = '';
+        done.forEach((s, i) => doneList.append(h('div', {}, `#${i + 1}: ${Math.round(s).toLocaleString()} psi`)));
+        if (done.length === 3) {
+          doneList.append(h('div', { class: 'avg' }, `Average: ${Math.round(r.avgStrength).toLocaleString()} psi`));
+        }
+      }
+
+      // 전역 경과시간 t → 페이즈 판정(cast/cure/test) + 재하 진행 수치 산출.
+      // stressAt·타임라인·failMode·피크 고정·done 캐치업은 전부 구 2D 버전의 값을
+      // 그대로 유지한다(불변 계약) — 3D 갱신(squash/crackProgress/cylinderVisible)과
+      // HTML 오버레이만 이 프레임 안에서 새로 배선한다.
+      function renderFrame(t) {
+        let phase, idx = 0, prog = 0, fp = 0, eps = 0, displaySigma = 0, squash = 0, crackProgress = 0, day = 1;
+        if (t < 1.5) {
+          phase = 'cast';
+        } else if (t < testStart) {
+          phase = 'cure';
+          day = Math.min(28, Math.max(1, Math.round(((t - 1.5) / 2) * 28)));
+        } else {
+          phase = 'test';
+          idx = Math.min(2, Math.floor((t - testStart) / CYL_T));
+          prog = Math.min(1, ((t - testStart) - idx * CYL_T) / (CYL_T * 0.92));
+          fp = r.cylinders[idx];
+          eps = prog * 0.0038; // 그래프용 실제 변형률(하강부 포함)
+          // 큰 판독기(psi/lbf)는 피크(0.002) 이후에도 값이 되돌아 내려가지 않도록 고정 표시(v1 fix, 불변 계약)
+          displaySigma = stressAt(fp, Math.min(eps, 0.002));
+          squash = Math.min(10, prog * 12);
+          crackProgress = Math.min(1, Math.max(0, (eps - 0.002) / 0.0016));
+        }
+
+        utm.update(t, squash, crackProgress, phase === 'test');
+        stage.renderer.render(stage.scene, stage.camera);
+
+        if (phase === 'cast') {
+          caption.textContent = 'Casting cylinders…';
+          dayBox.style.display = 'none'; loadPanel.style.display = 'none'; graphWrap.style.display = 'none';
+        } else if (phase === 'cure') {
+          caption.textContent = 'Moist curing…';
+          dayBox.style.display = ''; dayNum.textContent = `Day ${day}`;
+          loadPanel.style.display = 'none'; graphWrap.style.display = 'none';
+        } else {
+          caption.textContent = `Cylinder ${idx + 1} of 3`;
+          dayBox.style.display = 'none';
+          loadPanel.style.display = ''; graphWrap.style.display = '';
+          const psiInt = Math.round(displaySigma), lbfInt = Math.round(displaySigma * AREA); // 불변 계약 포맷(toLocaleString)
+          psiReadout.textContent = String(psiInt); psiLabel.textContent = `${psiInt.toLocaleString()} psi`;
+          lbfReadout.textContent = String(lbfInt); lbfLabel.textContent = `${lbfInt.toLocaleString()} lbf`;
           drawGraph(fp, eps);
+
           // idx보다 낮은 회차는 시간상 재하가 이미 끝났음이 확정되므로(idx는 증가만 함),
           // 프레임 점프(백그라운드 탭 스로틀·GC 히치 등)로 등식이 어긋나도 소프트락 없이 캐치업(v1 fix, 불변 계약)
           while (done.length < idx && done.length < 3) done.push(r.cylinders[done.length]);
           if (prog >= 1 && done.length === idx && done.length < 3) done.push(r.cylinders[idx]);
-          // 완료 목록
-          ctx.textAlign = 'left'; ctx.font = '600 14px Inter, sans-serif';
-          done.forEach((s, i) => {
-            ctx.fillStyle = '#12855f';
-            ctx.fillText(`#${i + 1}: ${Math.round(s).toLocaleString()} psi`, 610, 370 + i * 22);
-          });
-          if (done.length === 3) {
-            ctx.fillStyle = '#141c2b'; ctx.font = '700 15px Inter, sans-serif';
-            ctx.fillText(`Average: ${Math.round(r.avgStrength).toLocaleString()} psi`, 610, 440);
-            if (nextBtn.style.display === 'none') {
-              nextBtn.style.display = '';
-              finished = true; // Average 표시 프레임을 마지막으로 그린 뒤 재큐잉 중단
-            }
+          updateDoneList();
+          if (done.length === 3 && !finished) {
+            finished = true; // Average 표시 프레임을 마지막으로 그린 뒤 루프 정지
+            nextBtn.style.display = '';
+            stage.stop();
           }
         }
-        if (!finished) raf = requestAnimationFrame(draw);
-      };
-      raf = requestAnimationFrame(draw);
+      }
+
+      stage.setLoop((now) => {
+        if (!start) start = now;
+        renderFrame((now - start) / 1000);
+      });
+
+      // 검증 훅(스펙 §1) — 마운트 중에만 노출, 히든 페인에서 수동 렌더+픽셀 검증용
+      window.__scene3dDebug = { renderAt: renderFrame, renderer: stage.renderer };
     },
-    unmount() { cancelAnimationFrame(raf); },
+    unmount() {
+      delete window.__scene3dDebug;
+      if (stage) { stage.dispose(); stage = null; } // stop + disposeDeep(scene) + renderer.dispose + DOM 제거
+    },
   };
 };
 

@@ -863,6 +863,264 @@ function buildSlumpScene({ mode = 'true', slump = 3, measuredSlump = 3, segregat
   };
 }
 
+// ── COMPRESSION 장면: 2포스트 UTM(ASTM C39, universal testing machine) ──
+// 기존 2D 픽셀 레이아웃(구 Scenes.compression, 캔버스 900×470)의 구조·비례를
+// 그대로 3D 월드 좌표로 옮긴다. PXU = 1/300(픽셀→월드 변환 계수), 캔버스
+// pixelY(Y-down, 원점 상단) → 월드 y(Y-up, 원점 바닥) 변환은 py(pixelY)가
+// 담당하며 기준 바닥은 구 bedBot(pixelY=428)이다. 판정·타이밍·픽셀 판독
+// (stressAt·타임라인·done 캐치업·피크 고정·AREA·toLocaleString 포맷)은 전부
+// index.html 오버레이 쪽 책임이며, 이 팩토리는 기계·공시체·균열 지오메트리만
+// 다룬다(스펙 §3.3, 계획 Task 4 계약).
+//
+// 구조: 프레임(베드+기둥 2(실린더)+상부 크로스헤드+로드셀 컬럼)은 전부 고정.
+// 상부 플래튼은 고정, 하부 플래튼은 유압 램(하우징 고정+로드 신장)에 밀려
+// squash만큼 상승한다. 공시체(bodyMesh)는 상단이 고정된 채(피벗을 위쪽에 둔
+// 지오메트리) squash에 따라 아래쪽이 줄어드는 스케일로 압축을 표현한다.
+// 파괴 유형은 failMode(호출 시 1회 고정 — 배합별로 결정되므로 3본 공통)에
+// 따라 cone/columnar/crumble 중 하나의 지오메트리만 미리 만들어두고,
+// update()가 매 프레임 crackProgress(0→1)로 그 지오메트리를 드러낸다.
+// cast 페이즈(양생 전)에는 UTM 뒤편에 몰드 3개가 콘크리트로 차오르는 모습을
+// 보여주고(cylinderVisible=false), 재하 시작 후(cylinderVisible=true)에는
+// 몰드를 숨기고 공시체+파괴 연출을 보여준다.
+/**
+ * @param {{failMode:'cone'|'columnar'|'crumble', rng:() => number}} params
+ *   failMode: index.html이 game.result로 1회 판정한 값(불변 계약 로직, 이식만).
+ *   rng: MixEngine.mulberry32 시드 생성기 — 골재/파편 배치 결정론용.
+ * @returns {{group:THREE.Group, update:(t:number,squash:number,crackProgress:number,cylinderVisible:boolean)=>void}}
+ */
+function buildUtmScene({ failMode = 'cone', rng } = {}) {
+  const rand = typeof rng === 'function' ? rng : Math.random; // 안전망(계약상 항상 전달되어야 함)
+  const group = new THREE.Group();
+
+  const PXU = 1 / 300;
+  const py = (pixelY) => (428 - pixelY) * PXU; // 구 캔버스 pixelY(Y-down) → 월드 y(바닥=0)
+
+  const bedTopY = py(400), bedBotY = 0;
+  const headTopY = py(50), headBotY = py(78);
+  const cellTopY = py(78), cellBotY = py(128);
+  const specTopY = py(140);          // 공시체 상단(고정 — 상부 플래튼 하단에 맞닿음)
+  const H0 = 120 * PXU;              // 공시체 공칭 높이(squash=0일 때)
+  const specR = 24 * PXU;            // 공시체 반지름(6"⌀ 비율, cw=48px)
+  const postHalfGap = (190 / 2) * PXU;
+  const postR = (14 / 2) * PXU;
+  const beamHalfW = (190 / 2 + 14 / 2 + 20) * PXU;
+  const beamDepth = beamHalfW * 0.85;
+  const ramHouseTopY = py(360);
+  const ramR = (50 / 2) * PXU;
+  const plateHalfW = 45 * PXU, plateT = 12 * PXU;
+  const capT = Math.min(7 * PXU, H0 * 0.12);
+
+  // steelMaterial()의 기본 metalness(0.85)는 envMap이 없는 이 장면에서 직접
+  // 스펙큘러 하이라이트를 받는 면 외에는 대부분 검게 렌더링된다(무-envMap 고금속
+  // 재질의 알려진 한계 — 검증 중 renderAt+toDataURL로 실제 발견). 프레임/플래튼/
+  // 램처럼 화면 대부분을 차지하는 큰 부재는 가시성 확보를 위해 인스턴스 단위로
+  // metalness를 낮춘다(공용 팩토리 steelMaterial() 자체는 그대로 둬 Task 1-3 회귀 방지).
+  const steelMat = steelMaterial();
+  steelMat.metalness = 0.35; steelMat.roughness = 0.55;
+  const darkMat = darkMetalMaterial();
+  const orangeMat = orangeMaterial();
+
+  // ── 프레임(전부 고정): 베드 + 기둥 2(실린더) + 상부 크로스헤드 + 로드셀 컬럼 ──
+  const bed = new THREE.Mesh(new THREE.BoxGeometry(beamHalfW * 2, bedTopY - bedBotY, beamDepth * 2), steelMat);
+  bed.position.y = (bedTopY + bedBotY) / 2;
+  bed.castShadow = true; bed.receiveShadow = true;
+  group.add(bed);
+
+  function makePost(x) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(postR, postR, headBotY - bedTopY, 16), steelMat);
+    m.position.set(x, (headBotY + bedTopY) / 2, 0);
+    m.castShadow = true; m.receiveShadow = true;
+    return m;
+  }
+  group.add(makePost(-postHalfGap), makePost(postHalfGap));
+
+  const crosshead = new THREE.Mesh(new THREE.BoxGeometry(beamHalfW * 2, headTopY - headBotY, beamDepth * 2), steelMat);
+  crosshead.position.y = (headTopY + headBotY) / 2;
+  crosshead.castShadow = true; crosshead.receiveShadow = true;
+  group.add(crosshead);
+
+  const loadCell = new THREE.Mesh(new THREE.CylinderGeometry(specR * 0.9, specR * 0.9, cellTopY - cellBotY, 16), darkMat);
+  loadCell.position.y = (cellTopY + cellBotY) / 2;
+  loadCell.castShadow = true; loadCell.receiveShadow = true;
+  group.add(loadCell);
+
+  const platenTop = new THREE.Mesh(new THREE.CylinderGeometry(plateHalfW, plateHalfW, plateT, 20), steelMat); // 상부 플래튼(고정)
+  platenTop.position.y = specTopY + plateT / 2;
+  platenTop.castShadow = true; platenTop.receiveShadow = true;
+  group.add(platenTop);
+
+  // ── 유압 하부 램: 하우징(고정) + 로드(가변 길이 — squash만큼 신장해 플래튼을 밀어올린다) ──
+  const ramHousing = new THREE.Mesh(new THREE.CylinderGeometry(ramR, ramR, ramHouseTopY - bedTopY, 16), steelMat);
+  ramHousing.position.y = (ramHouseTopY + bedTopY) / 2;
+  ramHousing.castShadow = true; ramHousing.receiveShadow = true;
+  group.add(ramHousing);
+  const ramTrim = new THREE.Mesh(new THREE.CylinderGeometry(ramR * 1.02, ramR * 1.02, plateT * 0.4, 16), orangeMat); // 유압 라인 트림(믹서 장면과 오렌지 포인트 통일)
+  ramTrim.position.y = ramHouseTopY - plateT * 0.2;
+  group.add(ramTrim);
+
+  const ramRodGeo = new THREE.CylinderGeometry(specR * 0.4, specR * 0.4, 1, 12);
+  ramRodGeo.translate(0, 0.5, 0); // 피벗을 로드 하단에 둬 scale.y만으로 신장 표현
+  const ramRod = new THREE.Mesh(ramRodGeo, steelMat);
+  ramRod.castShadow = true;
+  group.add(ramRod);
+
+  const platenBottom = new THREE.Mesh(new THREE.CylinderGeometry(plateHalfW, plateHalfW, plateT, 20), steelMat); // 하부 플래튼(램에 의해 상승)
+  platenBottom.castShadow = true; platenBottom.receiveShadow = true;
+  group.add(platenBottom);
+
+  // ── 공시체(회색 콘크리트 실린더) + 캡핑(상하 밝은 원판) ──
+  // bodyGeo는 피벗을 상단(local y=0)에 두어(translate) 상단이 고정된 채
+  // scale.y만으로 압축(하단이 올라오는 압축)을 표현할 수 있게 한다.
+  const specimenGroup = new THREE.Group();
+  specimenGroup.position.y = specTopY;
+  group.add(specimenGroup);
+
+  const bodyGeo = new THREE.CylinderGeometry(specR, specR, H0, 24);
+  bodyGeo.translate(0, -H0 / 2, 0);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x8d9199, roughness: 0.85, metalness: 0.03 });
+  const bodyMesh = new THREE.Mesh(bodyGeo, bodyMat);
+  bodyMesh.castShadow = true; bodyMesh.receiveShadow = true;
+  specimenGroup.add(bodyMesh);
+
+  const capMat = new THREE.MeshStandardMaterial({ color: 0xf1efe8, roughness: 0.5, metalness: 0.05 }); // 캡핑재(유황/네오프렌) — 밝은 띠
+  const capTop = new THREE.Mesh(new THREE.CylinderGeometry(specR * 1.01, specR * 1.01, capT, 24), capMat);
+  capTop.position.y = -capT / 2;
+  const capBot = new THREE.Mesh(new THREE.CylinderGeometry(specR * 1.01, specR * 1.01, capT, 24), capMat);
+  specimenGroup.add(capTop, capBot);
+
+  // ── 파괴 유형 지오메트리: failMode 1개만 실제로 만든다(3본 공통 — 배합 1회 판정) ──
+  let updateFracture; // (cp:number, specBotLocalY:number) => void — specBotLocalY는 specimenGroup 로컬 기준 공시체 하단 y(음수)
+  if (failMode === 'columnar') {
+    // 수직 쪼개짐 — 균열 평면(슬래브) 3개가 bodyMesh 자식으로 붙어 squash와 함께
+    // 스케일되고, crackProgress에 따라 반경 방향으로 벌어지며 불투명해진다.
+    const slabMat = new THREE.MeshStandardMaterial({ color: 0x2b2f38, roughness: 0.8, transparent: true, opacity: 0 });
+    const slabs = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3].map((ang) => {
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(specR * 0.4, H0 * 0.9, specR * 0.12), slabMat);
+      slab.rotation.y = ang;
+      slab.userData.angle = ang;
+      bodyMesh.add(slab);
+      return slab;
+    });
+    updateFracture = (cp) => {
+      slabMat.opacity = 0.9 * cp;
+      const rad = specR * 0.7 + specR * 0.5 * cp;
+      for (const slab of slabs) {
+        slab.position.set(Math.cos(slab.userData.angle) * rad, -H0 * 0.45, Math.sin(slab.userData.angle) * rad);
+      }
+      bodyMesh.scale.x = bodyMesh.scale.z = 1 + 0.08 * cp; // 쪼개지며 살짝 부푸는 실루엣
+    };
+  } else if (failMode === 'crumble') {
+    // 부스러짐 — 하부 플래튼 위로 낙하해 쌓이는 파편(InstancedMesh, 결정적 시드).
+    const FRAG_N = 24;
+    const fragGeo = new THREE.IcosahedronGeometry(1, 0);
+    const fp = fragGeo.attributes.position;
+    const fv = new THREE.Vector3();
+    for (let i = 0; i < fp.count; i++) {
+      fv.fromBufferAttribute(fp, i);
+      fv.multiplyScalar(0.8 + rand() * 0.35);
+      fp.setXYZ(i, fv.x, fv.y, fv.z);
+    }
+    fragGeo.computeVertexNormals();
+    const fragMat = new THREE.MeshStandardMaterial({ color: 0x8d8f95, roughness: 0.9, flatShading: true });
+    const fragMesh = new THREE.InstancedMesh(fragGeo, fragMat, FRAG_N);
+    fragMesh.castShadow = true; fragMesh.receiveShadow = true;
+    group.add(fragMesh);
+    const fragSeed = Array.from({ length: FRAG_N }, () => ({
+      angle: rand() * Math.PI * 2,
+      radius: specR * (0.25 + rand() * 0.95),
+      size: specR * (0.09 + rand() * 0.09),
+      reveal: rand() * 0.7,                       // 등장 임계값(crackProgress) — 단계적 낙하 연출
+      spawnDrop: specR * (1.5 + rand() * 1.8),      // 낙하 시작 높이(플래튼 기준 오프셋)
+      axis: new THREE.Vector3(rand() - 0.5, rand() - 0.5, rand() - 0.5).normalize(),
+    }));
+    const fm4 = new THREE.Matrix4(), fq = new THREE.Quaternion(), fs = new THREE.Vector3(), fp3 = new THREE.Vector3();
+    updateFracture = (cp, specBotLocalY, restWorldY) => {
+      for (let i = 0; i < FRAG_N; i++) {
+        const s = fragSeed[i];
+        const local = THREE.MathUtils.clamp((cp - s.reveal) / Math.max(0.001, 1 - s.reveal), 0, 1);
+        const eased = local * local * (3 - 2 * local); // smoothstep
+        const scale = cp <= 0 ? 0.0001 : s.size * (0.35 + 0.65 * eased);
+        const y = restWorldY + s.size * 0.5 + (1 - eased) * s.spawnDrop;
+        fp3.set(Math.cos(s.angle) * s.radius, y, Math.sin(s.angle) * s.radius);
+        fq.setFromAxisAngle(s.axis, eased * Math.PI * 1.4);
+        fs.set(scale, scale, scale);
+        fm4.compose(fp3, fq, fs);
+        fragMesh.setMatrixAt(i, fm4);
+      }
+      fragMesh.instanceMatrix.needsUpdate = true;
+    };
+  } else {
+    // cone(기본값) — 상하 원추 분리면이 crackProgress에 따라 진해지고 살짝 부푼다(호리병 모양 파괴면).
+    const coneMat = new THREE.MeshStandardMaterial({ color: 0x3d414a, roughness: 0.8, transparent: true, opacity: 0, side: THREE.DoubleSide });
+    const halfH = H0 * 0.5;
+    const topCone = new THREE.Mesh(new THREE.ConeGeometry(specR * 1.05, halfH, 20, 1, true), coneMat);
+    topCone.rotation.x = Math.PI; topCone.position.y = -halfH / 2; // 밑면=상단(y=0), 꼭짓점=중앙(y=-H0/2), 아래를 향함
+    const botCone = new THREE.Mesh(new THREE.ConeGeometry(specR * 1.05, halfH, 20, 1, true), coneMat);
+    botCone.position.y = -H0 + halfH / 2; // 밑면=하단(y=-H0), 꼭짓점=중앙(y=-H0/2), 위를 향함
+    bodyMesh.add(topCone, botCone);
+    updateFracture = (cp) => {
+      coneMat.opacity = 0.85 * cp;
+      const bulge = 1 + 0.15 * cp;
+      topCone.scale.set(bulge, 1, bulge);
+      botCone.scale.set(bulge, 1, bulge);
+    };
+  }
+
+  // ── cast 페이즈: 몰드 3개(개방형 원통 셸 + 차오르는 콘크리트) — 재하 시작 전에만 보인다 ──
+  const MOLD_X = [-140 * PXU, 0, 140 * PXU];
+  const MOLD_Z = beamDepth * 2 + specR * 3; // 기계 앞쪽으로 충분히 이격
+  const moldsGroup = new THREE.Group();
+  group.add(moldsGroup);
+  const moldShellMat = new THREE.MeshStandardMaterial({
+    color: 0xb9c0c7, roughness: 0.4, metalness: 0.6, transparent: true, opacity: 0.35, side: THREE.DoubleSide,
+  });
+  const moldFillMat = new THREE.MeshStandardMaterial({ color: 0x83878f, roughness: 0.9 });
+  const moldFills = MOLD_X.map((mx) => {
+    const shell = new THREE.Mesh(new THREE.CylinderGeometry(specR * 1.08, specR * 1.08, H0 * 1.02, 20, 1, true), moldShellMat);
+    shell.position.set(mx, H0 * 0.51, MOLD_Z);
+    moldsGroup.add(shell);
+    const fillGeo = new THREE.CylinderGeometry(specR, specR, H0, 20);
+    fillGeo.translate(0, H0 / 2, 0); // 피벗을 바닥에 둬 scale.y로 차오르는 높이를 표현
+    const fill = new THREE.Mesh(fillGeo, moldFillMat);
+    fill.position.set(mx, 0, MOLD_Z);
+    fill.scale.y = 0.001;
+    moldsGroup.add(fill);
+    return fill;
+  });
+
+  // ── update(t, squash, crackProgress, cylinderVisible) ────────────────
+  function update(t = 0, squash = 0, crackProgress = 0, cylinderVisible = false) {
+    const squashW = Math.max(0, squash) * PXU;
+    const bodyH = Math.max(0.02, H0 - squashW);
+    const specBotY = specTopY - bodyH; // 월드 좌표(공시체 하단 — squash에 따라 상승)
+
+    specimenGroup.visible = cylinderVisible;
+    bodyMesh.scale.y = bodyH / H0;
+    capBot.position.y = -bodyH + capT / 2;
+
+    platenBottom.position.y = specBotY - plateT / 2;
+    const rodBotY = ramHouseTopY, rodTopY = specBotY - plateT;
+    ramRod.scale.y = Math.max(0.001, rodTopY - rodBotY);
+    ramRod.position.y = rodBotY;
+
+    const cp = THREE.MathUtils.clamp(crackProgress, 0, 1);
+    if (failMode === 'crumble') updateFracture(cp, -bodyH, specBotY);
+    else updateFracture(cp);
+
+    // cast 몰드: 재하가 시작되면(cylinderVisible=true) 완전히 숨기고, 그 전까지는
+    // t에 따라 차오르는 높이를 갱신한다(구 2D 로직 fillH = min(1, t/1.2 - i*0.15) 이식).
+    moldsGroup.visible = !cylinderVisible;
+    if (!cylinderVisible) {
+      moldFills.forEach((fill, i) => {
+        fill.scale.y = Math.max(0.001, THREE.MathUtils.clamp(t / 1.2 - i * 0.15, 0, 1));
+      });
+    }
+  }
+  update(0, 0, 0, false);
+
+  return { group, update };
+}
+
 // ── GPU 리소스 재귀 해제 ────────────────────────────────────────────
 const TEXTURE_KEYS = [
   'map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap',
@@ -902,4 +1160,5 @@ window.Scene3D = {
   disposeDeep,
   buildMixerScene,
   buildSlumpScene,
+  buildUtmScene,
 };
