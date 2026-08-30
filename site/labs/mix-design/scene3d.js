@@ -352,27 +352,63 @@ function buildMixerScene({ wc = 0.5, rng } = {}) {
   // ── 믹싱 블레이드(내부 패들) 2개, 180° 간격 — drumShell 자식이라 스핀과 함께 돈다 ──
   // 리벳 링만으로는 회전 가독성이 낮았다(0.2초 프레임 diff 1.4%뿐 — 검증 중 확인).
   // 레퍼런스 실사진(hotfix/mixer-ref.jpg)의 내부 나선 패들을 단순화해, 허브 쪽
-  // 벽면에서 개구부 쪽 벽면까지 살짝 비틀린(BLADE_TWIST) 얇은 판으로 표현한다.
+  // 벽면에서 개구부 쪽 벽면까지 짧은 수직 세그먼트 여러 개를 각도를 조금씩
+  // 틀어 쌓아올린 계단형 나선으로 표현한다.
+  // (재리뷰 수정 — 2차) 1차 수정(setFromUnitVectors 한 번으로 대체해 dir along
+  // 진행 방향 + 접선 재직교화)도 실측 결과 불충분했다: yAxis(진행 방향) 자체가
+  // 트위스트 때문에 수직에서 크게 기울어 있으면(세그먼트당 최대 18°), 폭 축을
+  // "yAxis에 직교하면서 접선에 최대한 가깝게" 재직교화해도 잔차가 남아 반경
+  // 최대 0.079 초과가 실측됐다(월드행렬 경유 재검증으로 확인).
+  // 지금 구현은 잔차 자체를 원천 차단한다 — 각 세그먼트를 "완전히 수직"으로만
+  // 두고(로컬 Y축 = 월드/드럼 로컬 Y축 그대로, 기울이지 않음) 각도만 세그먼트
+  // 사이에서 계단식으로 바꾼다. 이러면 로컬 Y(수직)·접선(폭)·반경(두께) 셋이
+  // 항상 정확히 직교해 재직교화 오차가 전혀 생기지 않는다. 유일하게 남는
+  // 항목은 폭이 있는 평판이 접선을 따라 뻗으므로 코너가 중심보다 피타고라스
+  // 정리만큼(√(posR²+halfWidth²)) 더 바깥으로 나간다는 것 — 이를 닫힌 형태로
+  // 역산해(posR = √((wallR-margin)² − halfWidth²) − halfThick) 모든 코너가
+  // 벽 프로파일 반지름 이내에 들어오도록 위치를 직접 계산한다(safety margin
+  // 포함, 아래 geometric 검증 스크립트로 8코너 전수 확인됨).
   function bladeRadiusAt(y) { // drumMesh profile(허브→벨리→목→림)과 동일한 반지름 보간
     if (y <= Y_BELLY) return THREE.MathUtils.lerp(R_HUB, R_BELLY, (y - Y_HUB) / (Y_BELLY - Y_HUB));
     if (y <= Y_NECK) return THREE.MathUtils.lerp(R_BELLY, R_NECK, (y - Y_BELLY) / (Y_NECK - Y_BELLY));
     return THREE.MathUtils.lerp(R_NECK, R_RIM, (y - Y_NECK) / (Y_RIM - Y_NECK));
   }
   const bladeMat = new THREE.MeshStandardMaterial({ color: 0x1c1e22, roughness: 0.65, metalness: 0.25 });
-  const BLADE_TWIST = THREE.MathUtils.degToRad(55);
-  const BLADE_Y_LO = Y_HUB + 0.06, BLADE_Y_HI = Y_RIM - 0.03; // 허브 쪽 벽 → 개구부 바로 안쪽까지(개구부에서 보이는 위치)
+  const BLADE_TWIST = THREE.MathUtils.degToRad(95);
+  const BLADE_SAFETY = 0.01; // 벽 프로파일 대비 최종 안전 여유(코너 기준)
+  const BLADE_Y_LO = Y_HUB + 0.06, BLADE_Y_HI = Y_RIM - 0.02; // 허브 쪽 벽 → 개구부 안쪽까지
+  const BLADE_SEGMENTS = 5;
+  const BLADE_THICK = 0.08;
+  const bladeHalfT = BLADE_THICK / 2;
+  // 폭은 세그먼트마다 그 위치의 벽 반지름(wallR)에 비례해 정한다(허브 쪽은
+  // 좁고 목~림 쪽은 넓게) — 회전 가독성(개구부에서 보이는 면적)은 목~림
+  // 구간에서 나오므로, 균일 폭보다 이쪽을 안전 한도까지 넓히는 편이 효과적.
+  const BLADE_WIDTH_RATIO = 0.55; // halfWidth = wallR * 이 비율(항상 wallR보다 충분히 작아 안전)
+  const BLADE_HALF_WIDTH_MAX = 0.26;
   [0, Math.PI].forEach((baseAngle) => {
-    const rLo = bladeRadiusAt(BLADE_Y_LO) - 0.015, rHi = bladeRadiusAt(BLADE_Y_HI) - 0.015; // 벽에 거의 밀착(살짝만 파묻어 접합부 표현)
-    const a = new THREE.Vector3(Math.cos(baseAngle) * rLo, BLADE_Y_LO, Math.sin(baseAngle) * rLo);
-    const angHi = baseAngle + BLADE_TWIST;
-    const b = new THREE.Vector3(Math.cos(angHi) * rHi, BLADE_Y_HI, Math.sin(angHi) * rHi);
-    const dir = new THREE.Vector3().subVectors(b, a);
-    const len = dir.length() || 0.001;
-    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.03, len, 0.34), bladeMat); // 폭(0.2→0.34)을 넓혀 개구부에서 더 크게 보이게 한다
-    blade.position.copy(a).lerp(b, 0.5);
-    blade.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
-    blade.castShadow = true; blade.receiveShadow = true;
-    drumShell.add(blade);
+    for (let i = 0; i < BLADE_SEGMENTS; i++) {
+      const t0 = i / BLADE_SEGMENTS, t1 = (i + 1) / BLADE_SEGMENTS;
+      const y0 = THREE.MathUtils.lerp(BLADE_Y_LO, BLADE_Y_HI, t0);
+      const y1 = THREE.MathUtils.lerp(BLADE_Y_LO, BLADE_Y_HI, t1);
+      const refAngle = baseAngle + BLADE_TWIST * (t0 + t1) / 2; // 세그먼트 중앙 각도(계단식 트위스트)
+      // 세그먼트 구간 내 더 좁은 쪽(보수적) 벽 반지름을 채택
+      const wallR = Math.min(bladeRadiusAt(y0), bladeRadiusAt(y1)) - BLADE_SAFETY;
+      const bladeHalfW = Math.min(BLADE_HALF_WIDTH_MAX, wallR * BLADE_WIDTH_RATIO);
+      // 폭이 있는 평판의 코너가 접선 방향으로 halfWidth만큼 벌어지므로, 코너가
+      // 정확히 wallR 안쪽에 들어오도록 중심 반지름(posR)을 피타고라스로 역산.
+      const outerLimit2 = wallR * wallR - bladeHalfW * bladeHalfW;
+      const posR = Math.max(0.02, Math.sqrt(Math.max(0.0001, outerLimit2)) - bladeHalfT);
+      const radialDir = new THREE.Vector3(Math.cos(refAngle), 0, Math.sin(refAngle));
+      const tangentDir = new THREE.Vector3(-Math.sin(refAngle), 0, Math.cos(refAngle));
+      const yAxis = new THREE.Vector3(0, 1, 0); // 완전히 수직 — 재직교화가 필요 없어 잔차가 생기지 않는다
+      const basis = new THREE.Matrix4().makeBasis(radialDir, yAxis, tangentDir); // 로컬X=두께(반경), 로컬Y=수직, 로컬Z=폭(접선)
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(BLADE_THICK, y1 - y0, bladeHalfW * 2), bladeMat);
+      blade.position.copy(radialDir).multiplyScalar(posR);
+      blade.position.y = (y0 + y1) / 2;
+      blade.quaternion.setFromRotationMatrix(basis);
+      blade.castShadow = true; blade.receiveShadow = true;
+      drumShell.add(blade);
+    }
   });
 
   // ── 모터 하우징(드럼 후단) — 드럼과 함께 틸트되지만 스핀은 하지 않는다 ──
