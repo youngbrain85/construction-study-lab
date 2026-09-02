@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #003665; }
+    a { color: #0053a5; text-decoration: none; } a:hover { color: #003665; }
+    .row { display: grid; grid-template-columns: 60px 1fr; gap: 14px; padding: 18px 0; border-top: 1px solid #b9dff2; }
+    .type { font: 600 10.5px/1 'Red Hat Mono', 'Courier New', monospace; letter-spacing: .06em; text-transform: uppercase; color: #3b6894; border: 1px dashed #3b6894; padding: 6px 0; border-radius: 2px; text-align: center; align-self: flex-start; }
+    .meta { font: 500 11.5px/1.5 'Red Hat Mono', 'Courier New', monospace; color: #3b6894; }
+  </style>
+</helmet>
+<div style="width: 390px; min-height: 844px; background: #f2f9fe; font-family: 'Hepta Slab', Georgia, serif; color: #003665; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 20px; background: #ffffff; border-bottom: 2px solid #b9dff2;">
+    <div style="font: 800 18px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: .02em; text-transform: uppercase;">Construction Study Lab</div>
+    <div style="display: flex; gap: 16px; font: 600 12.5px/1 'Hepta Slab', Georgia, serif; color: #2b5f8f;">
+      <span>Lab</span>
+      <span style="color: #003665; border-bottom: 2px solid #0053a5; padding-bottom: 3px;">Study</span>
+    </div>
+  </div>
+
+  <div style="background: #0053a5; color: #ffffff; padding: 32px 20px 28px 20px; display: flex; flex-direction: column; gap: 10px;">
+    <div style="font: 600 11px/1 'Red Hat Mono', monospace; letter-spacing: .12em; text-transform: uppercase; color: #b8f5ff;">02 · Notes and references</div>
+    <div style="font: 800 72px/0.9 'Barlow Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase;">Study</div>
+    <div style="font: 400 14.5px/1.5 'Hepta Slab', Georgia, serif; color: #d9f3fd;">Lecture notes, reference tables, and worked examples to read alongside the labs.</div>
+  </div>
+
+  <div style="padding: 28px 20px 40px 20px; display: flex; flex-direction: column; gap: 32px; flex-grow: 1;">
+    <div>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 10px;">
+        <div style="font: 700 22px/1.1 'Hepta Slab', Georgia, serif;">Materials</div>
+        <div style="font: 400 13.5px/1.5 'Hepta Slab', Georgia, serif; color: #2b5f8f;">Concrete, aggregates, and mix design.</div>
+      </div>
+      <div class="row" style="border-bottom: 1px solid #b9dff2;">
+        <div class="type">Soon</div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="font: 700 16px/1.3 'Hepta Slab', Georgia, serif; color: #3b6894;">Lecture notes and reference tables will appear here.</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 10px;">
+        <div style="font: 700 22px/1.1 'Hepta Slab', Georgia, serif;">Surveying</div>
+        <div style="font: 400 13.5px/1.5 'Hepta Slab', Georgia, serif; color: #2b5f8f;">Leveling, traversing, and site layout.</div>
+      </div>
+      <div class="row" style="border-bottom: 1px solid #b9dff2;">
+        <div class="type">Soon</div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="font: 700 16px/1.3 'Hepta Slab', Georgia, serif; color: #3b6894;">Lecture notes and reference tables will appear here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 14px 20px; background: #003665; font: 500 10.5px/1.5 'Red Hat Mono', monospace; color: #d9f3fd;">© 2026 Thompson Thrift Department of Construction Management, Indiana State University.</div>
+</div>
+</x-dc>
+</body>
+</html>

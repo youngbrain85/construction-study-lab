@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #0053a5; }
+    a { color: #b8f5ff; text-decoration: none; } a:hover { color: #ffffff; }
+    .grid-bg { background-color: #0053a5;
+      background-image: linear-gradient(rgba(184,245,255,.10) 1px, transparent 1px), linear-gradient(90deg, rgba(184,245,255,.10) 1px, transparent 1px), linear-gradient(180deg, #003665 0%, #0053a5 100%);
+      background-size: 48px 48px, 48px 48px, 100% 100%; }
+  </style>
+</helmet>
+<div class="grid-bg" style="position: relative; width: 1440px; height: 900px; overflow: hidden; font-family: 'Hepta Slab', Georgia, serif; color: #ffffff; display: flex; flex-direction: column;">
+
+  <!-- Background line art: building frame (left) + tower crane (right) -->
+  <svg style="position: absolute; left: 0; bottom: 0; width: 1440px; height: 620px; opacity: .32;" viewBox="0 0 1440 620" fill="none" stroke="#b8f5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- ground -->
+    <path d="M0 600 H1440"></path>
+    <!-- building frame under the jib: 3 bays x 4 floors -->
+    <path d="M780 600 V230 M900 600 V230 M1020 600 V230"></path>
+    <path d="M780 230 H1020 M780 322 H1020 M780 414 H1020 M780 506 H1020"></path>
+    <path d="M780 322 L900 230 M900 600 L1020 506" stroke-dasharray="6 6"></path>
+    <path d="M760 230 H1040" stroke-width="3"></path>
+    <path d="M760 600 H1040" stroke-width="4"></path>
+    <!-- tower crane -->
+    <path d="M1100 600 V90" stroke-width="3"></path>
+    <path d="M1140 600 V90" stroke-width="3"></path>
+    <path d="M1100 560 L1140 520 M1140 560 L1100 520 M1100 480 L1140 440 M1140 480 L1100 440 M1100 400 L1140 360 M1140 400 L1100 360 M1100 320 L1140 280 M1140 320 L1100 280 M1100 240 L1140 200 M1140 240 L1100 200 M1100 160 L1140 120 M1140 160 L1100 120"></path>
+    <path d="M1100 90 H1140 M1080 90 H1160 V60 H1080 Z"></path>
+    <!-- jib -->
+    <path d="M760 90 H1080" stroke-width="3"></path>
+    <path d="M760 110 H1080"></path>
+    <path d="M780 110 L800 90 M820 110 L840 90 M860 110 L880 90 M900 110 L920 90 M940 110 L960 90 M980 110 L1000 90 M1020 110 L1040 90"></path>
+    <!-- counter jib + ballast -->
+    <path d="M1160 90 H1300 M1160 110 H1300 M1300 90 V125 H1250 V110" stroke-width="2"></path>
+    <!-- apex + tie ropes -->
+    <path d="M1120 60 V10 M1120 10 L800 90 M1120 10 L1290 90"></path>
+    <!-- trolley + hook -->
+    <path d="M870 110 V150 M856 150 H884 M870 150 V172"></path>
+    <path d="M870 172 c-14 0 -14 22 0 22 c8 0 12 -6 12 -10" stroke-width="2"></path>
+    <!-- lifted precast panel -->
+    <path d="M830 206 H910 V226 H830 Z"></path>
+    <!-- survey tripod at right -->
+    <path d="M1360 600 L1380 470 L1400 600 M1380 470 L1370 600 M1380 470 V450 M1366 452 H1394"></path>
+  </svg>
+
+  <!-- top bar -->
+  <div style="position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; height: 64px; padding: 0 48px; border-bottom: 1px solid rgba(184,245,255,.3); font: 500 12px/1 'Red Hat Mono', monospace; letter-spacing: .1em; text-transform: uppercase; color: #b8f5ff;">
+    <span>Thompson Thrift Department of Construction Management</span>
+    <span>cnstlab.org</span>
+  </div>
+
+  <!-- title + menu -->
+  <div style="position: relative; z-index: 2; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 36px; padding: 0 48px 40px 48px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="font: 600 13px/1 'Red Hat Mono', monospace; letter-spacing: .14em; text-transform: uppercase; color: #b8f5ff;">Interactive labs and study materials</div>
+      <div style="font: 800 168px/0.88 'Barlow Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase; letter-spacing: -.01em; color: #ffffff;">Construction<br>Study Lab</div>
+      <div style="font: 400 18px/1.55 'Hepta Slab', Georgia, serif; color: #d9f3fd; max-width: 44ch;">Build it, test it, prove it — hands-on labs for construction materials and surveying, with notes and reference tables to study alongside.</div>
+    </div>
+    <div style="display: flex; gap: 16px; align-items: stretch;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 40px; min-width: 300px; background: #ffffff; color: #003665; padding: 22px 26px; border-radius: 2px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="font: 800 34px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase; letter-spacing: .02em;">Lab</div>
+          <div style="font: 500 11.5px/1 'Red Hat Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: #2b5f8f;">Material · Survey</div>
+        </div>
+        <div style="font: 800 34px/1 'Barlow Condensed', sans-serif;">→</div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 40px; min-width: 300px; background: rgba(0,54,101,.55); color: #ffffff; border: 1px solid #b8f5ff; padding: 22px 26px; border-radius: 2px;">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="font: 800 34px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase; letter-spacing: .02em;">Study</div>
+          <div style="font: 500 11.5px/1 'Red Hat Mono', monospace; letter-spacing: .08em; text-transform: uppercase; color: #b8f5ff;">Notes · Tables · Examples</div>
+        </div>
+        <div style="font: 800 34px/1 'Barlow Condensed', sans-serif; color: #b8f5ff;">→</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: relative; z-index: 2; display: flex; align-items: center; height: 48px; padding: 0 48px; border-top: 1px solid rgba(102,206,246,.35); font: 500 11.5px/1 'Red Hat Mono', monospace; color: #d9f3fd; ">© 2026 Thompson Thrift Department of Construction Management, Indiana State University. All rights reserved.</div>
+</div>
+</x-dc>
+</body>
+</html>

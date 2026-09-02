@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: #f2f9fe; }
+    a { color: #0053a5; text-decoration: none; } a:hover { color: #003665; }
+    .row { display: grid; grid-template-columns: 90px 1fr 240px 140px; gap: 24px; align-items: center; padding: 24px 0; border-top: 1px solid #b9dff2; }
+    .type { font: 600 11.5px/1 'Red Hat Mono', 'Courier New', monospace; letter-spacing: .06em; text-transform: uppercase; color: #003665; background: #d9f3fd; padding: 6px 8px; border-radius: 2px; text-align: center; }
+    .meta { font: 500 12px/1.5 'Red Hat Mono', 'Courier New', monospace; color: #2b5f8f; }
+    .soon .type { color: #3b6894; background: transparent; border: 1px dashed #3b6894; } .soon .title, .soon .meta { color: #3b6894; }
+  </style>
+</helmet>
+<div style="width: 1440px; min-height: 900px; background: #f2f9fe; font-family: 'Hepta Slab', Georgia, serif; color: #003665; display: flex; flex-direction: column;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 64px; padding: 0 40px; background: #ffffff; border-bottom: 2px solid #b9dff2;">
+    <div style="font: 800 22px/1 'Barlow Condensed', 'Arial Narrow', sans-serif; letter-spacing: .02em; text-transform: uppercase;">Construction Study Lab</div>
+    <div style="display: flex; gap: 28px; font: 600 13px/1 'Hepta Slab', Georgia, serif; color: #2b5f8f;">
+      <span>Lab</span>
+      <span style="color: #003665; border-bottom: 2px solid #0053a5; padding-bottom: 4px;">Study</span>
+    </div>
+  </div>
+
+  <div style="background: #0053a5; color: #ffffff; padding: 56px 40px 48px 40px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="font: 600 12px/1 'Red Hat Mono', monospace; letter-spacing: .12em; text-transform: uppercase; color: #b8f5ff;">02 · Notes and references</div>
+      <div style="font: 800 96px/0.9 'Barlow Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase;">Study</div>
+    </div>
+    <div style="font: 400 16px/1.55 'Hepta Slab', Georgia, serif; color: #d9f3fd; max-width: 40ch;">Lecture notes, reference tables, and worked examples to read alongside the labs.</div>
+  </div>
+
+  <div style="padding: 40px 40px 64px 40px; display: flex; flex-direction: column; gap: 48px; flex-grow: 1;">
+    <div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 14px;">
+        <div style="font: 700 28px/1.1 'Hepta Slab', Georgia, serif;">Materials</div>
+        <div style="font: 400 15px/1.5 'Hepta Slab', Georgia, serif; color: #2b5f8f;">Concrete, aggregates, and mix design.</div>
+      </div>
+      <div class="row soon" style="border-bottom: 1px solid #b9dff2;">
+        <div class="type">Soon</div>
+        <div class="title" style="font: 700 22px/1.2 'Hepta Slab', Georgia, serif;">Lecture notes and reference tables will appear here.</div>
+        <div class="meta">—</div>
+        <div class="meta" style="text-align: center; letter-spacing: .08em;">SOON</div>
+      </div>
+    </div>
+    <div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 14px;">
+        <div style="font: 700 28px/1.1 'Hepta Slab', Georgia, serif;">Surveying</div>
+        <div style="font: 400 15px/1.5 'Hepta Slab', Georgia, serif; color: #2b5f8f;">Leveling, traversing, and site layout.</div>
+      </div>
+      <div class="row soon" style="border-bottom: 1px solid #b9dff2;">
+        <div class="type">Soon</div>
+        <div class="title" style="font: 700 22px/1.2 'Hepta Slab', Georgia, serif;">Lecture notes and reference tables will appear here.</div>
+        <div class="meta">—</div>
+        <div class="meta" style="text-align: center; letter-spacing: .08em;">SOON</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 40px; background: #003665; font: 500 11.5px/1 'Red Hat Mono', monospace; color: #d9f3fd;">
+    <span>© 2026 Thompson Thrift Department of Construction Management, Indiana State University. All rights reserved.</span>
+    <span style="letter-spacing: .08em; text-transform: uppercase;">← Home</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
