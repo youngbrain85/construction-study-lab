@@ -23,7 +23,14 @@
   ];
 
   // { id, group, type:'pdf'|'link'|'page', title, desc, href } — 비어 있으면 페이지가 Coming soon 행을 그린다
-  const MATERIALS = [];
+  const MATERIALS = [
+    { id: 'mix-design-1', group: 'materials', type: 'page', title: 'How to design a concrete mix',
+      desc: 'Concrete mix design, part 1 — the ten-step ACI workflow, from slump to trial batch, with the tables you need.',
+      href: 'mix-design/' },
+    { id: 'mix-design-2', group: 'materials', type: 'page', title: 'Worked example: a 3,000 psi beam',
+      desc: 'Concrete mix design, part 2 — every step of one mix, from 325 lb of water to a checked 1 yd³ batch.',
+      href: 'mix-design/example/' },
+  ];
 
   // 점수 → 등급 (Mix Design Lab 채점 등급과 동일한 경계값)
   function scoreToGrade(score) {

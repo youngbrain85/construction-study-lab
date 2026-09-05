@@ -4,6 +4,10 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const S = require('../site/shared/registry.js');
+import { existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const STUDY_DIR = join(dirname(fileURLToPath(import.meta.url)), '../site/study');
 
 test('그룹 2개 + 랩의 group이 전부 유효', () => {
   assert.deepEqual(S.LAB_GROUPS.map(g => g.id), ['material', 'survey']);
@@ -45,5 +49,15 @@ test('MATERIALS: 항목이 있으면 group·type·필수 필드가 유효', () =
     assert.ok(groups.has(m.group), `${m.id} group`);
     assert.ok(['pdf', 'link', 'page'].includes(m.type), `${m.id} type`);
     for (const k of ['id', 'title', 'desc', 'href']) assert.ok(m[k], `${m.id} ${k}`);
+  }
+});
+
+test('MATERIALS: 믹스 디자인 2편이 등록돼 있고 page href 가 실제 파일을 가리킨다', () => {
+  const pages = S.MATERIALS.filter(m => m.type === 'page');
+  assert.deepEqual(pages.map(m => m.id), ['mix-design-1', 'mix-design-2']);
+  for (const m of pages) {
+    assert.equal(m.group, 'materials');
+    assert.ok(m.href.endsWith('/'), `${m.id} href ends with /`);
+    assert.ok(existsSync(join(STUDY_DIR, m.href, 'index.html')), `${m.id} → ${m.href}index.html`);
   }
 });
