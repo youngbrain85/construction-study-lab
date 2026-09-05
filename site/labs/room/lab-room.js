@@ -267,18 +267,20 @@ function bindEvents() {
   });
   document.addEventListener('keydown', () => markInput());
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopLoop(); else markInput(); });
-  window.addEventListener('pagehide', (e) => { if (e.persisted) stopLoop(); else unmount(); });
-  window.addEventListener('pageshow', (e) => {
-    if (!e.persisted) return;
-    if (!stage) { const fb = document.getElementById('fallback'); if (fb && !fb.hidden) LabList.render(fb); return; } // 대체 목록 상태로 복원
-    fade.classList.remove('is-on'); activating = false; dolly = null;
-    applyCamera(); refreshGrades(); markInput(); renderOnce();
-  });
 }
 
 function unmount() {
   delete window.__labRoomDebug;
   if (stage) { stage.dispose(); stage = null; }
 }
+
+// bfcache 수명주기는 마운트 성공 여부와 무관하게 항상 듣는다 — 대체 목록 상태(stage 없음)로 복원돼도 목록을 재렌더해야 한다
+window.addEventListener('pagehide', (e) => { if (e.persisted) stopLoop(); else unmount(); });
+window.addEventListener('pageshow', (e) => {
+  if (!e.persisted) return;
+  if (!stage) { const fb = document.getElementById('fallback'); if (fb && !fb.hidden) LabList.render(fb); return; } // 대체 목록 상태로 복원
+  fade.classList.remove('is-on'); activating = false; dolly = null;
+  applyCamera(); refreshGrades(); markInput(); renderOnce();
+});
 
 mount();
