@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-05-study-mix-design-article-design.md`
 
+> **구현 기록(2026-09-05):** 최종 전체 리뷰 수정(커밋 e97309d)으로 사이트 파일이 이 플랜에 수록된 HTML/CSS/테스트 본문과 일부 다르다 — Step 5 예제 0.55/544로 통일, b/b₀·FM 문장 정정, 부피 합계 정밀도 문구, `.eq` 블록 표시 + `sub` 크기, `.frac` 막대 폭, 표 `scope`·내비 `aria-label`·`aria-current`, SVG `fill="var(--bg)"`, 토큰 가드의 HTML 확장, 2 in. 열 테스트. **사이트 파일이 정본**이며 스펙은 이에 맞춰 갱신했다.
+
 ## Global Constraints
 
 - 언어: 글은 영어. 코드 주석·커밋 메시지는 한국어.

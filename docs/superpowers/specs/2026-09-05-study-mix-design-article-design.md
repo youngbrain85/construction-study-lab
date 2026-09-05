@@ -122,9 +122,9 @@ Study 목록(`study/index.html`)은 바꾸지 않는다 — 두 행이 "Page" �
 | 6 | `step-2` | Step 2 — Nominal maximum aggregate size | 표면적 논리(큰 골재 → 물·시멘트 절감), 사진 `graded-aggregate.jpg`, ACI 318 한계 3개(1/5 폼 최소치수, 1/3 슬래브 두께, 3/4 철근 순간격) |
 | 7 | `step-3` | Step 3 — Estimate water and air | 표 `tbl-water`(§6), 갇힌 공기 vs 공기연행(노출 등급), 형상 보정 표(angular = table / rounded −8 % / other = records / all = trial batch) + 사진 `angular-rounded.jpg`, 예 325 × 0.92 ≈ 299 |
 | 8 | `step-4` | Step 4 — Choose the w/cm | f'cr 개념(변동성·통계적 합격) + 표 `tbl-fcr`, 표 `tbl-wcm`, 보간 예(4,200 psi → 0.55), "strength와 durability 중 **낮은** w/cm가 지배" `.callout-key` |
-| 9 | `step-5` | Step 5 — Total cementitious materials | 식 CM = water ÷ w/cm(`.eq`), 예 299 ÷ 0.48 = 623, 체크 4개(총 결합재 ≠ 포틀랜드만·최소량은 요구 시만·SCM 대체·페이스트 부피) |
-| 10 | `step-6` | Step 6 — Coarse aggregate by bulk volume | b/b₀ 정의, 표 `tbl-bb0`, 식 mass = b/b₀ × 27 × dry-rodded density, 예 0.69 × 27 × 100 = 1,863, `.callout-warn` bulk volume ≠ absolute volume(공극 포함, OD 봉다짐 밀도) |
-| 11 | `step-7` | Step 7 — Fine aggregate by absolute volume | 식 V = m ÷ (RD × 1,685), 잔골재 = 1 − Σ, SVG 도해 C(1 yd³ 부피 막대: 물 0.177 · 결합재 0.102 · 굵은골재 0.415 · 공기 0.015 · 잔골재 0.2905), `.callout-def` relative density·OD/SSD 기준 유지 |
+| 9 | `step-5` | Step 5 — Total cementitious materials | 식 CM = water ÷ w/cm(`.eq`), 예 299 ÷ 0.55 ≈ 544(Part 2와 같은 수치로 통일 — 슬라이드 14의 0.48/623 예는 쓰지 않는다: 이어지는 Step 7이 544를 전제로 한다), 체크 4개(총 결합재 ≠ 포틀랜드만·최소량은 요구 시만·SCM 대체·페이스트 부피) |
+| 10 | `step-6` | Step 6 — Coarse aggregate by bulk volume | b/b₀ 정의, FM이 커질수록(거친 모래) b/b₀가 **작아진다**는 문장(고운 모래가 굵은골재를 더 담는다 — 표 방향과 일치해야 함), 표 `tbl-bb0`, 식 mass = b/b₀ × 27 × dry-rodded density, 예 0.69 × 27 × 100 = 1,863, `.callout-warn` bulk volume ≠ absolute volume(공극 포함, OD 봉다짐 밀도) |
+| 11 | `step-7` | Step 7 — Fine aggregate by absolute volume | 식 V = m ÷ (RD × 1,685), 잔골재 = 1 − Σ, SVG 도해 C(1 yd³ 부피 막대: 물 0.177 · 결합재 0.102 · 굵은골재 0.415 · 공기 0.015 · 잔골재 0.2905), `.callout-def` relative density·OD/SSD 기준 유지. 표시값은 소수 3자리(합 0.709)이고 합계 0.7095는 미반올림 값의 합임을 본문에 명시한다(Part 2도 동일) |
 | 12 | `step-8-10` | Steps 8–10 — Summarize, adjust for moisture, trial-batch | 설계 기준표 정리(SSD 기준), SVG 도해 B(수분 상태 4단계: oven-dry / air-dry / SSD / wet), free moisture = MC − A, batch water = design water − Σ free water, batch aggregate = SSD × (1 + MC) ÷ (1 + A), 시험배합에서 확인·수정 |
 | 13 | `takeaways` | Key takeaways | 4개(슬라이드 26): ACI는 출발값 / 같은 순서 / 낮은 w/cm / 수분 기준 일관 |
 
@@ -171,8 +171,8 @@ Part 2의 모든 수치는 슬라이드 19–25와 동일하다(위 표가 정�
 ## 7. 자동 테스트
 
 1. `tools/registry.test.mjs` 보강: MATERIALS `type:'page'` 항목마다 `site/study/<href>index.html` 파일이 존재한다(href는 `/`로 끝남).
-2. `tools/study-tables.test.mjs`: Part 1 HTML을 읽어 `#tbl-water`(nonAE·ae 각 3행 × NMAS 0.375–1.5, entrapped, air 3행)·`#tbl-wcm`(2000–6000 × 2)·`#tbl-bb0`(NMAS 0.375–1.5 × FM 4)의 값이 `MixEngine.DATA`의 `WATER_TABLE`(`nonAE`/`ae`/`entrappedAir`/`targetAir`)·`WC_TABLE`·`CA_VOLUME_TABLE`과 정확히 같다. 파싱은 정규식(`<tr …>…</tr>`, `data-*`, 첫 숫자)으로 하고 HTML 파서 의존성은 추가하지 않는다.
-3. `tools/site-guards.test.mjs`: (a) `site/` 아래 `.html/.js/.css`(vendor 제외)에 대문자 문자열 `CNST`가 없다(대소문자 구분 — 도메인 `cnstlab.org`는 소문자라 해당 없음) (b) `site/study/article.css`에 `#` 리터럴 색이 없다(`var(--…)`만) (c) Part 1·Part 2 HTML의 내부 링크(`href`가 `http`로 시작하지 않고 `#`만이 아닌 것)가 파일로 존재한다(디렉터리 링크는 `index.html`).
+2. `tools/study-tables.test.mjs`: Part 1 HTML을 읽어 `#tbl-water`(nonAE·ae 각 3행 × NMAS 0.375–1.5, entrapped, air 3행)·`#tbl-wcm`(2000–6000 × 2)·`#tbl-bb0`(NMAS 0.375–1.5 × FM 4)의 값이 `MixEngine.DATA`의 `WATER_TABLE`(`nonAE`/`ae`/`entrappedAir`/`targetAir`)·`WC_TABLE`·`CA_VOLUME_TABLE`과 정확히 같다. 엔진에 없는 2 in. 열(물 260/285/300·240/265/280, 갇힌 공기 0.5, 공기량 2.0/4.0/5.0, b/b₀ 0.78/0.76/0.74/0.72)은 리터럴로 고정한다. 파싱은 정규식(`<tr …>…</tr>`, `data-*`, 첫 숫자)으로 하고 HTML 파서 의존성은 추가하지 않는다.
+3. `tools/site-guards.test.mjs`: (a) `site/` 아래 `.html/.js/.css`(vendor 제외)에 대문자 문자열 `CNST`가 없다(대소문자 구분 — 도메인 `cnstlab.org`는 소문자라 해당 없음) (b) `site/study/article.css`와 두 글 페이지 HTML(인라인 SVG 포함)에 `#` 리터럴 색이 없다(`var(--…)`만) (c) Part 1·Part 2 HTML의 내부 링크(`href`가 `http`로 시작하지 않고 `#`만이 아닌 것)가 파일로 존재하고, 다른 페이지를 가리키는 앵커(`example/#step-4`, `../#tbl-water`)는 그 파일에 `id`가 있다(디렉터리 링크는 `index.html`) (d) 사진 4장의 용량이 예산 안이다.
 4. 기존 `engine.test.mjs`·`contrast-check.test.mjs` 불변 통과. 실행: `node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs`. README의 테스트 명령을 이것으로 갱신.
 
 ## 8. 화면 검증(필수)
