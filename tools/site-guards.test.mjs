@@ -23,11 +23,13 @@ test('site/ 어디에도 대문자 과목 코드 CNST 가 없다', () => {
   for (const f of walk(SITE)) assert.ok(!readFileSync(f, 'utf8').includes('CNST'), `course code in ${f}`);
 });
 
-test('article.css 는 theme.css 토큰만 쓴다(리터럴 색 없음)', () => {
-  const css = readFileSync(join(SITE, 'study/article.css'), 'utf8');
-  const literals = css.match(/#[0-9a-fA-F]{3,8}\b/g) || [];
-  assert.deepEqual(literals, []);
-  assert.ok(css.includes('var(--royal)'), 'uses tokens');
+test('article.css 와 글 페이지는 theme.css 토큰만 쓴다(리터럴 색 없음)', () => {
+  const files = ['study/article.css', 'study/mix-design/index.html', 'study/mix-design/example/index.html'];
+  for (const rel of files) {
+    const src = readFileSync(join(SITE, rel), 'utf8');
+    assert.deepEqual(src.match(/#[0-9a-fA-F]{3,8}\b/g) || [], [], `${rel} has literal colours`);
+  }
+  assert.ok(readFileSync(join(SITE, 'study/article.css'), 'utf8').includes('var(--royal)'), 'uses tokens');
 });
 
 test('Study 사진 4장이 존재하고 용량 예산 안이다', () => {

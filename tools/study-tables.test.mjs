@@ -76,3 +76,18 @@ test('#tbl-bb0: 굵은골재 용적비 = 엔진 CA_VOLUME_TABLE', () => {
   }
   assert.equal(checked, 5 * 4);
 });
+
+test('2 in. NMAS 열(엔진 미포함)은 ACI 211.1 값 그대로', () => {
+  const W = table('tbl-water');
+  const expect = { 'nonAE:1.5': 260, 'nonAE:3.5': 285, 'nonAE:6.5': 300, 'ae:1.5': 240, 'ae:3.5': 265, 'ae:6.5': 280 };
+  for (const r of rows(W)) {
+    const series = attr(r.attrs, 'data-series'), slump = attr(r.attrs, 'data-slump'), row = attr(r.attrs, 'data-row');
+    const c = cells(r.body, 'data-nmas');
+    if (series && slump) assert.equal(c['2'], expect[`${series}:${slump}`], `${series} ${slump} 2 in.`);
+    if (row === 'entrapped') assert.equal(c['2'], 0.5, 'entrapped 2 in.');
+    if (row === 'air') assert.equal(c['2'], { mild: 2.0, moderate: 4.0, severe: 5.0 }[attr(r.attrs, 'data-exposure')], 'air 2 in.');
+  }
+  const two = rows(table('tbl-bb0')).find(r => attr(r.attrs, 'data-nmas') === '2.0');
+  assert.ok(two, 'bb0 2 in. row');
+  assert.deepEqual(['2.4', '2.6', '2.8', '3'].map(k => cells(two.body, 'data-fm')[k]), [0.78, 0.76, 0.74, 0.72]);
+});

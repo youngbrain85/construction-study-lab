@@ -16,7 +16,7 @@
   <a class="logo" href="../../../">Construction Study Lab</a>
   <nav class="appbar-nav" aria-label="Sections">
     <a href="../../../labs/">Lab</a>
-    <a href="../../" class="is-active">Study</a>
+    <a href="../../" class="is-active" aria-current="true">Study</a>
   </nav>
 </div></header>
 
@@ -50,7 +50,7 @@
 <div class="table-wrap">
 <table class="ref-table ref-table--text" id="tbl-givens">
   <caption>Design requirements and material properties</caption>
-  <thead><tr><th>Item</th><th>Given</th></tr></thead>
+  <thead><tr><th scope="col">Item</th><th scope="col">Given</th></tr></thead>
   <tbody>
     <tr><td>Application</td><td>Reinforced concrete beam</td></tr>
     <tr><td>Specified strength f′<sub>c</sub></td><td>3,000 psi at 28 days</td></tr>
@@ -118,17 +118,17 @@
 <div class="table-wrap">
 <table class="ref-table" id="tbl-volumes">
   <caption>Absolute volumes of everything except the sand</caption>
-  <thead><tr><th>Ingredient</th><th>Calculation</th><th>Volume, yd³</th></tr></thead>
+  <thead><tr><th scope="col">Ingredient</th><th scope="col">Calculation</th><th scope="col">Volume, yd³</th></tr></thead>
   <tbody>
     <tr><td>Cementitious materials</td><td>544 ÷ (3.15 × 1,685)</td><td>0.102</td></tr>
     <tr><td>Water</td><td>299 ÷ (1.00 × 1,685)</td><td>0.177</td></tr>
     <tr><td>Coarse aggregate (SSD)</td><td>1,872 ÷ (2.68 × 1,685)</td><td>0.415</td></tr>
     <tr><td>Air</td><td>1.5% × 1.0 yd³</td><td>0.015</td></tr>
-    <tr><th>Sum</th><td></td><th>0.7095</th></tr>
+    <tr><th scope="row" colspan="2">Sum, carried at full precision</th><th>0.7095</th></tr>
   </tbody>
 </table>
 </div>
-<p>Water has no relative density term because water is the reference: its relative density is 1. The sand takes what is left:</p>
+<p>Water has no relative density term because water is the reference: its relative density is 1. The three-decimal volumes are rounded for display; the sum uses the unrounded values, which is why it reads 0.7095 rather than 0.709. The sand takes what is left:</p>
 <div class="eq"><i>V</i><sub>FA</sub> = 1 − 0.7095 = <strong>0.2905 yd³</strong></div>
 <div class="eq"><i>m</i><sub>FA, SSD</sub> = 0.2905 × 2.64 × 1,685 ≈ <strong>1,292 lb/yd³</strong></div>
 <figure>
@@ -160,20 +160,20 @@
 <div class="table-wrap">
 <table class="ref-table" id="tbl-summary">
   <caption>Design-basis mix proportions per cubic yard, SSD basis</caption>
-  <thead><tr><th>Ingredient</th><th>Mass, lb/yd³</th></tr></thead>
+  <thead><tr><th scope="col">Ingredient</th><th scope="col">Mass, lb/yd³</th></tr></thead>
   <tbody>
     <tr><td>Total cementitious materials</td><td>544</td></tr>
     <tr><td>Water</td><td>299</td></tr>
     <tr><td>Coarse aggregate (SSD)</td><td>1,872</td></tr>
     <tr><td>Fine aggregate (SSD)</td><td>1,292</td></tr>
-    <tr><th>Total</th><th>4,007</th></tr>
+    <tr><th scope="row">Total</th><th>4,007</th></tr>
   </tbody>
 </table>
 </div>
 <p>Three quick checks:</p>
 <ol>
   <li><strong>The ratio.</strong> 299 ÷ 544 ≈ 0.55 — matches the design.</li>
-  <li><strong>The volume.</strong> 0.102 + 0.177 + 0.415 + 0.015 + 0.2905 = 1.000 yd³.</li>
+  <li><strong>The volume.</strong> 0.7095 + 0.2905 = 1.000 yd³ — the unrounded absolute volumes add to exactly one cubic yard.</li>
   <li><strong>The density.</strong> 4,007 lb ÷ 27 ft³ ≈ 148.4 lb/ft³. Normal-weight concrete runs about 140 to 150 lb/ft³, so the answer is reasonable.</li>
 </ol>
 <div class="table-wrap">
@@ -222,7 +222,7 @@
   <a class="btn btn-primary" href="../../../labs/mix-design/">Open the lab →</a>
 </div>
 
-<nav class="article-nav">
+<nav class="article-nav" aria-label="Series">
   <a class="prev" href="../"><span class="dir">← Previous</span><span class="ttl">Part 1: How to design a concrete mix</span></a>
   <a class="next" href="../../"><span class="dir">Study →</span><span class="ttl">All study materials</span></a>
 </nav>
