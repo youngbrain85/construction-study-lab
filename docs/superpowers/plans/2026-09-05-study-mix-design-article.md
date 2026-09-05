@@ -111,7 +111,7 @@ Expected: `article.css` 테스트 FAIL(`ENOENT`), CNST 테스트 PASS.
 .article-hero-inner { max-width:1100px; margin:0 auto; }
 .article-hero .eyebrow { margin:0; color:var(--neon); }
 .article-hero h1 { font:800 72px/.92 var(--font-head); text-transform:uppercase; letter-spacing:.01em;
-  color:#fff; margin:12px 0 16px; max-width:14ch; }
+  color:var(--bg); margin:12px 0 16px; max-width:14ch; } /* --bg = 흰색: theme.css 에 흰색 토큰이 없어 배경 토큰을 흰 글자색으로 쓴다 */
 .article-hero .lede { font:400 18px/1.55 var(--font); color:var(--icy); max-width:60ch; margin:0 0 20px; }
 .article-hero .byline { font:500 12px/1.6 var(--font-mono); letter-spacing:.06em; text-transform:uppercase;
   color:var(--icy); margin:0; }
@@ -201,9 +201,9 @@ main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; d
 .article-nav a.next { text-align:right; }
 
 /* 랩 CTA */
-.cta-lab { display:flex; align-items:center; justify-content:space-between; gap:24px; background:var(--dark); color:#fff;
+.cta-lab { display:flex; align-items:center; justify-content:space-between; gap:24px; background:var(--dark); color:var(--bg);
   padding:28px 32px; border-radius:var(--radius); margin:48px 0 0; }
-.cta-lab h3 { color:#fff; margin:0 0 6px; }
+.cta-lab h3 { color:var(--bg); margin:0 0 6px; }
 .cta-lab p { color:var(--icy); margin:0; }
 .cta-lab .btn-primary { flex:none; text-decoration:none; }
 .cta-lab :focus-visible { outline-color:var(--neon); }
