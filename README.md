@@ -1,6 +1,6 @@
 # Construction Study Lab
 
-Interactive labs and study materials for construction education, maintained by the Thompson Thrift Department of Construction Management at Indiana State University.
+Interactive labs and study materials for construction education.
 
 First lab: **Mix Design Lab** — proportion a concrete mix with the ACI PRC-211.1-22 tables, then run virtual slump (ASTM C143) and compression (ASTM C39) tests. The three test scenes render in real-time 3D via a self-hosted three.js (`site/shared/vendor/`).
 
