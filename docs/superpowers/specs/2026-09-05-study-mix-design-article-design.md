@@ -88,7 +88,7 @@ Study 목록(`study/index.html`)은 바꾸지 않는다 — 두 행이 "Page" �
 | 목차 | `.toc` sticky top 88px; 제목 mono 11.5px 대문자 `--muted`; 목록은 왼쪽 2px `--border` 선, 항목 13.5px `--muted`, hover `--dark`, `.is-active`는 `--dark` + 왼쪽 선 `--royal` + 600 |
 | 본문 타이포 | `.article` 16.5px/1.7; `h2` 26px 700, 위 여백 56px, 상단 2px `--dark` 선 + `.num`(Barlow Condensed 800 30px `--royal`); `h3` 19px 700; `p` 아래 18px; 링크 `--royal` |
 | 상자 | `.callout` padding 18px 22px, margin 24px 0, `.label` mono 11.5px 대문자 자간 .12em. `.callout-key` 배경 `--icy` + 왼쪽 4px `--royal`(라벨 `--royal`) / `.callout-def` 배경 `--bg` + 1px `--border`(라벨 `--muted`) / `.callout-warn` 배경 `--amber-50` + 왼쪽 4px `--amber`(라벨 `--amber`) |
-| 그림 | `figure` margin 28px 0; `img` width 100% radius 2px; `figcaption` mono 12.5px `--muted`. `.fig-row`는 2열 grid(gap 16px, ≤700px 1열) — 작은 사진 2장을 나란히(원본 해상도가 낮아 확대 금지: `img { max-width: 원본 폭 }`) |
+| 그림 | `figure` margin 28px 0; `img` width 100% radius 2px; `figcaption` mono 12.5px `--muted`. 작은 사진(골재 등급 350px, 각진/둥근 331px)은 `figure.fig-small`로 두고 `img`에 `max-width: 원본 폭`을 주어 확대하지 않는다(두 사진은 각각 다른 절에 있으므로 나란히 놓지 않음) |
 | SVG 도해 | 인라인 `<svg class="fig-svg" viewBox=…>`; 색은 `currentColor`와 `var(--royal)`·`var(--icy)`·`var(--border)`·`var(--muted)`만; 글자는 사이트 서체(`font-family: var(--font-mono)`) 12–13px |
 | 수식 | `.eq`(가운데 정렬 flex, 18px, margin 22px 0) + `.frac`(세로 flex, 분자 아래 1.5px `--text` 선). 변수는 `<i>`, 첨자는 `<sub>` |
 | 표 | `.table-wrap { overflow-x:auto }` 안에 theme.css `.ref-table`(caption 위, 홀수행 `--surface`). 셀 `white-space:nowrap`. 표 아래 `.ref-note` 출처 문구 |
@@ -103,7 +103,7 @@ Study 목록(`study/index.html`)은 바꾸지 않는다 — 두 행이 "Page" �
 ### 3.3 `article.js`
 
 - `#year` 채움.
-- `IntersectionObserver`(rootMargin `-30% 0px -60% 0px`)로 `.article h2[id]` 중 보이는 첫 항목의 목차 링크에 `.is-active`. 페이지 로드 시 해시가 있으면 그 항목을 활성.
+- 스크롤(rAF로 합침)·리사이즈·로드 시 `.article h2[id]` 중 **뷰포트 상단 35 % 선을 지난 마지막 제목**의 목차 링크에 `.is-active`(아무 제목도 지나지 않았으면 첫 제목). 긴 절 안에서 스크롤해도 현재 절이 유지되고, 위로 올라갈 때도 정확하다(IntersectionObserver 띠 방식은 위로 스크롤할 때 한 절 늦게 바뀐다).
 - 실패해도 페이지는 정상(순수 장식).
 
 ## 4. 콘텐츠 개요
@@ -156,7 +156,7 @@ Part 2의 모든 수치는 슬라이드 19–25와 동일하다(위 표가 정�
 | `graded-aggregate.jpg` | 350×200 그대로(≤ 25 KB) | `.fig-row`, max-width 350px | "Four aggregate sizes side by side, from fine to coarse" |
 | `angular-rounded.jpg` | 320×160 그대로(≤ 12 KB) | `.fig-row`, max-width 320px | "Angular crushed stone next to rounded gravel" |
 
-`loading="lazy"`, `width`/`height` 속성 명시(레이아웃 시프트 방지). 캡션은 `figcaption`.
+첫 화면에 보이는 `pour.jpg`만 `loading="eager"`, 나머지는 `loading="lazy"`. `width`/`height` 속성 명시(레이아웃 시프트 방지). 캡션은 `figcaption`. 처리 스크립트는 `tools/prep-study-images.py`(Pillow)로 커밋해 재현 가능하게 한다.
 
 ## 6. 표(Part 1) — 파싱 가능한 마크업
 
