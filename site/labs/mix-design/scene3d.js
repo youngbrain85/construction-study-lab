@@ -1245,3 +1245,6 @@ window.Scene3D = {
   buildSlumpScene,
   buildUtmScene,
 };
+
+// ── ES module export (labs/room/lab-room.js 가 재활용) — window.Scene3D 노출과 병행, 동작 불변 ──
+export { THREE, createStage, concreteMaterial, aggregateField, steelMaterial, orangeMaterial, darkMetalMaterial, disposeDeep, buildMixerScene, buildSlumpScene, buildUtmScene };
