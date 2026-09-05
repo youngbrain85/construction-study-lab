@@ -39,3 +39,23 @@ test('Study 사진 4장이 존재하고 용량 예산 안이다', () => {
     assert.ok(statSync(p).size <= max, `${name} is ${statSync(p).size} B > ${max} B`);
   }
 });
+
+const ARTICLE_PAGES = ['study/mix-design/index.html', 'study/mix-design/example/index.html'];
+test('글 페이지의 내부 링크·이미지·스타일 경로가 파일로 존재한다', () => {
+  for (const rel of ARTICLE_PAGES) {
+    const file = join(SITE, rel);
+    assert.ok(existsSync(file), `${rel} missing`);
+    const html = readFileSync(file, 'utf8');
+    const refs = [...html.matchAll(/\b(?:href|src)="([^"#][^"]*)"/g)].map(m => m[1]).filter(u => !/^https?:/.test(u));
+    assert.ok(refs.length > 10, `${rel}: too few refs`);
+    for (const u of refs) {
+      const clean = u.split('#')[0].split('?')[0];
+      let p = resolve(dirname(file), clean);
+      if (clean.endsWith('/')) p = join(p, 'index.html');
+      assert.ok(existsSync(p), `${rel}: broken ref ${u}`);
+    }
+    // 페이지 안 앵커(#id)도 실제 id 가 있어야 한다
+    const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
+    for (const m of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.has(m[1]), `${rel}: missing anchor #${m[1]}`);
+  }
+});
