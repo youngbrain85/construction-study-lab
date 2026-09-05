@@ -103,14 +103,14 @@ main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; d
   padding:28px 32px; border-radius:var(--radius); margin:48px 0 0; }
 .cta-lab h3 { color:var(--bg); margin:0 0 6px; }
 .cta-lab p { color:var(--icy); margin:0; }
-.cta-lab .btn-primary { flex:none; text-decoration:none; }
+.cta-lab .btn-primary { flex:none; text-decoration:none; color:var(--bg); } /* .article a(0,1,1)가 theme.css .btn-primary 글자색을 덮어써 버튼 글자가 안 보이던 결함 수정 */
 .cta-lab :focus-visible { outline-color:var(--neon); }
 
 @media (max-width:900px) {
   .article-hero { padding:36px 20px 32px; }
   .article-hero h1 { font-size:44px; }
   .article-hero .lede { font-size:16px; }
-  main.article-layout { grid-template-columns:1fr; gap:24px; padding:32px 20px 56px; }
+  main.article-layout { grid-template-columns:minmax(0,1fr); gap:24px; padding:32px 20px 56px; } /* 1fr 의 암묵적 최소폭(auto)이 넓은 표 때문에 그리드 트랙(=페이지)을 뚫고 나가던 결함 수정 */
   .toc { position:static; }
   .toc ol { columns:2; column-gap:24px; }
   .toc li { break-inside:avoid; }
