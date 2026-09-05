@@ -26,6 +26,7 @@
 <main class="room-main">
   <div class="room-viewport" id="room" role="region" aria-label="Virtual construction lab">
     <div class="room-caption">
+      <h1 class="visually-hidden">Lab</h1>
       <p class="eyebrow">01 · Interactive labs</p>
       <p class="room-hint">Pick a station</p>
     </div>
@@ -38,15 +39,30 @@
 <script src="../shared/registry.js"></script>
 <script src="../shared/dom.js"></script>
 <script src="lab-list.js"></script>
-<script type="module" src="room/lab-room.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear(); // 경로와 무관하게 항상
+  // 3D 모듈이 8 s 안에 body.room-page--3d 를 붙이지 못하면(404·구문 오류 등) 대체 목록을 띄운다
+  window.__labRoomGuard = setTimeout(() => {
+    if (!document.body.classList.contains('room-page--3d')) LabList.showFallback('module-timeout');
+  }, 8000);
+</script>
+<script nomodule>LabList.showFallback('nomodule');</script>
+<script type="module" src="room/lab-room.js" onerror="LabList.showFallback('module-error')"></script>
 ```
 
-- 지금의 `.band-dark .section-head`(큰 "LAB" 제목 띠)와 `main#groups`는 **삭제**한다. 눈썹 문구 "01 · Interactive labs"는 뷰포트 왼쪽 위 캡션으로 옮긴다.
+`<head>`에는 `<link rel="modulepreload" href="../shared/vendor/three.module.js">`와 `<link rel="modulepreload" href="mix-design/scene3d.js">`를 둔다(lab-room → scene3d → three 직렬 import 체인의 대기 제거).
+
+- 지금의 `.band-dark .section-head`(큰 "LAB" 제목 띠)와 `main#groups`는 **삭제**한다. 눈썹 문구 "01 · Interactive labs"는 뷰포트 왼쪽 위 캡션으로 옮긴다. 페이지 헤딩 구조는 시각적으로 숨긴 `<h1>Lab</h1>`로 유지한다(`.visually-hidden` 유틸을 theme.css에 추가).
+- 3D 모듈이 아예 실행되지 못해도(404·구문 오류·`nomodule` 브라우저·8 s 타임아웃) 인라인 클래식 스크립트가 `LabList.showFallback`으로 목록을 그린다 — v4처럼 클래식 스크립트만으로도 Mix Design Lab 링크가 항상 존재한다. `lab-room.js`는 마운트 성공 시 `clearTimeout(window.__labRoomGuard)`를 호출한다.
+- 푸터 연도는 인라인 스크립트가 항상 채운다(3D·대체 경로 무관).
 - 렌더러 캔버스는 `#room` 안에 삽입되며 `role="img"`, `aria-label="Top-down view of the virtual construction lab"`를 갖는다. 3D 안의 정보는 전부 라벨(§5.4)로 DOM에 중복 노출되므로 캔버스 자체는 장식이다.
 
 ### 2.2 레이아웃 CSS (`theme.css`에 `.room-*` 블록 추가)
 
-- `body.room-page { height:100vh; height:100dvh; overflow:hidden; }` — 페이지 전체는 스크롤하지 않는다.
+- `body.room-page { min-height:0; height:100vh; height:100dvh; overflow:hidden; }` — `.section-page { min-height:100vh }`를 `min-height:0`으로 눌러야 한다. 안 그러면 iOS 주소창 표시 상태에서 100vh > 100dvh라 body가 화면보다 길어지고 푸터가 잘린다. 페이지 전체는 스크롤하지 않는다(뷰포트 높이 ≥ 641px 기준).
+- `@media (max-height:640px) { body.room-page { height:auto; min-height:100dvh; overflow:auto; } .room-viewport { flex:none; height:420px; } }` — 가로로 눕힌 폰(844×390)·낮은 창에서는 방을 420px 고정 높이로 두고 페이지가 자연 스크롤한다. "한 화면·스크롤 없음"은 1440×900과 390×844 기준 목표이지 불변 조건이 아니다.
+- `.room-main > [hidden] { display:none !important; }` — `.section-main { display:flex }`가 UA의 `[hidden]`을 이기므로 명시한다(안 그러면 빈 `#fallback`이 `flex-grow:1`로 뷰포트 높이의 절반을 차지한다).
+- `.visually-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }`
 - `.room-main { flex:1; min-height:0; display:flex; flex-direction:column; max-width:none; margin:0; padding:0; overflow:auto; }` — 대체 목록이 보일 때는 `main` 안에서만 스크롤한다.
 - `.room-viewport { position:relative; flex:1; min-height:0; background:var(--icy); overflow:hidden; }` — 3D 첫 프레임 전에도 Icy 배경과 캡션이 먼저 보인다.
 - `.room-caption { position:absolute; left:40px; top:28px; z-index:2; pointer-events:none; }` / `.room-hint { font:400 15px/1.4 var(--font); color:var(--muted); margin:4px 0 0; }`
@@ -61,8 +77,12 @@
 |---|---|
 | 로딩(모듈 다운로드 중) | Icy 배경 + 캡션만. 스피너 없음 |
 | 3D 정상 | 방 + 라벨. `body`에 `room-page--3d` 클래스 추가 |
-| 대체(`?no3d=1`, WebGL 실패, import 실패, 마운트 중 예외) | `.room-viewport`에 `hidden`, `#fallback`에 v4 목록 렌더. `console.warn('[LabRoom] fallback:', reason)` |
+| 대체(`?no3d=1`, WebGL 실패, import 실패, 마운트 중 예외) | `LabList.showFallback(reason)`: `.room-viewport`에 `hidden`, `#fallback`에 v4 목록 렌더, `console.warn('[LabRoom] fallback:', reason)` |
+| 모듈 자체 실행 불가(404·구문 오류·`nomodule`·8 s 타임아웃) | 인라인 가드(§2.1)가 같은 `LabList.showFallback`을 호출 |
+| WebGL 컨텍스트 손실(`webglcontextlost`) | 루프 정지 후 `LabList.showFallback('context-lost')` |
+| bfcache 복원(뒤로 가기, `pageshow.persisted`) | 페이드 제거·카메라 재적용·루프 재개·Best grade 재계산(§5.3). 대체 목록이 떠 있었다면 목록 재렌더 |
 | 탭 백그라운드 | 렌더 루프 정지, 복귀 시 재개 |
+| 유휴 20 s(포인터·키 입력 없음) | 루프 정지(마지막 프레임 유지), 입력이 오면 재개 |
 
 `?no3d=1` 쿼리는 검증용 강제 대체 스위치다(문서화만, UI 노출 없음).
 
@@ -106,9 +126,9 @@ const STATIONS = [ // center = 바닥 발자국 중심, size = 발자국(w: x �
 ];
 
 const CAMERA = {
-  fovDeg: 36, margin: 1.08, targetY: 0.8,
-  landscape: { yawDeg: 35, pitchDeg: 50 },   // aspect ≥ 1: 앞쪽 오른쪽(남동) 위에서
-  portrait:  { yawDeg: 80, pitchDeg: 55 },   // aspect < 1: 마당 쪽(동) 끝에서 방의 긴 축이 화면 위아래로
+  targetY: 0.8,
+  landscape: { yawDeg: 35, pitchDeg: 50, fovDeg: 36, margin: 1.08 }, // aspect ≥ 1: 앞쪽 오른쪽(남동) 위에서
+  portrait:  { yawDeg: 80, pitchDeg: 55, fovDeg: 52, margin: 1.04 }, // aspect < 1: 마당 쪽(동) 끝에서 방의 긴 축이 화면 위아래로. 넓은 fov로 카메라를 가까이(fov 36°면 거리 ≈ 48 m라 믹서가 40px)
 };
 ```
 
@@ -116,9 +136,10 @@ const CAMERA = {
 - 통로: x ∈ [-1.7, 1.7] 구간은 비워 둔다(스테이션 발자국이 침범하지 않는다).
 - 카메라 방향(타깃 → 카메라 단위벡터): `dir = (sin(yaw)·cos(pitch), sin(pitch), cos(yaw)·cos(pitch))`. 타깃 = `BOUNDS` 중심의 x·z와 `targetY`.
 - `fitCamera(aspect)` → `{ position:{x,y,z}, target:{x,y,z}, fovDeg }`: `BOUNDS`의 꼭짓점 8개가 모두 시야 안에 들어오는 **최소 거리**를 닫힌식으로 구한다. 카메라 기저(forward = -dir, right = normalize(cross(forward, up)), up' = cross(right, forward))에서 꼭짓점의 로컬 좌표 (lx, ly, lz)를 구하고, 거리 d는 모든 꼭짓점에 대해 `|lx| ≤ (lz + d)·tan(hfov/2)/margin`, `|ly| ≤ (lz + d)·tan(vfov/2)/margin`을 만족하는 최소값(`tan(hfov/2) = tan(vfov/2)·aspect`). 반복 없음.
+- `deoverlapLabels(boxes)` → 같은 배열(제자리 수정). `boxes = [{ key, x, y, w, h }]`(화면 px, x·y는 라벨 상자의 좌상단). 화면 y 오름차순으로 정렬한 뒤 앞 상자와 겹치는 상자는 **y가 작은(더 먼) 쪽**을 겹친 높이 + 8px만큼 위로 민다. 밀린 거리를 `lead`로 돌려준다(라벨의 리더선 길이). 한 프레임에 한 번, 5개라 비용 없음.
 - `mulberry32(seed)`: 소품 배치용 결정적 난수(엔진과 동일 알고리즘, 5줄). Mix Design의 `engine.js`는 이 페이지에 로드하지 않는다.
-- 노출: ES module `export`와 `window.LabLayout` 둘 다(브라우저·node 테스트 공용). node 테스트는 `createRequire`가 아니라 `import()`로 읽는다.
-- 테스트(`tools/layout.test.mjs`): (1) `STATIONS` 키 = `registry.STATION_KEYS`(순서 포함) (2) 발자국이 방(또는 survey는 마당) 안에 있고, 통로를 침범하지 않으며, 서로 겹치지 않는다 (3) aspect 0.46·1.0·1.6·2.2 각각에 대해 `fitCamera` 결과로 원근 투영했을 때 `BOUNDS` 꼭짓점 8개가 모두 NDC [-1, 1] 안에 있다 (4) 거리는 aspect가 커질수록 줄거나 같다(가로가 넓을수록 가까이).
+- 노출: ES module `export`와 `if (typeof window !== 'undefined') window.LabLayout = …` 둘 다(브라우저·node 테스트 공용). node 테스트는 `createRequire`가 아니라 `import()`로 읽는다.
+- 테스트(`tools/layout.test.mjs`): (1) `STATIONS` 키 = `registry.STATION_KEYS`(순서 포함) (2) 발자국이 방(또는 survey는 마당) 안에 있고, 통로를 침범하지 않으며, 서로 겹치지 않는다 (3) aspect 0.46·0.6·0.9·1.0·1.3·1.6·2.2 각각에 대해 `fitCamera` 결과로 원근 투영했을 때 `BOUNDS` 꼭짓점 8개가 모두 NDC [-1, 1] 안에 있다 (4) 거리 단조성은 **같은 방위 안에서만**: landscape {1.0, 1.3, 1.6, 2.2}와 portrait {0.46, 0.6, 0.9} 각각에서 aspect가 커질수록 거리가 줄거나 같다(방위가 바뀌는 0.9↔1.0 경계는 (3)으로만 검증) (5) `deoverlapLabels`: aspect 0.46·0.53·0.69(390×844, 390×743, 390×564)에서 라벨 앵커 5개를 투영하고 상자 140×56px을 붙였을 때, 처리 후 어떤 두 상자도 겹치지 않고 각 상자의 이동량 ≤ 120px.
 
 ## 5. 3D 모듈
 
@@ -135,7 +156,7 @@ const CAMERA = {
   - `buildTensileFrame(THREE, pal)`: 베이스 + 기둥 2(높이 2.2) + 크로스헤드 + 상·하 그립 + 그립 사이 철근 시편(요철은 얇은 링 6개), 옆에 시편 선반(막대 6개 비스듬히) + 파단 시편 트레이
   - `buildFramingStation(THREE, pal)`: 스터드 벽 패널(길이 2.4, 높이 2.4, 스터드 16" ≈ 0.4 m 간격, 상·하 플레이트, 헤더 1개) — x축과 평행하게 세워 카메라에 비스듬히 보이게, 테이블소(테이블 + 다리 4 + 날 원판), 목재 더미(2×4 박스 8개 격자 적층)
   - `buildSurveyStation(THREE, pal)`: 삼각대(다리 3 + 헤드) 위 토탈스테이션(박스 + 망원경 실린더), 레벨 로드(높이 2.0, 빨강·흰 띠 10개 교대 `0xd7263d`/`0xffffff`), 벤치마크 말뚝 2개 + 그 사이 얇은 줄
-  - Mix 스테이션은 `props.js`에 없다 — `lab-room.js`가 `buildMixerScene({wc:0.5, rng})`, `buildSlumpScene({mode:'true', slump:3, measuredSlump:3, rng})`, `buildUtmScene({failMode:'cone', rng})`를 그대로 불러 배치한다(초기 상태: 빈 콘·온전한 공시체).
+  - Mix 스테이션은 `props.js`에 없다 — `lab-room.js`가 `buildMixerScene({wc:0.5, rng})`, `buildSlumpScene({mode:'true', slump:3, measuredSlump:3, rng})`, `buildUtmScene({failMode:'cone', rng})`를 그대로 불러 배치한다. 빌더의 생성 직후 상태는 게임의 첫 프레임(반투명 컷어웨이 콘, 공시체 대신 빈 몰드 3개)이므로 **배치 직후 한 번** `slump.update('lift', 0, 0)`(불투명 빈 콘, 봉·뒤집은 콘·치수선 숨김)과 `utm.update(0, 0, 0, true)`(온전한 공시체 표시, 몰드 숨김)를 호출해 정지 상태를 만든다. 믹서만 루프에서 `update(3 + t·0.35)`로 돈다.
 - `buildFloorRing(THREE, size)`: 발자국 테두리(폭 0.06, y=0.01, `MeshBasicMaterial` `0x0053a5`, `transparent`) — 호버·활성 표시용.
 - `buildHitBox(THREE, size, h)`: 발자국 × 높이 h의 투명 박스. `material.colorWrite=false, depthWrite=false`(그리지 않지만 `visible:true`라 레이캐스트 대상). `userData.station = key`.
 - 모든 메쉬 `castShadow/receiveShadow = true`(줄눈·링·히트박스 제외). 스테이션당 메쉬 ≤ 60개.
@@ -144,30 +165,35 @@ const CAMERA = {
 
 ```
 mount():
-  1. no3d 쿼리 / window.SITE·window.LabList 존재 확인 → 없으면 fallback
+  1. `?no3d=1` 쿼리면 fallback. (window.SITE·window.LabList는 §2.1의 스크립트 순서가 보장한다 — 조건 검사 없음)
   2. import('../mix-design/scene3d.js'), import('./layout.js'), import('./props.js')  (실패 → fallback)
-  3. createStage(#room, { fov:36, background:0xe6f6fd, groundRadius:0.01 }) → null이면 fallback; stage.ground.visible=false
+  3. createStage(#room, { background:0xe6f6fd, groundRadius:0.01 }) → null이면 fallback; stage.ground.visible=false (fov·위치는 6에서 applyCamera가 정한다)
      키 라이트 재배치: position (6,12,6), shadow.camera ±12, mapSize 2048, far 40
   4. buildRoomShell → scene
   5. for station of STATIONS: lab = LABS.find(l => l.station === key)
        props = active ? Mix 빌더 3개 : props.js 빌더 (palette muted = !active)
        ring(활성: opacity .55 상시 / soon: 숨김), hitBox, label(§5.4)
-  6. fitCamera(aspect) 적용, ResizeObserver(#room)로 크기·aspect 재적용
-  7. setLoop(render): mixer.update(3 + t·0.35) 드럼 공회전(3 s 이후는 버킷·투입 스트림이 숨겨진 구간이라 드럼만 돈다) → 라벨 위치 갱신 → render
-     document.visibilitychange: hidden → stop, visible → setLoop
-  8. window.__labRoomDebug = { renderAt(t), hover(key|null), activate(key), stations(), info(), renderer, camera }
+  6. applyCamera(fitCamera(aspect)) — position.set → lookAt(target) → fov·aspect 설정 → updateProjectionMatrix() → updateMatrixWorld()를 한 묶음으로.
+     ResizeObserver(#room) → setSize(w,h,false) + applyCamera + 즉시 한 프레임 렌더
+  7. 루프 한 프레임 = mixer.update(3 + t·0.35)(3 s 이후는 버킷·투입 스트림이 숨겨진 구간이라 드럼만 돈다) → renderer.render → 라벨 위치 갱신(§5.4; render 뒤에 해야 카메라 행렬이 최신).
+     기본: setLoop(프레임). 20 s 무입력이면 stop, 입력 시 재개. document.hidden이면 stop, 복귀 시 재개.
+     prefers-reduced-motion: reduce — 루프 없음. mixer.update(3) 한 번, 이후 호버·포커스·리사이즈·activate·pageshow 때만 한 프레임 렌더
+  8. body.room-page--3d 추가, clearTimeout(window.__labRoomGuard)
+  9. window.__labRoomDebug = { renderAt(t), hover(key|null), activate(key), stations(), info(), renderer, camera }
+     info() = { calls: renderer.info.render.calls, triangles, meshes }
 ```
 
-- **호버**: `pointermove`(pointerType ≠ 'touch')마다 다음 프레임에 레이캐스트(히트박스만 대상). 결과가 바뀌면 `setHover(key|null)`:
-  - 활성 스테이션: 소품 재질의 `emissive = 0x0053a5, emissiveIntensity = 0.18`(원값 저장·복원), 링 opacity 1.0, 라벨 `.is-hover`, 커서 `pointer`
+- **호버**: `pointermove`(pointerType ≠ 'touch')마다 다음 프레임에 레이캐스트(히트박스만 대상). 이벤트 대상이 `.station-label` 안이면 레이캐스트를 건너뛰고 `dataset.station`을 키로 쓴다(라벨은 히트박스 위 공중에 떠 있어 레이는 빗나간다). 라벨 자체에도 `pointerenter → setHover(key)`, `pointerleave → setHover(null)`을 건다. 결과가 바뀌면 `setHover(key|null)`:
+  - 활성 스테이션: 소품 재질 중 `mat.isMeshStandardMaterial`인 것만 `emissive = 0x0053a5, emissiveIntensity = 0.18`(원값을 `Map<material, {hex, intensity}>`에 저장·복원 — 슬럼프 치수선의 `LineBasicMaterial`은 emissive가 없어 건너뛴다), 링 opacity 1.0, 라벨 `.is-hover`, 커서 `pointer`
   - Coming soon: 라벨 `.is-hover`만, 소품·링 변화 없음, 커서 기본
-- **클릭/탭**: `pointerdown` 위치 기억 → `pointerup`에서 이동 < 8px이면 `activate(key)`. 터치는 호버 없이 바로 이 경로.
+- **클릭/탭**: 뷰포트에서는 `pointerdown` 위치 기억 → `pointerup`에서 이동 < 8px이면 레이캐스트로 키를 얻어 `activate(key)`. 라벨에서는 `click` 핸들러가 담당: 주 버튼이고 Ctrl/Cmd/Shift/Alt가 없으면 `preventDefault()` 후 `activate(key)`(수정키·중클릭은 브라우저 기본 새 탭 허용). Coming soon 라벨의 `click`도 같은 핸들러로 nudge. 터치는 호버 없이 바로 이 경로.
 - **`activate(key)`**:
-  - 활성: 이미 진행 중이면 무시. `prefers-reduced-motion: reduce`면 즉시 `location.assign(lab.href)`. 아니면 450 ms 동안 카메라 위치를 `현재 → 라벨 앵커 + dir·4.5 m`로 ease-out-cubic 보간하고 `.room-fade.is-on`, 완료 시 `location.assign(lab.href)`.
-  - Coming soon: 라벨에 `.is-nudge`를 600 ms 붙인다(상태 글자가 두 번 깜빡이는 CSS 애니메이션). 이동 없음.
-- **키보드**: 라벨 요소 자체가 포커스 대상. `focus` → `setHover(key)`, `blur` → `setHover(null)`. 활성 라벨은 `<a href>`라 Enter로 이동(클릭 경로와 같게 `activate`를 호출하고 기본 이동은 막는다).
-- **unmount**(pagehide): 루프 정지, `disposeDeep`, `renderer.dispose`, `__labRoomDebug` 제거.
-- `pageshow`(bfcache 복원)에서는 라벨의 Best grade만 다시 계산한다.
+  - 활성: 이미 진행 중이면 무시(`activating` 플래그). `prefers-reduced-motion: reduce`면 즉시 `location.assign(lab.href)`. 아니면 450 ms 동안 카메라 위치를 `현재 → 라벨 앵커 + dir·4.5 m`로, 카메라 타깃을 `방 타깃 → 라벨 앵커`로 함께 ease-out-cubic 보간(매 프레임 `applyCamera`)하고 `.room-fade.is-on`, 완료 시 `location.assign(lab.href)`.
+  - Coming soon: 라벨에 `.is-nudge`를 600 ms 붙인다(상태 글자가 두 번 깜빡이는 CSS 애니메이션. `prefers-reduced-motion: reduce`에서는 애니메이션 없이 테두리만 `var(--royal)`로 600 ms). 이동 없음.
+- **키보드**: 라벨 요소 자체가 포커스 대상. `focus` → `setHover(key)`, `blur` → `setHover(null)`. 활성 라벨은 `<a href>`라 Enter가 `click`을 일으키고 위 `click` 핸들러가 `activate`를 돈다.
+- **pagehide**: `e.persisted`(bfcache에 들어감)면 루프만 정지. 아니면 `disposeDeep`, `renderer.dispose`, `__labRoomDebug` 제거.
+- **pageshow**(`e.persisted`, 뒤로 가기 복원): `.room-fade.is-on` 제거, `activating` 리셋, `applyCamera(fitCamera(aspect))`, 루프 재개(reduced-motion이면 한 프레임), 라벨 Best grade 재계산. 대체 목록이 떠 있었다면 `LabList.render` 재호출. 캔버스가 이미 dispose된 상태(비-bfcache 경로)는 새 로드라 `mount()`가 처음부터 돈다.
+- **webglcontextlost**: 루프 정지 후 `LabList.showFallback('context-lost')`.
 
 ### 5.4 라벨 (HTML 오버레이)
 
@@ -178,11 +204,15 @@ mount():
   - `.is-soon`: 배경 `var(--surface2)`, `border:1px dashed var(--faint)`, 글자 `var(--faint)`.
   - `.is-hover`, `:focus-visible`: 배경 `var(--royal)`, 글자·테두리 `#fff`.
   - 색 조합은 모두 기존 대비 게이트가 검증하는 토큰 쌍만 쓴다(text/muted/faint × bg/surface2, #fff × royal).
-- ≤700px: `.name` 12px, `.status` 10.5px, padding 5px 8px.
+- ≤700px: `.name` 12px, `.status` 10.5px, padding 5px 8px, `.grade` 숨김.
+- 투영 후 상자끼리 겹치면 `deoverlapLabels`(§4)로 먼 쪽 라벨을 위로 밀어 5개가 항상 전부 보이고 클릭 가능하다. 밀린 라벨은 `--lead`(px) 변수로 앵커까지 1px 세로 리더선(`::after`, `var(--faint)`)을 그린다.
+- 라벨 위 포인터·클릭 이벤트는 라벨이 직접 처리한다(§5.3) — 뷰포트 레이캐스트로 넘기지 않는다.
 
 ## 6. 대체 목록 — `site/labs/lab-list.js` (클래식 스크립트)
 
-지금 `labs/index.html` 인라인에 있는 `activeRow/soonRow/render`를 이 파일로 옮기고 `window.LabList = { render(root) }`로 노출한다. 동작은 v4와 같되 Coming soon 행이 `lab.name`을 제목으로 쓴다(§3). `lab-room.js`가 대체 경로에서 `LabList.render(document.getElementById('fallback'))`를 호출하고 `hidden`을 푼다.
+지금 `labs/index.html` 인라인에 있는 `activeRow/soonRow/render`를 이 파일로 옮기고 `window.LabList = { render(root), showFallback(reason) }`로 노출한다. 동작은 v4와 같되 Coming soon 행이 `lab.name`을 제목으로 쓴다(§3). 연도(`#year`)는 여기서 다루지 않는다(인라인 스크립트가 항상 채움, §2.1).
+
+`showFallback(reason)`은 멱등이다: `clearTimeout(window.__labRoomGuard)`, `#room`에 `hidden`, `#fallback`의 `hidden` 해제, `render(#fallback)`, `console.warn('[LabRoom] fallback:', reason)`. `lab-room.js`의 모든 대체 경로와 §2.1의 인라인 가드가 이 함수 하나를 부른다.
 
 ## 7. 시각 스타일
 
@@ -195,20 +225,23 @@ mount():
 | Coming soon | `makePalette({muted:true})` 회색조 + 링 숨김 |
 | 활성 | 제 색 + 링 Royal opacity .55 상시, 호버 시 1.0 + emissive |
 | 조명 | `createStage` 기본(키·필·림) + 키 라이트 위치/그림자 범위 재설정(§5.3) |
-| 카메라 | fov 36°, 가로 yaw 35°/pitch 50°, 세로 yaw 80°/pitch 55°, 여백 8% |
+| 카메라 | 가로 yaw 35°/pitch 50°/fov 36°/여백 8%, 세로 yaw 80°/pitch 55°/fov 52°/여백 4% |
 
 ## 8. 성능·오류 처리
 
-- 예산: draw call ≤ 400(`__labRoomDebug.info()`로 검증), 메쉬 총 ≤ 300, DPR ≤ 2, 그림자는 키 라이트 하나(2048), 추가 다운로드는 새 JS 4개(총 ≤ 60 KB)뿐. 모바일(390×844) 첫 프레임 ≤ 2 s 목표(헤드리스 캡처 타이밍으로 확인).
+- 예산: draw call ≤ 400(`__labRoomDebug.info()`로 검증), 메쉬 총 ≤ 400, DPR ≤ 2, 그림자는 키 라이트 하나(2048).
+- 다운로드: 새 JS 4개(≤ 60 KB)에 더해 **이 페이지에서 처음 받는** `three.module.js`(1.37 MB raw, 압축 후 약 330 KB)와 `scene3d.js`(68 KB). `<head>`의 `modulepreload` 2개(§2.1)로 직렬 대기를 없앤다. Mix Design Lab을 다녀온 방문자는 캐시로 받는다.
+- 첫 프레임 목표: 데스크톱 캐시 없음 ≤ 1.5 s, 모바일 390×844에서 Fast 3G 에뮬레이션(CDP `Network.emulateNetworkConditions`) ≤ 6 s, 캐시 있음 ≤ 2 s.
 - 오류 처리: 대체 경로 §2.3. 마운트 전체가 `try/catch`로 감싸이며, 실패 시 부분적으로 만들어진 스테이지는 `dispose`한다.
-- 창 크기 변경: `ResizeObserver` → `renderer.setSize(w,h,false)`, `camera.aspect`, `fitCamera` 재적용.
+- 창 크기 변경: `ResizeObserver` → `renderer.setSize(w,h,false)` → `applyCamera(fitCamera(aspect))`(§5.3 6) → 즉시 한 프레임 렌더.
+- 유휴·모션 감소: §5.3 7(20 s 무입력 정지, reduced-motion이면 필요할 때만 렌더).
 - Math.random 금지(three 내부 제외) — 배치 난수는 `mulberry32(11)` 고정 시드.
 
 ## 9. 검증
 
 1. 자동: `node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/layout.test.mjs` 전부 통과(기존 29 + 신규).
-2. 헤드리스 Edge 캡처(스크래치패드 `verify/`에 저장): 데스크톱 1440×900, 모바일 390×844(iframe 래퍼) — 방 전체·라벨 5개·캡션·푸터가 한 화면에 보이는지 대조.
-3. CDP 워크: `__labRoomDebug.hover('mix')` → `renderAt` → 캡처(강조·링·라벨 색), `hover('soil')`(라벨만 강조), `activate('mix')` 후 URL이 `mix-design/`로 바뀜, `activate('soil')`은 URL 불변, `info().calls ≤ 400`, `?no3d=1`에서 대체 목록 캡처.
+2. 헤드리스 Edge 캡처(스크래치패드 `verify/`에 저장): 데스크톱 1440×900, 모바일 390×844(iframe 래퍼), 가로 폰 844×390 — 방 전체·라벨 5개·캡션·푸터가 보이고 **라벨 5개가 서로 겹치지 않는지** 대조. 데스크톱에서 `#room` 높이 = `.room-main` 높이(빈 `#fallback`이 공간을 차지하지 않음). 390×844에서 `document.documentElement.scrollHeight === clientHeight`. CDP `Emulation.setDeviceMetricsOverride`로 주소창 표시 상태(390×664)를 재현해 푸터가 보이는지 확인.
+3. CDP 워크: `__labRoomDebug.hover('mix')` → `renderAt` → 캡처(강조·링·라벨 색), `hover('soil')`(라벨만 강조), 라벨 중심으로 `pointermove`를 보내도 `.is-hover` 유지, Coming soon 라벨 클릭 → `.is-nudge`, `activate('mix')` 후 URL이 `mix-design/`로 바뀜, 이어서 `history.back()` → `.room-fade` opacity 0·캔버스 존재·`activate('mix')` 재동작, `activate('soil')`은 URL 불변, `info().calls ≤ 400`, `?no3d=1`에서 대체 목록 캡처, 모듈 경로를 404로 바꾼 사본에서 8 s 뒤 대체 목록이 뜨는지.
 4. 키보드: Tab으로 라벨 5개 순회, Enter로 Mix 진입(CDP `Input.dispatchKeyEvent`).
 5. 배포 후 라이브(cnstlab.org/labs/)에서 2·3 반복, Mix Design Lab 진입·리포트 완료 회귀 확인.
 
