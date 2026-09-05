@@ -956,6 +956,9 @@ test('글 페이지의 내부 링크·이미지·스타일 경로가 파일로 �
       let p = resolve(dirname(file), clean);
       if (clean.endsWith('/')) p = join(p, 'index.html');
       assert.ok(existsSync(p), `${rel}: broken ref ${u}`);
+      // 다른 페이지의 앵커(example/#step-4, ../#tbl-water)는 그 파일에 id 가 있어야 한다
+      const hash = u.includes('#') ? u.slice(u.indexOf('#') + 1) : '';
+      if (hash) assert.ok(readFileSync(p, 'utf8').includes(`id="${hash}"`), `${rel}: missing anchor ${u}`);
     }
     // 페이지 안 앵커(#id)도 실제 id 가 있어야 한다
     const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
