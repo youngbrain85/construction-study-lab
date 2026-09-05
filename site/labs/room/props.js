@@ -113,7 +113,7 @@ export function buildTensileFrame(pal) {
   g.add(box(0.12, 0.2, 0.12, pal.dark, X, 1.19, Z)); g.add(box(0.12, 0.2, 0.12, pal.dark, X, 0.35, Z)); // 상·하 그립
   g.add(cyl(0.014, 0.014, 0.66, pal.dark, X, 0.77, Z, 10));                               // 철근 시편
   for (let i = 0; i < 6; i++) g.add(cyl(0.02, 0.02, 0.012, pal.dark, X, 0.5 + i * 0.1, Z, 10)); // 마디
-  g.add(box(0.5, 0.35, 0.3, pal.royal, X, 0.42, Z + 0.55));                               // 유압 유닛
+  g.add(box(0.5, 0.35, 0.3, pal.royal, X, 0.175, Z + 0.5));                               // 유압 유닛(바닥에 놓여 베이스에 붙음)
   g.add(box(0.25, 0.18, 0.08, pal.dark, X, 1.7, Z - 0.3)); g.add(box(0.2, 0.1, 0.02, pal.white, X, 1.7, Z - 0.35)); // 판독기
   const RX = 0.9, RZ = -0.5;                                                              // 시편 선반
   g.add(box(0.7, 0.05, 0.4, pal.dark, RX, 0.5, RZ)); for (const dx of [-0.32, 0.32]) g.add(box(0.05, 0.5, 0.4, pal.dark, RX + dx, 0.25, RZ));
@@ -128,7 +128,7 @@ export function buildFramingStation(pal) {
   const g = new THREE.Group(); g.name = 'wood';
   const PZ = -1.1, L = 2.4, H = 2.4, T = 0.09, D = 0.04;                                 // 패널: x 축과 평행
   g.add(box(L, D, T, pal.wood, 0, D / 2, PZ)); g.add(box(L, D, T, pal.wood, 0, H - D / 2, PZ)); g.add(box(L, D, T, pal.wood, 0, H - D * 1.5, PZ)); // 하부·상부 이중 플레이트
-  for (let i = 0; i <= 6; i++) g.add(box(D, H - D * 3, T, pal.wood, -L / 2 + D / 2 + i * 0.393, H / 2, PZ)); // 스터드 16" 간격
+  for (let i = 0; i <= 6; i++) g.add(box(D, H - D * 3, T, pal.wood, -L / 2 + D / 2 + i * 0.393, D + (H - D * 3) / 2, PZ)); // 스터드 16" 간격 (하부 플레이트 위에 얹힘)
   g.add(box(1.0, 0.18, T, pal.wood, 0.4, 1.95, PZ));                                       // 헤더
   g.add(box(1.0, D, T, pal.wood, 0.4, 0.9, PZ));                                           // 창 하부 플레이트
   const SX = -0.9, SZ = 0.6;                                                              // 테이블소
