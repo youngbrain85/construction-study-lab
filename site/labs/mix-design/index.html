@@ -6,7 +6,7 @@
 <title>Mix Design Lab — Construction Study Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../shared/theme.css">
 <style>
 /* ── Mix Design Lab 모듈 전용 스타일 ──────────────────────────────
@@ -16,23 +16,23 @@
 
 /* COMPRESSION 장면 전용: 디지털 로드 인디케이터(7-seg풍 어두운 패널, 스펙 §3.3) */
 .utm-load-panel { position:absolute; right:16px; top:16px; width:190px;
-  background:#12151b; border:2px solid #3d414a; border-radius:8px; padding:10px 12px;
-  font-family:'Courier New', monospace; pointer-events:none; }
-.utm-load-panel .title { color:#7d8797; font:700 11px/1.4 Inter, sans-serif; letter-spacing:.04em; }
+  background:#12151b; border:2px solid #3d414a; border-radius:var(--radius); padding:10px 12px;
+  font-family:var(--font-mono); pointer-events:none; }
+.utm-load-panel .title { color:#7d8797; font:700 11px/1.4 var(--font); letter-spacing:.04em; }
 .utm-load-panel .readout { font-size:26px; font-weight:700; letter-spacing:.06em; margin-top:4px;
   text-shadow:0 0 6px currentColor; }
 .utm-load-panel .readout.psi { color:#5ee88a; }
 .utm-load-panel .readout.lbf { color:#ffb454; font-size:19px; margin-top:8px; }
-.utm-load-panel .label { color:#6b7484; font:500 12px Inter, sans-serif; margin-top:2px; }
+.utm-load-panel .label { color:#98a1b0; font:500 12px var(--font); margin-top:2px; }
 .utm-graph-wrap { position:absolute; right:16px; top:172px; }
 .utm-done-list { position:absolute; right:16px; bottom:14px; text-align:right;
-  font:600 14px Inter, sans-serif; color:#12855f; pointer-events:none; }
-.utm-done-list .avg { color:#141c2b; font-weight:700; margin-top:2px; }
+  font:600 14px var(--font); color:var(--green); pointer-events:none; }
+.utm-done-list .avg { color:var(--text); font-weight:700; margin-top:2px; }
 </style>
 </head>
 <body>
 <header class="appbar"><div class="appbar-inner">
-  <div class="logo"><a href="../../" style="color:var(--muted);text-decoration:none;font-weight:600;font-size:14px;margin-right:4px">← All Labs</a> <span class="mark">⬢</span> MixLab</div>
+  <div class="logo"><a href="../">← All Labs</a> Mix Design Lab</div>
   <div id="appbar-info"></div>
 </div></header>
 <main id="stage"></main>
@@ -497,7 +497,7 @@ Scenes.mix = () => {
       const captionBounds = mixer.stageBreaks; // buildMixerScene 내부 STAGE_BOUNDS 실값(하드코딩 대신 직접 소비)
 
       const caption = h('div', { style: 'position:absolute;left:0;right:0;top:10px;text-align:center;' +
-        'font:600 14px Inter,sans-serif;color:#5b6472;pointer-events:none' }, MIX_CAPTIONS[0]);
+        'font:600 14px var(--font);color:var(--muted);pointer-events:none' }, MIX_CAPTIONS[0]);
       container.append(caption);
 
       const nextBtn = h('button', { class: 'btn btn-primary', onclick: () => go('slump') },
@@ -589,9 +589,9 @@ Scenes.slump = () => {
         SETTLE_END = LIFT_END + T.SETTLE_DUR;
 
       const overlay = h('div', { style: 'position:absolute;left:0;right:0;top:10px;text-align:center;' +
-        'font:600 14px Inter,sans-serif;color:#5b6472;pointer-events:none' });
+        'font:600 14px var(--font);color:var(--muted);pointer-events:none' });
       const overlaySub = h('div', { style: 'position:absolute;left:0;right:0;top:32px;text-align:center;' +
-        'font:500 12px Inter,sans-serif;color:#8b93a3;pointer-events:none' });
+        'font:500 12px var(--font-mono);color:var(--faint);pointer-events:none' });
       container.append(overlay, overlaySub);
 
       const info = h('div', { class: 'stage-actions', style: 'min-height:34px' });
@@ -700,11 +700,11 @@ Scenes.compression = () => {
 
       // ── 오버레이: 상단 캡션 + Day 카운터(양생 중) + 로드 패널 + 그래프 + 완료 목록 ──
       const caption = h('div', { style: 'position:absolute;left:0;right:0;top:10px;text-align:center;' +
-        'font:600 14px Inter,sans-serif;color:#5b6472;pointer-events:none' });
-      const dayNum = h('div', { style: 'font:800 44px Inter,sans-serif;color:#141c2b' });
+        'font:600 14px var(--font);color:var(--muted);pointer-events:none' });
+      const dayNum = h('div', { style: 'font:700 44px var(--font);color:var(--text)' });
       const dayBox = h('div', { style: 'position:absolute;left:0;right:0;top:42%;transform:translateY(-50%);' +
         'text-align:center;pointer-events:none;display:none' },
-        dayNum, h('div', { style: 'font:500 13px Inter,sans-serif;color:#5b6472;margin-top:4px' }, '73 °F · 100% RH'));
+        dayNum, h('div', { style: 'font:500 13px var(--font-mono);color:var(--muted);margin-top:4px' }, '73 °F · 100% RH'));
 
       const psiReadout = h('div', { class: 'readout psi' }, '0');
       const psiLabel = h('div', { class: 'label' }, '0 psi');
@@ -731,16 +731,18 @@ Scenes.compression = () => {
       function drawGraph(fp, epsNow) {
         // 응력-변형률 미니 그래프(하강부는 실제 eps로 그린다 — 불변 계약, 구 drawGraph 로직 이식)
         if (!graphCtx) return;
+        const cs = getComputedStyle(document.documentElement);
+        const tok = v => cs.getPropertyValue(v).trim();   // Canvas 2D는 var()를 못 읽는다 — 토큰을 문자열로 전달
         const gw = 190, gh = 130, gx = 4, gy = 4, pw = gw - 34, ph = gh - 26;
         graphCtx.clearRect(0, 0, gw, gh);
-        graphCtx.strokeStyle = '#c9cfda'; graphCtx.lineWidth = 1.5;
+        graphCtx.strokeStyle = tok('--border'); graphCtx.lineWidth = 1.5;
         graphCtx.strokeRect(gx, gy, pw, ph);
-        graphCtx.fillStyle = '#98a1b0'; graphCtx.font = '500 10px Inter, sans-serif'; graphCtx.textAlign = 'center';
+        graphCtx.fillStyle = tok('--muted'); graphCtx.font = `500 10px ${tok('--font-mono')}`; graphCtx.textAlign = 'center';
         graphCtx.fillText('strain', gx + pw / 2, gy + ph + 14);
         graphCtx.save(); graphCtx.translate(gx - 10, gy + ph / 2); graphCtx.rotate(-Math.PI / 2);
         graphCtx.fillText('stress (psi)', 0, 0); graphCtx.restore();
         graphCtx.save(); graphCtx.beginPath(); graphCtx.rect(gx, gy, pw, ph); graphCtx.clip(); // 산포로 fp가 yMax 초과 시 곡선이 그래프 박스 밖으로 새는 것을 방지(클리핑 유지)
-        graphCtx.strokeStyle = '#1b66f0'; graphCtx.lineWidth = 2; graphCtx.beginPath();
+        graphCtx.strokeStyle = tok('--primary'); graphCtx.lineWidth = 2; graphCtx.beginPath();
         const yMax = r.f28 * 1.15 || 1000;
         for (let e = 0; e <= epsNow; e += 0.00004) {
           const px2 = gx + (e / 0.0038) * pw;

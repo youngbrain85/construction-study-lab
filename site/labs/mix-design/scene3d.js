@@ -65,7 +65,7 @@ function createStage(container, opts = {}) {
   container.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(opts.background ?? 0xeef1f5); // 사이트 라이트 테마(--surface2)와 조화
+  scene.background = new THREE.Color(opts.background ?? 0xe6f6fd); // 사이트 Icy 계열(--surface2)과 조화
 
   // 3/4 뷰 고정 카메라 — orbit 없음(스펙 §6 범위 제외: 부가 조작)
   const camera = new THREE.PerspectiveCamera(opts.fov ?? 38, w / h, opts.near ?? 0.1, opts.far ?? 100);
