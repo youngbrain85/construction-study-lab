@@ -9,6 +9,9 @@
     { id: 'survey',   name: 'Survey Lab',   blurb: 'Leveling, traversing, and site layout.' },
   ];
 
+  // 3D 랩실(labs/room)의 스테이션 키 — layout.js 의 STATIONS 순서와 같아야 한다(tools/layout.test.mjs)
+  const STATION_KEYS = ['mix', 'soil', 'steel', 'wood', 'survey'];
+
   const LABS = [
     { id: 'mix-design', group: 'material', name: 'Mix Design Lab', href: 'mix-design/',
       desc: 'Proportion a concrete mix with the ACI tables, then put it through virtual slump and strength tests.',
@@ -51,7 +54,7 @@
     } catch (e) { return null; }
   }
 
-  const SITE = { LAB_GROUPS, LABS, STUDY_GROUPS, MATERIALS, scoreToGrade, bestGrade };
+  const SITE = { LAB_GROUPS, STATION_KEYS, LABS, STUDY_GROUPS, MATERIALS, scoreToGrade, bestGrade };
   if (typeof window !== 'undefined') window.SITE = SITE;
   if (typeof module !== 'undefined' && module.exports) module.exports = SITE;
 })();
