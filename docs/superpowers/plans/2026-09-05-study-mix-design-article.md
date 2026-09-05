@@ -464,7 +464,7 @@ test('#tbl-bb0: 굵은골재 용적비 = 엔진 CA_VOLUME_TABLE', () => {
 - [ ] **Step 2: 테스트 실행 — HTML 이 없어 실패**
 
 Run: `node --test tools/study-tables.test.mjs`
-Expected: 3 tests FAIL(`ENOENT … index.html`).
+Expected: FAIL — 파일을 읽는 최상위 `readFileSync`가 `ENOENT … index.html`를 던져 파일 수준 실패 1건(테스트 등록 전이라 개별 3건으로 세지지 않는다).
 
 - [ ] **Step 3: `site/study/mix-design/index.html` 작성** — 아래 전문을 그대로 쓴다. (`byline`의 읽는 시간은 Step 4에서 계산해 고친다.)
 
@@ -740,7 +740,7 @@ Expected: 3 tests FAIL(`ENOENT … index.html`).
   <caption>Table 5. Water–cementitious materials ratio for a required 28-day compressive strength</caption>
   <thead><tr><th>Required strength, psi <span class="si">(MPa)</span></th><th>Non-air-entrained</th><th>Air-entrained</th></tr></thead>
   <tbody>
-    <tr data-fc="6000"><td>6,000 <span class="si">(41.4)</span></td><td data-series="nonAE">0.41</td><td data-series="ae">0.33</td></tr>
+    <tr data-fc="6000"><td>6,000 <span class="si">(41.4)</span></td><td data-series="nonAE">0.41</td><td data-series="ae">0.32</td></tr>
     <tr data-fc="5000"><td>5,000 <span class="si">(34.5)</span></td><td data-series="nonAE">0.48</td><td data-series="ae">0.40</td></tr>
     <tr data-fc="4000"><td>4,000 <span class="si">(27.6)</span></td><td data-series="nonAE">0.57</td><td data-series="ae">0.48</td></tr>
     <tr data-fc="3000"><td>3,000 <span class="si">(20.7)</span></td><td data-series="nonAE">0.68</td><td data-series="ae">0.59</td></tr>
@@ -909,8 +909,8 @@ Expected: 3 tests FAIL(`ENOENT … index.html`).
 
 - [ ] **Step 4: 읽는 시간 계산·기입**
 
-Run (PowerShell): `$html = Get-Content site/study/mix-design/index.html -Raw; $body = [regex]::Match($html, '(?s)<article class="article">(.*)</article>').Groups[1].Value; $text = [regex]::Replace($body, '<[^>]+>', ' '); $words = ($text -split '\s+' | Where-Object { $_ -ne '' }).Count; "$words words, $([math]::Round($words/200)) min"`
-Expected: 약 1,900 words → `9 min` 안팎. 출력된 분 수로 `.byline`의 "9 min read"를 고친다(같으면 그대로).
+Run (PowerShell — 표와 SVG 도해의 숫자·라벨은 읽는 시간에서 뺀다): `$html = Get-Content site/study/mix-design/index.html -Raw; $body = [regex]::Match($html, '(?s)<article class="article">(.*)</article>').Groups[1].Value; $body = [regex]::Replace($body, '(?s)<table.*?</table>', ' '); $body = [regex]::Replace($body, '(?s)<svg.*?</svg>', ' '); $text = [regex]::Replace($body, '<[^>]+>', ' '); $words = ($text -split '\s+' | Where-Object { $_ -ne '' }).Count; "$words words, $([math]::Round($words/200)) min"`
+Expected: 약 2,000 words → `10 min` 안팎. 출력된 분 수로 `.byline`의 "9 min read"를 고친다(같으면 그대로).
 
 - [ ] **Step 5: 테스트 실행 — 표 대조 통과 확인**
 
