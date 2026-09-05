@@ -1,5 +1,5 @@
 // site/shared/registry.js — 사이트 레지스트리 (홈·Lab·Study 페이지 공용, 클래식 스크립트)
-// 새 랩 = 폴더 1개 + LABS 항목 1줄. 새 공부자료 = MATERIALS 항목 1줄.
+// 새 랩 = 폴더 1개 + LABS 항목 1줄(`station` 키는 3D 랩실의 스테이션; Coming soon 항목의 `href`·`active:true`를 채우면 스테이션이 켜진다). 새 공부자료 = MATERIALS 항목 1줄.
 // href는 각 섹션 페이지(labs/ 또는 study/) 기준 상대경로다.
 (function () {
   'use strict';
@@ -13,11 +13,13 @@
   const STATION_KEYS = ['mix', 'soil', 'steel', 'wood', 'survey'];
 
   const LABS = [
-    { id: 'mix-design', group: 'material', name: 'Mix Design Lab', href: 'mix-design/',
+    { id: 'mix-design', group: 'material', station: 'mix', name: 'Mix Design Lab', href: 'mix-design/',
       desc: 'Proportion a concrete mix with the ACI tables, then put it through virtual slump and strength tests.',
       meta: '5 missions · ACI PRC-211.1-22', bestKey: 'mixlab-best', active: true },
-    { id: 'material-soon', group: 'material', active: false },
-    { id: 'survey-soon',   group: 'survey',   active: false },
+    { id: 'soil-testing', group: 'material', station: 'soil',   name: 'Soil Testing Lab',  active: false },
+    { id: 'steel',        group: 'material', station: 'steel',  name: 'Steel Lab',         active: false },
+    { id: 'wood-framing', group: 'material', station: 'wood',   name: 'Wood Framing Lab',  active: false },
+    { id: 'surveying',    group: 'survey',   station: 'survey', name: 'Surveying Lab',     active: false },
   ];
 
   const STUDY_GROUPS = [

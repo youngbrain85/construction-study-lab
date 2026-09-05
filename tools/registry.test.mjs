@@ -61,3 +61,14 @@ test('MATERIALS: 믹스 디자인 2편이 등록돼 있고 page href 가 실제 
     assert.ok(existsSync(join(STUDY_DIR, m.href, 'index.html')), `${m.id} → ${m.href}index.html`);
   }
 });
+
+test('LABS: station 키가 STATION_KEYS 와 1:1, 활성 랩은 href·desc·meta 가 있다', () => {
+  assert.deepEqual(S.STATION_KEYS, ['mix', 'soil', 'steel', 'wood', 'survey']);
+  assert.deepEqual(S.LABS.map(l => l.station), S.STATION_KEYS);
+  for (const lab of S.LABS) {
+    assert.ok(lab.name, `${lab.id} name`);
+    if (lab.active) for (const k of ['href', 'desc', 'meta']) assert.ok(lab[k], `${lab.id} ${k}`);
+  }
+  const soon = S.LABS.filter(l => !l.active).map(l => l.name);
+  assert.deepEqual(soon, ['Soil Testing Lab', 'Steel Lab', 'Wood Framing Lab', 'Surveying Lab']);
+});
