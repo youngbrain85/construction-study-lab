@@ -18,7 +18,7 @@ html, body { background:var(--royal); }
   background-image:
     linear-gradient(rgba(184,245,255,.10) 1px, transparent 1px),
     linear-gradient(90deg, rgba(184,245,255,.10) 1px, transparent 1px),
-    linear-gradient(180deg, #003665 0%, #0053a5 100%);
+    linear-gradient(180deg, var(--dark) 0%, var(--royal) 100%);
   background-size:48px 48px, 48px 48px, 100% 100%; }
 .home-art { position:absolute; left:0; right:0; bottom:0; width:100%; height:auto; max-height:70%;
   opacity:.32; pointer-events:none; }
@@ -30,7 +30,7 @@ html, body { background:var(--royal); }
 .home-foot { height:48px; border-top:1px solid rgba(184,245,255,.3); color:var(--icy);
   letter-spacing:0; text-transform:none; font-size:11.5px; }
 .home-body { position:relative; z-index:2; flex-grow:1; display:flex; flex-direction:column;
-  justify-content:center; gap:36px; padding:24px 48px 40px; }
+  justify-content:center; gap:36px; max-width:none; margin:0; padding:24px 48px 40px; }
 .home-eyebrow { font:600 13px/1 var(--font-mono); letter-spacing:.14em; text-transform:uppercase; color:var(--neon); }
 .home-title { font:800 clamp(72px, 11.6vw, 168px)/.88 var(--font-head); text-transform:uppercase;
   letter-spacing:-.01em; color:#fff; margin:16px 0; }
@@ -48,6 +48,7 @@ html, body { background:var(--royal); }
 .menu-btn--study { background:rgba(0,54,101,.55); color:#fff; border-color:var(--neon); }
 .menu-btn--study small, .menu-btn--study .arrow { color:var(--neon); }
 .menu-btn--study:hover { background:rgba(0,54,101,.8); }
+.home :focus-visible { outline-color: var(--neon); }
 @media (max-width:700px) {
   .home { background-size:40px 40px, 40px 40px, 100% 100%; }
   .home-art--desktop { display:none; } .home-art--mobile { display:block; max-height:40%; opacity:.3; }
@@ -66,7 +67,7 @@ html, body { background:var(--royal); }
 </head>
 <body>
 <div class="home">
-  <svg class="home-art home-art--desktop" viewBox="0 0 1440 620" fill="none" stroke="#b8f5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <svg class="home-art home-art--desktop" viewBox="0 0 1440 620" preserveAspectRatio="xMidYMax meet" fill="none" stroke="#b8f5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     <path d="M0 600 H1440"></path>
     <path d="M780 600 V230 M900 600 V230 M1020 600 V230"></path>
     <path d="M780 230 H1020 M780 322 H1020 M780 414 H1020 M780 506 H1020"></path>
@@ -87,7 +88,7 @@ html, body { background:var(--royal); }
     <path d="M830 206 H910 V226 H830 Z"></path>
     <path d="M1360 600 L1380 470 L1400 600 M1380 470 L1370 600 M1380 470 V450 M1366 452 H1394"></path>
   </svg>
-  <svg class="home-art home-art--mobile" viewBox="0 0 390 300" fill="none" stroke="#b8f5ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <svg class="home-art home-art--mobile" viewBox="0 0 390 300" preserveAspectRatio="xMidYMax meet" fill="none" stroke="#b8f5ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
     <path d="M0 290 H390"></path>
     <path d="M30 290 V110 M90 290 V110 M150 290 V110 M210 290 V110"></path>
     <path d="M30 110 H210 M30 170 H210 M30 230 H210"></path>

@@ -34,5 +34,16 @@ test('bestGrade: localStorage 없으면 null, 있으면 최고 점수 등급', (
   assert.equal(S.bestGrade('mixlab-best'), 'A');
   globalThis.localStorage = { getItem: () => '{}' };
   assert.equal(S.bestGrade('mixlab-best'), null);
+  globalThis.localStorage = { getItem: () => '{not json' };
+  assert.equal(S.bestGrade('mixlab-best'), null);
   delete globalThis.localStorage;
+});
+
+test('MATERIALS: 항목이 있으면 group·type·필수 필드가 유효', () => {
+  const groups = new Set(S.STUDY_GROUPS.map(g => g.id));
+  for (const m of S.MATERIALS) {
+    assert.ok(groups.has(m.group), `${m.id} group`);
+    assert.ok(['pdf', 'link', 'page'].includes(m.type), `${m.id} type`);
+    for (const k of ['id', 'title', 'desc', 'href']) assert.ok(m[k], `${m.id} ${k}`);
+  }
 });

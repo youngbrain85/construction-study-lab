@@ -24,6 +24,7 @@ html, body { margin:0; padding:0; background:var(--surface); color:var(--text);
 button { font-family:var(--font); }
 a { color:var(--primary); }
 :focus-visible { outline:3px solid var(--royal); outline-offset:2px; }
+.band-dark :focus-visible, .band-royal :focus-visible, .site-footer :focus-visible { outline-color: var(--neon); }
 
 /* 앱바 */
 .appbar { position:sticky; top:0; z-index:20; background:var(--bg);
@@ -33,6 +34,7 @@ a { color:var(--primary); }
 .appbar-inner--wide { max-width:none; padding:0 40px; }
 .logo { font-family:var(--font-head); font-weight:800; font-size:22px; letter-spacing:.02em;
   text-transform:uppercase; color:var(--dark); display:flex; gap:14px; align-items:center; }
+a.logo { text-decoration:none; }
 .logo a { font:600 13px/1 var(--font); text-transform:none; letter-spacing:0;
   color:var(--muted); text-decoration:none; }
 .logo a:hover { color:var(--dark); }
@@ -160,7 +162,7 @@ h3 { font-size:22px; font-weight:700; margin:0; }
   justify-content:space-between; gap:40px; }
 .section-head h1 { font:800 96px/.9 var(--font-head); text-transform:uppercase; color:#fff; margin:10px 0 0; }
 .section-head p { font:400 16px/1.55 var(--font); color:var(--icy); max-width:40ch; margin:0; }
-.section-main { padding:40px 40px 64px; display:flex; flex-direction:column; gap:48px; flex-grow:1; }
+.section-main { max-width:none; margin:0; padding:40px 40px 64px; display:flex; flex-direction:column; gap:48px; flex-grow:1; }
 .group-head { display:flex; align-items:baseline; justify-content:space-between; gap:24px; padding-bottom:14px; }
 .group-head h2 { font:700 28px/1.1 var(--font); margin:0; }
 .group-head p { font:400 15px/1.5 var(--font); color:var(--muted); margin:0; }
@@ -204,5 +206,6 @@ h3 { font-size:22px; font-weight:700; margin:0; }
   .ledger-row .meta, .ledger-row .btn, .ledger-row .soon { grid-column:2; text-align:left; }
   .ledger-row .btn { text-align:center; }
   .ledger-row.is-active { padding:18px; }
+  .ledger-row.is-soon .meta, .ledger-row.is-soon .soon { display:none; }
   .site-footer { padding:14px 20px; font-size:10.5px; }
 }
