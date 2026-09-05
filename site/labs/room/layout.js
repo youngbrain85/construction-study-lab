@@ -19,7 +19,7 @@ export const STATIONS = [
 
 export const CAMERA = {
   targetY: 0.8,
-  landscape: { yawDeg: 35, pitchDeg: 50, fovDeg: 36, margin: 1.08 }, // aspect ≥ 1: 앞쪽 오른쪽(남동) 위에서
+  landscape: { yawDeg: 35, pitchDeg: 46, fovDeg: 36, margin: 1.08 }, // aspect ≥ 1: 앞쪽 오른쪽(남동) 위에서
   portrait:  { yawDeg: 80, pitchDeg: 55, fovDeg: 52, margin: 1.04 }, // aspect < 1: 마당 쪽(동) 끝에서, 넓은 fov
 };
 
@@ -53,19 +53,45 @@ export function boundsCorners(b = BOUNDS) {
   return out;
 }
 
-// BOUNDS 꼭짓점 8개가 모두 시야 안에 들어오는 최소 거리 — 닫힌식, 반복 없음 (스펙 §4)
+// BOUNDS 꼭짓점 8개가 모두 시야 안에 들어오는 최소 거리 — 꼭짓점당 닫힌식 (스펙 §4)
+// 3/4 부감에서는 상자의 기하 중심을 겨눠도 투영된 상자가 화면 중앙에 오지 않는다(원근 때문에 가까운 면이 더 크게 잡힌다).
+// 그래서 여백이 한쪽에만 몰려 방이 작아 보인다. 거리 → 투영 상자 NDC 중심만큼 타깃 이동 → 거리 재계산 을 3회 돌려
+// 상자를 화면 중앙에 맞춘다(실측상 2회면 수렴). targetY 는 첫 y 값일 뿐, 재중심 과정에서 움직이는 것이 정상.
 export function fitCamera(aspect, opts = {}) {
   const o = CAMERA[orientationFor(aspect)];
   const bounds = opts.bounds || BOUNDS;
-  const target = { x: (bounds.min.x + bounds.max.x) / 2, y: CAMERA.targetY, z: (bounds.min.z + bounds.max.z) / 2 };
   const dir = viewDir(o.yawDeg, o.pitchDeg);
   const { f, r, u } = cameraBasis(dir);
   const tanV = Math.tan(rad(o.fovDeg) / 2), tanH = tanV * aspect;
-  let d = 1;
-  for (const c of boundsCorners(bounds)) {
-    const v = sub(c, target);
-    const lx = dot(v, r), ly = dot(v, u), lz = dot(v, f);
-    d = Math.max(d, (Math.abs(lx) * o.margin) / tanH - lz, (Math.abs(ly) * o.margin) / tanV - lz);
+  const corners = boundsCorners(bounds);
+  let target = { x: (bounds.min.x + bounds.max.x) / 2, y: CAMERA.targetY, z: (bounds.min.z + bounds.max.z) / 2 };
+
+  const fitDistance = (t) => {
+    let d = 1;
+    for (const c of corners) {
+      const v = sub(c, t);
+      const lx = dot(v, r), ly = dot(v, u), lz = dot(v, f);
+      d = Math.max(d, (Math.abs(lx) * o.margin) / tanH - lz, (Math.abs(ly) * o.margin) / tanV - lz);
+    }
+    return d;
+  };
+
+  let d = fitDistance(target);
+  for (let i = 0; i < 3; i++) {
+    let nx0 = Infinity, nx1 = -Infinity, ny0 = Infinity, ny1 = -Infinity;
+    for (const c of corners) { // 카메라가 target + dir·d 에 있으므로 꼭짓점 깊이는 lz + d
+      const v = sub(c, target);
+      const depth = dot(v, f) + d;
+      const nx = dot(v, r) / (depth * tanH), ny = dot(v, u) / (depth * tanV);
+      if (nx < nx0) nx0 = nx;
+      if (nx > nx1) nx1 = nx;
+      if (ny < ny0) ny0 = ny;
+      if (ny > ny1) ny1 = ny;
+    }
+    const cx = (nx0 + nx1) / 2, cy = (ny0 + ny1) / 2;
+    const sx = cx * tanH * d, sy = cy * tanV * d; // NDC 중심 오차를 카메라 평면 위 이동량으로 환산
+    target = { x: target.x + r.x * sx + u.x * sy, y: target.y + r.y * sx + u.y * sy, z: target.z + r.z * sx + u.z * sy };
+    d = fitDistance(target);
   }
   const position = { x: target.x + dir.x * d, y: target.y + dir.y * d, z: target.z + dir.z * d };
   return { position, target, dir, fovDeg: o.fovDeg, distance: d };

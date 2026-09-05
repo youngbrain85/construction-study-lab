@@ -16,13 +16,14 @@ let THREE, L, P, S3, stage, renderer, scene, camera;
 const camTarget = { x: 0, y: 0, z: 0 };
 let dirVec = null;
 const stations = [], byKey = {}, hitBoxes = [];
-let hovered = null, pendingHover = null, activating = false, dolly = null;
+let hovered = null, pendingHover = null, pendingPointer = null, activating = false, dolly = null;
 let loopOn = false, lastInput = 0, start = 0, onceQueued = false;
-let ray, ndc;
+let ray, ndc, projV;
 
 function fallback(reason, err) {
   if (err) console.warn('[LabRoom]', err);
   if (stage) { try { stage.dispose(); } catch (e) { /* 이미 정리됨 */ } stage = null; }
+  renderer = scene = camera = null; // 폐기된 renderer 로 프레임을 돌지 않게 끊는다
   LabList.showFallback(reason);
 }
 
@@ -31,6 +32,8 @@ async function mount() {
   try {
     [S3, L, P] = await Promise.all([import('../mix-design/scene3d.js'), import('./layout.js'), import('./props.js')]);
   } catch (err) { return fallback('import-failed', err); }
+  const fb = document.getElementById('fallback');
+  if (fb && !fb.hidden) return; // 12 s 가드가 이미 대체 목록을 띄웠다면 3D 를 만들지 않는다
   THREE = S3.THREE;
   stage = S3.createStage(viewport, { background: 0xe6f6fd, groundRadius: 0.01 });
   if (!stage) return fallback('no-webgl');
@@ -62,10 +65,12 @@ function build() {
     let update = null;
     if (st.key === 'mix') {
       const mixer = S3.buildMixerScene({ wc: 0.5, rng });
-      mixer.group.position.set(0.4, 0, -0.8); mixer.group.rotation.y = 0.4;
+      mixer.group.position.set(0.4, 0, -0.6); mixer.group.rotation.y = 0.4;
+      mixer.group.scale.setScalar(0.68);             // 원본은 화면 가득 채우는 크기 — 실물 믹서(≈1.4 m)로 축소
       const slump = S3.buildSlumpScene({ mode: 'true', slump: 3, measuredSlump: 3, rng });
       slump.update('lift', 0, 0);                    // 불투명 빈 콘 (y 오프셋은 빌더가 정한 값 유지)
       slump.group.position.x = -0.5; slump.group.position.z = 0.9;
+      slump.group.scale.setScalar(0.33);             // 실제 슬럼프 콘 높이 ≈ 0.30 m 에 맞춘 축척
       const utm = S3.buildUtmScene({ failMode: 'cone', rng });
       utm.update(0, 0, 0, true);                     // 온전한 공시체 표시, 몰드 숨김
       utm.group.position.set(-1.2, 0, -0.9);
@@ -85,13 +90,14 @@ function build() {
         if (m.isMeshStandardMaterial && !mats.has(m)) mats.set(m, { hex: m.emissive.getHex(), intensity: m.emissiveIntensity });
       }
     });
-    const s = { key: st.key, lab, active, group, ring, hit, update, mats, anchor: new THREE.Vector3(st.center.x, st.labelY, st.center.z), label: null, w: 0, h: 0 };
+    const s = { key: st.key, lab, active, group, ring, hit, update, mats, anchor: new THREE.Vector3(st.center.x, st.labelY, st.center.z), label: null, w: 0, h: 0, nudgeTimer: 0 };
     s.label = makeLabel(st, lab, active);
     stations.push(s); byKey[st.key] = s;
   }
   measureLabels();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { measureLabels(); renderOnce(); }); // 웹폰트 로드 후 라벨 크기 재측정
 
-  ray = new THREE.Raycaster(); ndc = new THREE.Vector2();
+  ray = new THREE.Raycaster(); ndc = new THREE.Vector2(); projV = new THREE.Vector3();
   applyCamera();
   new ResizeObserver(() => resize()).observe(viewport);
   bindEvents();
@@ -114,7 +120,7 @@ function makeLabel(st, lab, active) {
   const name = lab ? lab.name : st.key;
   const el = active
     ? h('a', { class: 'station-label is-active', href: lab.href, 'data-station': st.key })
-    : h('span', { class: 'station-label is-soon', 'data-station': st.key, tabindex: '0', role: 'note', 'aria-label': `${name}, coming soon` });
+    : h('span', { class: 'station-label is-soon', 'data-station': st.key, tabindex: '0', role: 'button', 'aria-disabled': 'true', 'aria-label': `${name}, coming soon` });
   el.append(h('span', { class: 'name' }, name), h('span', { class: 'status' }, active ? 'Enter →' : 'Coming soon'));
   if (active && lab.bestKey) { const g = SITE.bestGrade(lab.bestKey); if (g) el.append(h('span', { class: 'grade' }, `Best · ${g}`)); }
   el.addEventListener('pointerenter', () => { setHover(st.key); markInput(); });
@@ -160,9 +166,11 @@ function resize() {
 
 // ── 프레임: 소품 갱신 → 카메라 이동 → 호버 반영 → render → 라벨 배치 (render 뒤에 해야 카메라 행렬이 최신) ──
 function frame(now, manual = false) {
+  if (!renderer) return; // 이미 폐기된 뒤 남아 도는 rAF 콜백은 무시
   const t = (now - start) / 1000;
   if (!reducedMotion || manual) for (const s of stations) if (s.update) s.update(t);
   if (dolly) stepDolly(now);
+  if (pendingPointer) { pendingHover = { key: keyAt(pendingPointer.x, pendingPointer.y) }; pendingPointer = null; } // 레이캐스트는 이벤트마다가 아니라 프레임당 한 번
   if (pendingHover !== null) { setHover(pendingHover.key); pendingHover = null; }
   renderer.render(scene, camera);
   placeLabels();
@@ -179,10 +187,9 @@ function markInput() {
 
 function placeLabels() {
   const w = viewport.clientWidth, hh = viewport.clientHeight;
-  const v = new THREE.Vector3();
   const boxes = stations.map((s) => {
-    v.copy(s.anchor).project(camera);
-    const x = ((v.x + 1) / 2) * w, y = ((1 - v.y) / 2) * hh;
+    projV.copy(s.anchor).project(camera); // 프레임마다 Vector3 를 새로 만들지 않는다 (build 에서 한 번 생성)
+    const x = ((projV.x + 1) / 2) * w, y = ((1 - projV.y) / 2) * hh;
     return { key: s.key, x: x - s.w / 2, y: y - s.h, w: s.w, h: s.h };
   });
   L.deoverlapLabels(boxes);
@@ -222,8 +229,9 @@ function applyHover(s, on) {
 function activate(key) {
   const s = byKey[key]; if (!s) return;
   if (!s.active) {
+    clearTimeout(s.nudgeTimer); // 연타 시 앞선 타이머가 새 깜빡임을 중간에 끄지 않게
     s.label.classList.remove('is-nudge'); void s.label.offsetWidth; s.label.classList.add('is-nudge');
-    setTimeout(() => s.label.classList.remove('is-nudge'), NUDGE_MS);
+    s.nudgeTimer = setTimeout(() => s.label.classList.remove('is-nudge'), NUDGE_MS);
     return;
   }
   if (activating) return;
@@ -249,16 +257,19 @@ function bindEvents() {
     markInput();
     if (e.pointerType === 'touch') return;
     const lbl = e.target && e.target.closest ? e.target.closest('.station-label') : null; // 라벨 위에서는 레이캐스트 생략
-    pendingHover = { key: lbl ? lbl.dataset.station : keyAt(e.clientX, e.clientY) };
+    if (lbl) { pendingHover = { key: lbl.dataset.station }; pendingPointer = null; }
+    else pendingPointer = { x: e.clientX, y: e.clientY };          // 레이캐스트는 frame() 에서 한 번만
     if (reducedMotion) renderOnce();
   });
-  viewport.addEventListener('pointerleave', () => { pendingHover = { key: null }; markInput(); });
+  viewport.addEventListener('pointerleave', () => { pendingHover = { key: null }; pendingPointer = null; markInput(); });
   viewport.addEventListener('pointerdown', (e) => {
     markInput();
     const onLabel = e.target && e.target.closest && e.target.closest('.station-label'); // 라벨은 자기 click 핸들러가 처리
-    down = onLabel ? null : { x: e.clientX, y: e.clientY };
+    // 우클릭·수정키 클릭은 브라우저 기본 동작(컨텍스트 메뉴·새 탭)에 맡긴다
+    down = (e.button === 0 && !onLabel) ? { x: e.clientX, y: e.clientY } : null;
   });
   viewport.addEventListener('pointerup', (e) => {
+    if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) { down = null; return; }
     if (!down) return;
     const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
     if (moved >= 8) return;
@@ -272,6 +283,7 @@ function bindEvents() {
 function unmount() {
   delete window.__labRoomDebug;
   if (stage) { stage.dispose(); stage = null; }
+  renderer = scene = camera = null; // 폐기된 renderer 로 프레임을 돌지 않게 끊는다
 }
 
 // bfcache 수명주기는 마운트 성공 여부와 무관하게 항상 듣는다 — 대체 목록 상태(stage 없음)로 복원돼도 목록을 재렌더해야 한다

@@ -21,9 +21,9 @@
 </div></header>
 
 <main class="room-main">
+  <h1 class="visually-hidden">Lab</h1>
   <div class="room-viewport" id="room" role="region" aria-label="Virtual construction lab">
     <div class="room-caption">
-      <h1 class="visually-hidden">Lab</h1>
       <p class="eyebrow">01 · Interactive labs</p>
       <p class="room-hint">Pick a station</p>
     </div>
@@ -43,10 +43,10 @@
 <script src="lab-list.js"></script>
 <script>
   document.getElementById('year').textContent = new Date().getFullYear(); // 경로와 무관하게 항상
-  // 3D 모듈이 8 s 안에 body.room-page--3d 를 붙이지 못하면(404·구문 오류 등) 대체 목록을 띄운다
+  // 3D 모듈이 12 s 안에 body.room-page--3d 를 붙이지 못하면(404·구문 오류 등) 대체 목록을 띄운다
   window.__labRoomGuard = setTimeout(function () {
     if (!document.body.classList.contains('room-page--3d')) LabList.showFallback('module-timeout');
-  }, 8000);
+  }, 12000);
 </script>
 <script nomodule>LabList.showFallback('nomodule');</script>
 <script type="module" src="room/lab-room.js" onerror="LabList.showFallback('module-error')"></script>

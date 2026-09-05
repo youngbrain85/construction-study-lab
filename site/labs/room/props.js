@@ -69,8 +69,8 @@ export function buildRoomShell(ROOM, YARD, DOOR) {
   const T = 0.2, H = ROOM.wallH;
   const north = new THREE.Mesh(new THREE.BoxGeometry(W + T, H, T), wallMat); north.position.set(cx - T / 2, H / 2, ROOM.zMin - T / 2); north.receiveShadow = true; g.add(north);
   const west = new THREE.Mesh(new THREE.BoxGeometry(T, H, D), wallMat); west.position.set(ROOM.xMin - T / 2, H / 2, cz); west.receiveShadow = true; g.add(west);
-  const bandN = new THREE.Mesh(new THREE.BoxGeometry(W, 0.15, 0.02), bandMat); bandN.position.set(cx, 0.975, ROOM.zMin + 0.01); g.add(bandN);
-  const bandW = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.15, D), bandMat); bandW.position.set(ROOM.xMin + 0.01, 0.975, cz); g.add(bandW);
+  const bandN = new THREE.Mesh(new THREE.BoxGeometry(W, 0.15, 0.02), bandMat); bandN.position.set(cx, 0.975, ROOM.zMin + 0.01); shadowed(bandN); g.add(bandN);
+  const bandW = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.15, D), bandMat); bandW.position.set(ROOM.xMin + 0.01, 0.975, cz); shadowed(bandW); g.add(bandW);
 
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x0053a5, roughness: 0.6 }); // 열린 셔터 문틀(기둥 2 + 보)
   for (const z of [DOOR.zMin, DOOR.zMax]) g.add(box(0.25, DOOR.h, 0.25, frameMat, DOOR.x, DOOR.h / 2, z));

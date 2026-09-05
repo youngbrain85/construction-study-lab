@@ -64,6 +64,7 @@ test('MATERIALS: 믹스 디자인 2편이 등록돼 있고 page href 가 실제 
 
 test('LABS: station 키가 STATION_KEYS 와 1:1, 활성 랩은 href·desc·meta 가 있다', () => {
   assert.deepEqual(S.STATION_KEYS, ['mix', 'soil', 'steel', 'wood', 'survey']);
+  // 의도된 강결합: 스테이션은 방(layout.js)에 고정돼 있어 LABS 는 정확히 그 5개·그 순서여야 한다
   assert.deepEqual(S.LABS.map(l => l.station), S.STATION_KEYS);
   for (const lab of S.LABS) {
     assert.ok(lab.name, `${lab.id} name`);
