@@ -1,0 +1,125 @@
+/* ============================================================
+   Construction Study Lab — Study 글 페이지 공용 스타일 (article.css)
+   theme.css 토큰만 사용한다(리터럴 색 금지 — tools/site-guards.test.mjs).
+   마크업 계약: 스펙 §3.1 (body.article-page > .article-hero + main.article-layout)
+   ============================================================ */
+
+/* 히어로 */
+.article-hero { padding:56px 40px 48px; }
+.article-hero-inner { max-width:1100px; margin:0 auto; }
+.article-hero .eyebrow { margin:0; color:var(--neon); }
+.article-hero h1 { font:800 72px/.92 var(--font-head); text-transform:uppercase; letter-spacing:.01em;
+  color:var(--bg); margin:12px 0 16px; max-width:14ch; } /* --bg = 흰색: theme.css 에 흰색 토큰이 없어 배경 토큰을 흰 글자색으로 쓴다 */
+.article-hero .lede { font:400 18px/1.55 var(--font); color:var(--icy); max-width:60ch; margin:0 0 20px; }
+.article-hero .byline { font:500 12px/1.6 var(--font-mono); letter-spacing:.06em; text-transform:uppercase;
+  color:var(--icy); margin:0; }
+
+/* 본문 그리드: 목차 220px + 본문 720px — theme.css 의 `main` 규칙(0,0,1)보다 높은 특이성(0,1,1)으로 덮는다 */
+main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; display:grid;
+  grid-template-columns:220px minmax(0, 720px); gap:56px; align-items:start; }
+
+/* 목차 */
+.toc { position:sticky; top:88px; }
+.toc h2 { font:600 11.5px/1 var(--font-mono); letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); margin:0 0 12px; }
+.toc ol { list-style:none; margin:0; padding:0; border-left:2px solid var(--border); }
+.toc a { display:block; padding:6px 0 6px 14px; margin-left:-2px; border-left:2px solid transparent;
+  font:400 13.5px/1.35 var(--font); color:var(--muted); text-decoration:none; }
+.toc a:hover { color:var(--dark); }
+.toc a.is-active { color:var(--dark); border-left-color:var(--royal); font-weight:600; }
+
+/* 본문 타이포 */
+.article { font-size:16.5px; line-height:1.7; }
+.article h2 { font:700 26px/1.2 var(--font); margin:56px 0 16px; padding-top:10px; border-top:2px solid var(--dark);
+  letter-spacing:0; text-transform:none; }
+.article h2:first-child { margin-top:0; }
+.article h2 .num { font:800 30px/1 var(--font-head); color:var(--royal); margin-right:12px; }
+.article h3 { font:700 19px/1.3 var(--font); margin:32px 0 10px; }
+.article p { margin:0 0 18px; }
+.article ul, .article ol { padding-left:24px; margin:0 0 18px; }
+.article li { margin-bottom:6px; }
+.article a { color:var(--royal); }
+.article strong { font-weight:700; }
+.article .see-also { font:600 13.5px/1.4 var(--font); margin:-6px 0 18px; }
+.article .see-also a { text-decoration:none; }
+.article .see-also a:hover { text-decoration:underline; }
+.article .method { font:500 12.5px/1.5 var(--font-mono); color:var(--muted); margin:-6px 0 16px; }
+
+/* 상자: 핵심(Icy + Royal 선) / 정의(흰 바탕 + 테두리) / 주의(Amber 틴트) */
+.callout { border-radius:var(--radius); padding:18px 22px; margin:24px 0; }
+.callout .label { display:block; font:600 11.5px/1 var(--font-mono); letter-spacing:.12em; text-transform:uppercase;
+  margin-bottom:8px; }
+.callout p:last-child { margin-bottom:0; }
+.callout-key { background:var(--icy); border-left:4px solid var(--royal); }
+.callout-key .label { color:var(--royal); }
+.callout-def { background:var(--bg); border:1px solid var(--border); }
+.callout-def .label { color:var(--muted); }
+.callout-warn { background:var(--amber-50); border-left:4px solid var(--amber); }
+.callout-warn .label { color:var(--amber); }
+
+/* 그림 */
+.article figure { margin:28px 0; }
+.article figure img { width:100%; height:auto; border-radius:var(--radius); display:block; }
+.article figure.fig-small img { width:auto; max-width:100%; }
+.article figcaption { font:500 12.5px/1.5 var(--font-mono); color:var(--muted); margin-top:10px; }
+.fig-svg { width:100%; height:auto; display:block; }
+
+/* 수식: 가운데 정렬, 분수는 세로 flex */
+.eq { display:block; text-align:center; margin:22px 0; font:400 18px/1.6 var(--font); color:var(--text); }
+.eq sub { font-size:.72em; }
+.eq i { font-style:italic; }
+.frac { display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle; line-height:1.3; }
+.frac > span { padding:0 8px; align-self:stretch; text-align:center; }
+.frac > span:first-child { border-bottom:1.5px solid var(--text); }
+
+/* 표 */
+.table-wrap { overflow-x:auto; margin:22px 0 8px; }
+.table-wrap .ref-table th, .table-wrap .ref-table td { white-space:nowrap; }
+.table-wrap .ref-table .si { font-size:11px; color:var(--faint); }
+.table-wrap .ref-table tr.group th { text-align:left; font-size:11.5px; color:var(--dark); background:var(--surface2);
+  text-transform:uppercase; letter-spacing:.04em; padding:8px; }
+.ref-table--text td, .ref-table--text th { white-space:normal; text-align:left; }
+.article .ref-note { margin:0 0 22px; }
+
+/* 단계 목록: 큰 번호 */
+.steps { counter-reset:step; list-style:none; padding:0; margin:0 0 18px; }
+.steps li { position:relative; padding-left:56px; margin-bottom:14px; min-height:34px; }
+.steps li::before { counter-increment:step; content:counter(step, decimal-leading-zero); position:absolute; left:0; top:-2px;
+  font:800 30px/1 var(--font-head); color:var(--royal); }
+
+/* 이전/다음 */
+.article-nav { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:64px; border-top:1px solid var(--border);
+  padding-top:24px; }
+.article-nav a { display:block; padding:18px 20px; border:1px solid var(--border); border-radius:var(--radius);
+  text-decoration:none; color:var(--text); background:var(--bg); }
+.article-nav a:hover { border-color:var(--royal); }
+.article-nav .dir { display:block; font:600 11px/1 var(--font-mono); letter-spacing:.12em; text-transform:uppercase;
+  color:var(--muted); margin-bottom:8px; }
+.article-nav .ttl { font:700 16px/1.3 var(--font); }
+.article-nav a.next { text-align:right; }
+
+/* 랩 CTA */
+.cta-lab { display:flex; align-items:center; justify-content:space-between; gap:24px; background:var(--dark); color:var(--bg);
+  padding:28px 32px; border-radius:var(--radius); margin:48px 0 0; }
+.cta-lab h3 { color:var(--bg); margin:0 0 6px; }
+.cta-lab p { color:var(--icy); margin:0; }
+.cta-lab .btn-primary { flex:none; text-decoration:none; color:var(--bg); } /* .article a(0,1,1)가 theme.css .btn-primary 글자색을 덮어써 버튼 글자가 안 보이던 결함 수정 */
+.cta-lab :focus-visible { outline-color:var(--neon); }
+
+@media (max-width:900px) {
+  .article-hero { padding:36px 20px 32px; }
+  .article-hero h1 { font-size:44px; }
+  .article-hero .lede { font-size:16px; }
+  main.article-layout { grid-template-columns:minmax(0,1fr); gap:24px; padding:32px 20px 56px; } /* 1fr 의 암묵적 최소폭(auto)이 넓은 표 때문에 그리드 트랙(=페이지)을 뚫고 나가던 결함 수정 */
+  .toc { position:static; }
+  .toc ol { columns:2; column-gap:24px; }
+  .toc li { break-inside:avoid; }
+  .article h2 { font-size:23px; margin-top:44px; }
+  .eq { font-size:16.5px; }
+}
+@media (max-width:700px) {
+  .toc ol { columns:1; }
+  .article-nav { grid-template-columns:1fr; }
+  .article-nav a.next { text-align:left; }
+  .cta-lab { flex-direction:column; align-items:flex-start; padding:22px; }
+}

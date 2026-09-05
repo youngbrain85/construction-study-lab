@@ -20,11 +20,13 @@ https://cnstlab.org
 - `site/shared/registry.js` — `window.SITE`: `LAB_GROUPS`, `LABS`, `STUDY_GROUPS`, `MATERIALS`
 - `site/shared/dom.js` — shared DOM builder (`window.h`) used by the section pages
 - `site/shared/theme.css` — design tokens and shared components (ISU brand palette and type)
+- `site/study/article.css`, `site/study/article.js` — shared layout for study articles (hero, sticky contents, callouts, equations, tables)
+- `site/study/mix-design/` — *Concrete mix design*, part 1 (method) and part 2 (worked example); photos in `img/`, prepared by `tools/prep-study-images.py`
 - `site/labs/mix-design/` — Mix Design Lab module (`engine.js` scoring, `scene3d.js` three.js scenes)
 - `docs/design/mockups/` — the approved mockups the pages are built from
 
 **Add a lab:** create `site/labs/<id>/`, then add one entry to `LABS` in `site/shared/registry.js` (`group` = `material` or `survey`).
-**Add study material:** add one entry to `MATERIALS` (`type` = `pdf` | `link` | `page`, `group` = `materials` or `surveying`).
+**Add study material:** add one entry to `MATERIALS` (`type` = `pdf` | `link` | `page`, `group` = `materials` or `surveying`). For a `page`, create `site/study/<id>/index.html` from `site/study/mix-design/index.html` as the template (link `article.css` and `article.js`, keep the contents `<nav class="toc">` in sync with the `h2` ids) and set `href` to `<id>/`.
 
 ## Dev
 
@@ -37,5 +39,5 @@ Then open http://localhost:8123 (the custom server serves `.js` with the right M
 ## Test
 
 ```sh
-node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs
+node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs
 ```

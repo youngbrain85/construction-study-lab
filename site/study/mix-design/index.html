@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to design a concrete mix — Construction Study Lab</title>
+<meta name="description" content="Concrete mix design, part 1: the ten-step ACI workflow from slump to trial batch, with the tables you need and the traps to avoid.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../article.css">
+</head>
+<body class="section-page article-page">
+<header class="appbar"><div class="appbar-inner appbar-inner--wide">
+  <a class="logo" href="../../">Construction Study Lab</a>
+  <nav class="appbar-nav" aria-label="Sections">
+    <a href="../../labs/">Lab</a>
+    <a href="../" class="is-active" aria-current="true">Study</a>
+  </nav>
+</div></header>
+
+<section class="band-royal article-hero"><div class="article-hero-inner">
+  <p class="eyebrow">Concrete mix design · Part 1 of 2</p>
+  <h1>How to design a concrete mix</h1>
+  <p class="lede">Ten decisions, made in order, turn cement, water, and aggregate into a mix you can trust.</p>
+  <p class="byline">Jisoo Park · September 2026 · 14 min read</p>
+</div></section>
+
+<main class="article-layout">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#why">1. Why mix design matters</a></li>
+    <li><a href="#what">2. What mix design is</a></li>
+    <li><a href="#objectives">3. What a good mix must do</a></li>
+    <li><a href="#workflow">4. The ten-step workflow</a></li>
+    <li><a href="#step-1">5. Step 1 — Slump</a></li>
+    <li><a href="#step-2">6. Step 2 — Maximum aggregate size</a></li>
+    <li><a href="#step-3">7. Step 3 — Water and air</a></li>
+    <li><a href="#step-4">8. Step 4 — The w/cm ratio</a></li>
+    <li><a href="#step-5">9. Step 5 — Cementitious materials</a></li>
+    <li><a href="#step-6">10. Step 6 — Coarse aggregate</a></li>
+    <li><a href="#step-7">11. Step 7 — Fine aggregate</a></li>
+    <li><a href="#step-8-10">12. Steps 8–10 — Summarize, adjust, trial-batch</a></li>
+    <li><a href="#takeaways">13. Key takeaways</a></li>
+  </ol>
+</nav>
+
+<article class="article">
+
+<h2 id="why"><span class="num">1</span>Why mix design matters</h2>
+<figure>
+  <img src="img/pour.jpg" width="1200" height="628" alt="Worker spreading fresh concrete over a mat of rebar as it comes down a chute" loading="eager">
+  <figcaption>Fresh concrete coming down the chute onto a mat of rebar. Every number in this mix was decided long before the truck arrived.</figcaption>
+</figure>
+<p>By the time a mixer truck backs up to the forms, every question about the concrete has already been answered. How wet should it be? How strong? How much rock, how much sand, how much cement, how much water? Mix design is where those answers come from.</p>
+<p>If you have studied the ingredients one at a time — cement, water, aggregates, admixtures — this is where the pieces come together. The question changes from <em>what is this material</em> to <em>how much of it do we need</em>. And the answer is not a formula. It is a sequence of decisions, and each decision uses the answer from the step before it. Miss one step, and every number after it is wrong.</p>
+<p>That is the whole point of this guide: the same ten steps, in the same order, every time. Part 1 builds the road map. <a href="example/">Part 2</a> works one complete mix by hand — no software, just the ACI tables and a calculator.</p>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>Cement plus water makes the glue that holds everything together. More water means more space between the cement grains, and more space means weaker concrete. Keep that in mind: it is the reason the whole process exists.</p>
+</div>
+
+<h2 id="what"><span class="num">2</span>What mix design is</h2>
+<div class="callout callout-def"><span class="label">Definition</span>
+  <p>Concrete mix design is the process of selecting suitable ingredients for concrete and determining their relative proportions, to produce concrete with the required characteristics.</p>
+</div>
+<p>Two questions, then: <strong>which materials</strong>, and <strong>how much of each</strong>. The materials fall into four groups.</p>
+<ul>
+  <li><strong>Cementitious materials (C).</strong> Portland cement, plus any supplementary cementitious materials such as fly ash or slag. With water, they form the paste — the glue.</li>
+  <li><strong>Water (W).</strong> Reacts with the cement (hydration) and, more than anything else, sets how easily the fresh concrete moves.</li>
+  <li><strong>Aggregates (A).</strong> Coarse and fine. The filler — about 70 percent of the volume. The paste is only about 30.</li>
+  <li><strong>Admixtures (Ad).</strong> The fine tuning: air entrainers, water reducers, retarders, accelerators.</li>
+</ul>
+<div class="callout callout-key"><span class="label">The goal</span>
+  <p>Achieve the desired workability in fresh concrete and the required strength and durability in hardened concrete — at minimum cost.</p>
+</div>
+<p>All three at the same time. That is the hard part. If cost did not matter, mix design would be easy: just add more cement. But cement is the most expensive ingredient, so we use only as much as the job needs, and not a bag more.</p>
+
+<h2 id="objectives"><span class="num">3</span>What a good mix must do</h2>
+<p>Break the goal into three groups of objectives, and keep all three in your head while you work.</p>
+<h3>Fresh concrete</h3>
+<ul>
+  <li><strong>Consistency and workability</strong> — so the crew can place and finish it.</li>
+  <li><strong>Cohesiveness</strong> — so it holds together instead of bleeding.</li>
+  <li><strong>Minimal segregation</strong> — the rocks must not sink to the bottom.</li>
+</ul>
+<h3>Hardened concrete</h3>
+<ul>
+  <li><strong>Compressive strength</strong> (f′<sub>c</sub>) at the specified age, usually 28 days.</li>
+  <li><strong>Durability</strong> against whatever the structure will face: freezing and thawing, sulfates, chlorides, water.</li>
+  <li><strong>Volume stability</strong> — low shrinkage, and therefore less cracking.</li>
+</ul>
+<h3>Economy</h3>
+<ul>
+  <li>Use locally available materials when you can. Hauling aggregate a hundred miles is expensive.</li>
+  <li>Balance the first cost against the life-cycle cost. A cheap mix that fails early is not a cheap solution.</li>
+</ul>
+
+<h2 id="workflow"><span class="num">4</span>The ten-step workflow</h2>
+<p>Here is the road map for everything that follows. Take a picture of it; we come back to it again and again.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 250" role="img" aria-labelledby="fig1-title">
+  <title id="fig1-title">The ten-step mix design workflow</title>
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1 L9 5 L1 9" fill="none" stroke="var(--muted)" stroke-width="1.5"/></marker></defs>
+  <g fill="none" stroke="var(--border)" stroke-width="2">
+    <path d="M92 48 H626" marker-end="url(#arrow)"/>
+    <path d="M648 68 V138" marker-end="url(#arrow)"/>
+    <path d="M628 160 H94" marker-end="url(#arrow)"/>
+  </g>
+  <g font-family="var(--font-head)" font-weight="800" font-size="18" text-anchor="middle">
+    <circle cx="72" cy="48" r="18" fill="var(--icy)" stroke="var(--dark)" stroke-width="2"/><text x="72" y="54" fill="var(--dark)">1</text>
+    <circle cx="216" cy="48" r="18" fill="var(--icy)" stroke="var(--dark)" stroke-width="2"/><text x="216" y="54" fill="var(--dark)">2</text>
+    <circle cx="360" cy="48" r="18" fill="var(--royal)"/><text x="360" y="54" fill="var(--bg)">3</text>
+    <circle cx="504" cy="48" r="18" fill="var(--royal)"/><text x="504" y="54" fill="var(--bg)">4</text>
+    <circle cx="648" cy="48" r="18" fill="var(--royal)"/><text x="648" y="54" fill="var(--bg)">5</text>
+    <circle cx="648" cy="160" r="18" fill="var(--royal)"/><text x="648" y="166" fill="var(--bg)">6</text>
+    <circle cx="504" cy="160" r="18" fill="var(--royal)"/><text x="504" y="166" fill="var(--bg)">7</text>
+    <circle cx="360" cy="160" r="18" fill="var(--royal)"/><text x="360" y="166" fill="var(--bg)">8</text>
+    <circle cx="216" cy="160" r="18" fill="var(--dark)"/><text x="216" y="166" fill="var(--bg)">9</text>
+    <circle cx="72" cy="160" r="18" fill="var(--dark)"/><text x="72" y="166" fill="var(--bg)">10</text>
+  </g>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="11.5" fill="var(--muted)" text-anchor="middle">
+    <text x="72" y="88">Slump</text>
+    <text x="216" y="88">Max. aggregate</text><text x="216" y="102">size (NMAS)</text>
+    <text x="360" y="88">Water and air</text>
+    <text x="504" y="88">w/cm ratio</text>
+    <text x="648" y="88">Cementitious</text><text x="648" y="102">materials</text>
+    <text x="648" y="200">Coarse</text><text x="648" y="214">aggregate</text>
+    <text x="504" y="200">Fine</text><text x="504" y="214">aggregate</text>
+    <text x="360" y="200">Summarize</text><text x="360" y="214">the weights</text>
+    <text x="216" y="200">Moisture and</text><text x="216" y="214">trial batch</text>
+    <text x="72" y="200">Test and</text><text x="72" y="214">refine</text>
+  </g>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="11" fill="var(--muted)">
+    <circle cx="180" cy="240" r="6" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/><text x="192" y="244">Given by the job</text>
+    <circle cx="330" cy="240" r="6" fill="var(--royal)"/><text x="342" y="244">Arithmetic</text>
+    <circle cx="440" cy="240" r="6" fill="var(--dark)"/><text x="452" y="244">In the real world</text>
+  </g>
+</svg>
+<figcaption>Figure 1. The ten-step workflow. Steps 1–2 are given by the job, 3–8 are arithmetic, and 9–10 happen in the real world.</figcaption>
+</figure>
+<ol class="steps">
+  <li><strong>Select the slump.</strong></li>
+  <li><strong>Select the nominal maximum aggregate size</strong> (NMAS).</li>
+  <li><strong>Estimate the mixing water and air content</strong>, then apply any justified adjustments.</li>
+  <li><strong>Select the water–cementitious materials ratio</strong> (w/cm) from the strength and durability requirements.</li>
+  <li><strong>Calculate the total cementitious materials.</strong></li>
+  <li><strong>Estimate the coarse aggregate.</strong></li>
+  <li><strong>Calculate the fine aggregate</strong> by absolute volume.</li>
+  <li><strong>Summarize the design-basis weights.</strong></li>
+  <li><strong>Adjust for aggregate moisture and make a trial batch.</strong></li>
+  <li><strong>Test the trial mixture and refine it.</strong></li>
+</ol>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>The order matters. You cannot find the cement before you know the water, and you cannot find the sand before you know everything else. Each step consumes the answer from the one before it.</p>
+</div>
+
+<h2 id="step-1"><span class="num">5</span>Step 1 — Select the slump</h2>
+<p>Slump is a simple field test: fill a cone with fresh concrete, lift the cone, and measure how far the concrete drops (ASTM C143). It is an index of <em>consistency</em> — how wet the mix behaves — not a complete measure of workability. A higher slump means a more flowable concrete that is easier to place.</p>
+<figure>
+  <img src="img/slump-test.jpg" width="800" height="600" alt="Slump cone lifted beside the slumped concrete, with a tape measuring the drop" loading="lazy">
+  <figcaption>The slump test. The cone on the left was just lifted; the tape measures how far the concrete on the right settled.</figcaption>
+</figure>
+<p>The job usually tells you the slump. Thin walls and columns, and anything pumped, need more; mass concrete and pavements need less. Use the ranges below as a starting point.</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-slump">
+  <caption>Table 1. Starting slump ranges by member</caption>
+  <thead><tr><th scope="col">Member or placement</th><th scope="col">Starting slump</th></tr></thead>
+  <tbody>
+    <tr><td>Footings and slabs</td><td>2–5 in.</td></tr>
+    <tr><td>Beams and reinforced walls</td><td>3–5 in.</td></tr>
+    <tr><td>Building columns</td><td>3–5 in.</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="ref-note">Ranges before a water-reducing admixture is added; a superplasticizer can raise them without changing the w/cm.</p>
+<div class="callout callout-warn"><span class="label">Watch out</span>
+  <p>Here is the trap. Do not raise the slump by adding water. Extra water raises the water–cementitious materials ratio, and you lose strength. If you need more flow — for pumping, say — use a water reducer or a superplasticizer and keep the specified w/cm.</p>
+</div>
+<p class="see-also"><a href="example/#steps-1-3">See it worked in Part 2 →</a></p>
+
+<h2 id="step-2"><span class="num">6</span>Step 2 — Select the nominal maximum aggregate size</h2>
+<p>Why does aggregate size matter? Think about surface area. For the same volume, big rocks have far less surface area than small rocks. Less surface area means less paste to coat the particles, and less paste means less water and less cement. So, up to a point, bigger aggregate is cheaper. That is the whole idea.</p>
+<figure class="fig-small">
+  <img src="img/graded-aggregate.jpg" width="350" height="200" alt="Four aggregate sizes side by side, from fine to coarse" loading="lazy">
+  <figcaption>Graded aggregate, from fine sand to coarse stone. The largest size that fits the member sets the NMAS.</figcaption>
+</figure>
+<p>But you cannot just use huge rocks. The rock has to fit through the forms and between the bars, or it gets stuck and you get honeycombing. ACI 318 sets three limits. The nominal maximum aggregate size may not exceed:</p>
+<ul>
+  <li><strong>1/5</strong> of the narrowest dimension between the sides of the forms;</li>
+  <li><strong>1/3</strong> of the depth of a slab;</li>
+  <li><strong>3/4</strong> of the minimum clear spacing between reinforcing bars.</li>
+</ul>
+<p>Take the largest size that satisfies all three rules and still gives good workability.</p>
+<p class="see-also"><a href="example/#steps-1-3">See it worked in Part 2 →</a></p>
+
+<h2 id="step-3"><span class="num">7</span>Step 3 — Estimate the mixing water and air</h2>
+<p>Now open the ACI table (ACI PRC-211.1-22). You need two numbers to enter it: the slump and the NMAS — exactly the two things you picked in steps 1 and 2. See how the steps connect? The table gives the mixing water in lb/yd³ (kg/m³ in parentheses), and it gives the air content.</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-water">
+  <caption>Table 2. Approximate mixing water, lb/yd³ (kg/m³), and air content for the listed slumps and nominal maximum aggregate sizes</caption>
+  <thead>
+    <tr><th scope="col">Slump</th><th scope="col">3/8 in.<br><span class="si">9.5 mm</span></th><th scope="col">1/2 in.<br><span class="si">12.5 mm</span></th><th scope="col">3/4 in.<br><span class="si">19 mm</span></th><th scope="col">1 in.<br><span class="si">25 mm</span></th><th scope="col">1½ in.<br><span class="si">37.5 mm</span></th><th scope="col">2 in.<br><span class="si">50 mm</span></th></tr>
+  </thead>
+  <tbody>
+    <tr class="group"><th colspan="7" scope="colgroup">Non-air-entrained concrete</th></tr>
+    <tr data-series="nonAE" data-slump="1.5"><td>1–2 in.</td><td data-nmas="0.375">350 <span class="si">(207)</span></td><td data-nmas="0.5">335 <span class="si">(199)</span></td><td data-nmas="0.75">315 <span class="si">(190)</span></td><td data-nmas="1.0">300 <span class="si">(179)</span></td><td data-nmas="1.5">275 <span class="si">(166)</span></td><td data-nmas="2.0">260 <span class="si">(154)</span></td></tr>
+    <tr data-series="nonAE" data-slump="3.5"><td>3–4 in.</td><td data-nmas="0.375">385 <span class="si">(228)</span></td><td data-nmas="0.5">365 <span class="si">(216)</span></td><td data-nmas="0.75">340 <span class="si">(205)</span></td><td data-nmas="1.0">325 <span class="si">(193)</span></td><td data-nmas="1.5">300 <span class="si">(181)</span></td><td data-nmas="2.0">285 <span class="si">(169)</span></td></tr>
+    <tr data-series="nonAE" data-slump="6.5"><td>6–7 in.</td><td data-nmas="0.375">410 <span class="si">(243)</span></td><td data-nmas="0.5">385 <span class="si">(228)</span></td><td data-nmas="0.75">360 <span class="si">(216)</span></td><td data-nmas="1.0">340 <span class="si">(202)</span></td><td data-nmas="1.5">315 <span class="si">(190)</span></td><td data-nmas="2.0">300 <span class="si">(178)</span></td></tr>
+    <tr data-row="entrapped"><td>Typical entrapped air, %</td><td data-nmas="0.375">3</td><td data-nmas="0.5">2.5</td><td data-nmas="0.75">2</td><td data-nmas="1.0">1.5</td><td data-nmas="1.5">1</td><td data-nmas="2.0">0.5</td></tr>
+    <tr class="group"><th colspan="7" scope="colgroup">Air-entrained concrete</th></tr>
+    <tr data-series="ae" data-slump="1.5"><td>1–2 in.</td><td data-nmas="0.375">305 <span class="si">(181)</span></td><td data-nmas="0.5">295 <span class="si">(175)</span></td><td data-nmas="0.75">280 <span class="si">(168)</span></td><td data-nmas="1.0">270 <span class="si">(160)</span></td><td data-nmas="1.5">250 <span class="si">(148)</span></td><td data-nmas="2.0">240 <span class="si">(142)</span></td></tr>
+    <tr data-series="ae" data-slump="3.5"><td>3–4 in.</td><td data-nmas="0.375">340 <span class="si">(202)</span></td><td data-nmas="0.5">325 <span class="si">(193)</span></td><td data-nmas="0.75">305 <span class="si">(184)</span></td><td data-nmas="1.0">295 <span class="si">(175)</span></td><td data-nmas="1.5">275 <span class="si">(165)</span></td><td data-nmas="2.0">265 <span class="si">(157)</span></td></tr>
+    <tr data-series="ae" data-slump="6.5"><td>6–7 in.</td><td data-nmas="0.375">365 <span class="si">(216)</span></td><td data-nmas="0.5">345 <span class="si">(205)</span></td><td data-nmas="0.75">325 <span class="si">(197)</span></td><td data-nmas="1.0">310 <span class="si">(184)</span></td><td data-nmas="1.5">290 <span class="si">(174)</span></td><td data-nmas="2.0">280 <span class="si">(166)</span></td></tr>
+    <tr class="group"><th colspan="7" scope="colgroup">Recommended total air content, % (air-entrained)</th></tr>
+    <tr data-row="air" data-exposure="mild"><td>Mild exposure</td><td data-nmas="0.375">4.5</td><td data-nmas="0.5">4.0</td><td data-nmas="0.75">3.5</td><td data-nmas="1.0">3.0</td><td data-nmas="1.5">2.5</td><td data-nmas="2.0">2.0</td></tr>
+    <tr data-row="air" data-exposure="moderate"><td>Moderate exposure</td><td data-nmas="0.375">6.0</td><td data-nmas="0.5">5.5</td><td data-nmas="0.75">5.0</td><td data-nmas="1.0">4.5</td><td data-nmas="1.5">4.5</td><td data-nmas="2.0">4.0</td></tr>
+    <tr data-row="air" data-exposure="severe"><td>Severe exposure</td><td data-nmas="0.375">7.5</td><td data-nmas="0.5">7.0</td><td data-nmas="0.75">6.0</td><td data-nmas="1.0">6.0</td><td data-nmas="1.5">5.5</td><td data-nmas="2.0">5.0</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="ref-note">Starting values from ACI PRC-211.1-22 for angular, crushed-stone coarse aggregate. Columns for 3 in. and 4 in. NMAS are omitted.</p>
+<p>Two kinds of air appear in the table. Concrete that is <em>not</em> air-entrained still traps a little air, and the amount depends on the aggregate size — about 1.5 percent for a 1 in. NMAS. Concrete exposed to freezing and thawing gets air <em>on purpose</em>, with an air-entraining admixture, and the target depends on the exposure and the NMAS.</p>
+<h3>Adjust the water for particle shape</h3>
+<p>The table assumes typical aggregate — angular, crushed stone. Yours may be different, and the adjustment factor is particle shape. Crushed stone is angular: sharp edges, rough faces, lots of surface area, so it needs more water. River gravel is rounded and smooth; it rolls easily and needs less.</p>
+<figure class="fig-small">
+  <img src="img/angular-rounded.jpg" width="331" height="152" alt="Angular crushed stone next to rounded gravel" loading="lazy">
+  <figcaption>Angular crushed stone (left) and rounded gravel (right). Same size, very different water demand.</figcaption>
+</figure>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-shape">
+  <caption>Table 3. Mixing-water adjustment for aggregate shape</caption>
+  <thead><tr><th scope="col">Aggregate condition</th><th scope="col">Initial estimate</th></tr></thead>
+  <tbody>
+    <tr><td>Angular, crushed stone</td><td>ACI table value</td></tr>
+    <tr><td>Rounded gravel</td><td>Start at −8%</td></tr>
+    <tr><td>Other shapes or blends</td><td>Use plant records</td></tr>
+    <tr><td>All mixtures</td><td>Confirm by trial batch</td></tr>
+  </tbody>
+</table>
+</div>
+<p>For example: the table says 325 lb/yd³, and the coarse aggregate is well-rounded gravel. Start with an 8 percent reduction: 325 × 0.92 ≈ <strong>299 lb/yd³</strong>. Remember that number; Part 2 uses it. And remember why it matters: less water at the same w/cm means less cement, and less cement means lower cost.</p>
+<p class="see-also"><a href="example/#steps-1-3">See it worked in Part 2 →</a></p>
+
+<h2 id="step-4"><span class="num">8</span>Step 4 — Choose the water–cementitious materials ratio</h2>
+<h3>First, an input: the required average strength</h3>
+<p>The drawings specify a compressive strength, f′<sub>c</sub>. You do not design the mix for f′<sub>c</sub>. You design it for a higher number, the <strong>required average strength</strong> f′<sub>cr</sub> — r for required.</p>
+<p>Why overdesign? Because concrete is not perfect. Same plant, same materials, same day — and the cylinders still come out a little different every time. If you design exactly at 3,000 psi, about half of your tests will fall below 3,000 psi, and the concrete fails its statistical acceptance criteria. So we aim higher on purpose. How much higher depends on whether the plant has a strength record with low variability. With no acceptable record, ACI gives a fixed margin:</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-fcr">
+  <caption>Table 4. Required average strength when no acceptable strength record is available</caption>
+  <thead><tr><th scope="col">Specified strength f′<sub>c</sub>, psi</th><th scope="col">Required average strength f′<sub>cr</sub>, psi</th></tr></thead>
+  <tbody>
+    <tr><td>less than 3,000</td><td>f′<sub>c</sub> + 1,000</td></tr>
+    <tr><td>3,000 to 5,000</td><td>f′<sub>c</sub> + 1,200</td></tr>
+    <tr><td>over 5,000</td><td>1.10 f′<sub>c</sub> + 700</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="callout callout-def"><span class="label">Definition</span>
+  <p>The specified compressive strength f′<sub>c</sub> is the design value at the stated age. Acceptance is statistical — it is not a minimum for every single cylinder. One low cylinder does not automatically mean the concrete failed.</p>
+</div>
+<h3>Then, the ratio</h3>
+<p>This is the most important number in the whole mix design. Everything about strength and durability comes back to the water–cementitious materials ratio, w/cm, by weight. A lower ratio leaves less space between the cement grains: higher strength and lower permeability.</p>
+<p>There are two ways to pick it. <strong>Strength</strong> gives you one value, from the table below, entered with f′<sub>cr</sub>. <strong>Durability</strong> gives you another, from the exposure class — ACI 318 sets maximum w/cm values for freezing and thawing, sulfates, and other exposures.</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-wcm">
+  <caption>Table 5. Water–cementitious materials ratio for a required 28-day compressive strength</caption>
+  <thead><tr><th scope="col">Required strength, psi <span class="si">(MPa)</span></th><th scope="col">Non-air-entrained</th><th scope="col">Air-entrained</th></tr></thead>
+  <tbody>
+    <tr data-fc="6000"><td>6,000 <span class="si">(41.4)</span></td><td data-series="nonAE">0.41</td><td data-series="ae">0.32</td></tr>
+    <tr data-fc="5000"><td>5,000 <span class="si">(34.5)</span></td><td data-series="nonAE">0.48</td><td data-series="ae">0.40</td></tr>
+    <tr data-fc="4000"><td>4,000 <span class="si">(27.6)</span></td><td data-series="nonAE">0.57</td><td data-series="ae">0.48</td></tr>
+    <tr data-fc="3000"><td>3,000 <span class="si">(20.7)</span></td><td data-series="nonAE">0.68</td><td data-series="ae">0.59</td></tr>
+    <tr data-fc="2000"><td>2,000 <span class="si">(13.8)</span></td><td data-series="nonAE">0.82</td><td data-series="ae">0.74</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="ref-note">Starting values from ACI PRC-211.1-22, ratio by weight. Interpolate between rows.</p>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>Take the lower of the two ratios. The lower w/cm always governs.</p>
+</div>
+<p>Interpolation is part of the job. Suppose f′<sub>cr</sub> = 4,200 psi for non-air-entrained concrete. The table gives 0.57 at 4,000 psi and 0.48 at 5,000 psi. 4,200 is 20 percent of the way from 4,000 to 5,000, so: 0.57 − 0.20 × (0.57 − 0.48) = 0.57 − 0.018 ≈ <strong>0.55</strong>. Make sure you can do that on a calculator; Part 2 does it again.</p>
+<p class="see-also"><a href="example/#step-4">See it worked in Part 2 →</a></p>
+
+<h2 id="step-5"><span class="num">9</span>Step 5 — Calculate the total cementitious materials</h2>
+<p>This step is simple algebra. You know the water; you know the ratio. So:</p>
+<div class="eq"><i>CM</i> = <span class="frac"><span>mixing water</span><span>w/cm</span></span></div>
+<p>Say the adjusted water is 299 lb/yd³ and the ratio came out at 0.55. Then 299 ÷ 0.55 ≈ 544 lb/yd³ of cementitious materials — the number Part 2 carries forward.</p>
+<p>A few checks before you move on:</p>
+<ul>
+  <li>This is <strong>total cementitious material</strong>, not only portland cement. Fly ash, slag, and silica fume — the supplementary cementitious materials, SCMs — can replace part of the cement.</li>
+  <li>Use a <strong>minimum cement content</strong> only when the project actually requires one.</li>
+  <li>Watch the <strong>paste volume</strong>. Too much paste means more shrinkage, more heat, and more money.</li>
+  <li>Confirm everything with a <strong>trial batch</strong>. Paper is not proof.</li>
+</ul>
+<p class="see-also"><a href="example/#step-5">See it worked in Part 2 →</a></p>
+
+<h2 id="step-6"><span class="num">10</span>Step 6 — Estimate the coarse aggregate by bulk volume</h2>
+<p>The coarse aggregate is estimated by the <strong>bulk volume method</strong>. ACI gives a ratio, b/b<sub>0</sub>, where b is the bulk volume of coarse aggregate and b<sub>0</sub> is the bulk volume of the concrete — one cubic yard. The ratio depends on two things: the NMAS, and the fineness modulus (FM) of the sand. Finer sand (a lower FM) leaves room for more coarse aggregate; coarser sand needs more mortar around it, so the b/b<sub>0</sub> value falls as FM rises — read any row of the table from left to right and watch it drop.</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-bb0">
+  <caption>Table 6. Bulk volume of oven-dry-rodded coarse aggregate per unit volume of concrete, b/b<sub>0</sub></caption>
+  <thead><tr><th scope="col">NMAS</th><th scope="col">FM 2.40</th><th scope="col">FM 2.60</th><th scope="col">FM 2.80</th><th scope="col">FM 3.00</th></tr></thead>
+  <tbody>
+    <tr data-nmas="0.375"><td>3/8 in. <span class="si">(9.5 mm)</span></td><td data-fm="2.40">0.50</td><td data-fm="2.60">0.48</td><td data-fm="2.80">0.46</td><td data-fm="3.00">0.44</td></tr>
+    <tr data-nmas="0.5"><td>1/2 in. <span class="si">(12.5 mm)</span></td><td data-fm="2.40">0.59</td><td data-fm="2.60">0.57</td><td data-fm="2.80">0.55</td><td data-fm="3.00">0.53</td></tr>
+    <tr data-nmas="0.75"><td>3/4 in. <span class="si">(19 mm)</span></td><td data-fm="2.40">0.66</td><td data-fm="2.60">0.64</td><td data-fm="2.80">0.62</td><td data-fm="3.00">0.60</td></tr>
+    <tr data-nmas="1.0"><td>1 in. <span class="si">(25 mm)</span></td><td data-fm="2.40">0.71</td><td data-fm="2.60">0.69</td><td data-fm="2.80">0.67</td><td data-fm="3.00">0.65</td></tr>
+    <tr data-nmas="1.5"><td>1½ in. <span class="si">(37.5 mm)</span></td><td data-fm="2.40">0.75</td><td data-fm="2.60">0.73</td><td data-fm="2.80">0.71</td><td data-fm="3.00">0.69</td></tr>
+    <tr data-nmas="2.0"><td>2 in. <span class="si">(50 mm)</span></td><td data-fm="2.40">0.78</td><td data-fm="2.60">0.76</td><td data-fm="2.80">0.74</td><td data-fm="3.00">0.72</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="ref-note">ACI PRC-211.1-22. Enter with the NMAS and the fineness modulus of the fine aggregate.</p>
+<p>Then convert the ratio into a weight:</p>
+<div class="eq"><i>m</i><sub>CA</sub> = <span class="frac"><span><i>b</i></span><span><i>b</i><sub>0</sub></span></span> × 27 ft³/yd³ × dry-rodded bulk density</div>
+<p>For a 1 in. NMAS and FM = 2.60 the table gives 0.69. With a dry-rodded density of 100 lb/ft³: 0.69 × 27 × 100 = <strong>1,863 lb/yd³</strong>, oven-dry. When the next step needs the mass on an SSD basis, multiply by (1 + absorption): 1,863 × 1.005 ≈ 1,872 lb/yd³.</p>
+<div class="callout callout-warn"><span class="label">Watch out</span>
+  <p>b/b<sub>0</sub> uses the oven-dry-rodded bulk density, and a bulk volume includes the voids between the stones. Bulk volume is not absolute volume. That is fine here — the sand and the paste will fill those voids in the next step — but do not mix the two ideas.</p>
+</div>
+<p class="see-also"><a href="example/#step-6">See it worked in Part 2 →</a></p>
+
+<h2 id="step-7"><span class="num">11</span>Step 7 — Calculate the fine aggregate by absolute volume</h2>
+<p>The fine aggregate is whatever is left. One cubic yard of concrete is one cubic yard of solid material plus air, so we compute the absolute volume of every other ingredient and subtract from 1 yd³. To convert a mass in pounds directly into cubic yards, divide by its relative density times 1,685 lb/yd³ — the weight of a cubic yard of water.</p>
+<div class="eq"><i>V</i> (yd³) = <span class="frac"><span><i>m</i> (lb)</span><span><i>RD</i> × 1,685 lb/yd³</span></span></div>
+<div class="eq"><i>V</i><sub>FA</sub> = 1 yd³ − Σ <i>V</i><sub>other</sub></div>
+<div class="eq"><i>m</i><sub>FA</sub> = <i>V</i><sub>FA</sub> × <i>RD</i><sub>FA</sub> × 1,685 lb/yd³</div>
+<div class="callout callout-def"><span class="label">Definition</span>
+  <p>Relative density (specific gravity) compares a material's density with that of water, so water itself has a relative density of 1. Keep every mass and every relative density on the same moisture basis — oven-dry or SSD — and never mix them.</p>
+</div>
+<p>With the example numbers so far (544 lb of cementitious materials at RD 3.15, 299 lb of water, 1,872 lb SSD of coarse aggregate at RD 2.68, and 1.5 percent air):</p>
+<ul>
+  <li>Cementitious materials: 544 ÷ (3.15 × 1,685) = 0.102 yd³</li>
+  <li>Water: 299 ÷ 1,685 = 0.177 yd³</li>
+  <li>Coarse aggregate (SSD): 1,872 ÷ (2.68 × 1,685) = 0.415 yd³</li>
+  <li>Air: 0.015 × 1 yd³ = 0.015 yd³</li>
+</ul>
+<p>Carried at full precision the sum is 0.7095 yd³ (the three-decimal figures above are rounded for display and add to 0.709), so the sand takes the remaining 0.2905 yd³. At RD 2.64: 0.2905 × 2.64 × 1,685 ≈ <strong>1,292 lb SSD</strong> of fine aggregate.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 132" role="img" aria-labelledby="fig2-title">
+  <title id="fig2-title">Absolute volumes of the five ingredients in one cubic yard</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="11" fill="var(--muted)" text-anchor="middle">
+    <text x="97" y="34">Water 0.177</text>
+    <text x="186" y="34">CM 0.102</text>
+    <text x="351" y="34">Coarse aggregate (SSD) 0.415</text>
+    <text x="587" y="34">Fine aggregate (SSD) 0.2905</text>
+  </g>
+  <rect x="40" y="44" width="113.3" height="40" fill="var(--icy)" stroke="var(--dark)" stroke-width="1"/>
+  <rect x="153.3" y="44" width="65.3" height="40" fill="var(--royal)"/>
+  <rect x="218.6" y="44" width="265.6" height="40" fill="var(--dark)"/>
+  <rect x="484.2" y="44" width="9.6" height="40" fill="var(--bg)" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 2"/>
+  <rect x="493.8" y="44" width="185.9" height="40" fill="var(--border)"/>
+  <rect x="40" y="44" width="639.7" height="40" fill="none" stroke="var(--dark)" stroke-width="1.5"/>
+  <path d="M489 86 V100" fill="none" stroke="var(--muted)" stroke-width="1"/>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="11" fill="var(--muted)" text-anchor="middle">
+    <text x="489" y="112">Air 0.015</text>
+    <text x="360" y="128">Total = 1.000 yd³</text>
+  </g>
+</svg>
+<figcaption>Figure 2. Absolute volumes in one cubic yard for the example. All five pieces add up to exactly 1.000 yd³ — that is your check.</figcaption>
+</figure>
+<p class="see-also"><a href="example/#step-7">See it worked in Part 2 →</a></p>
+
+<h2 id="step-8-10"><span class="num">12</span>Steps 8–10 — Summarize, adjust for moisture, and trial-batch</h2>
+<h3>Step 8 — Summarize the design-basis weights</h3>
+<p>Write the mix on one line, per cubic yard, with the moisture basis stated: cementitious materials, water, coarse aggregate (SSD), fine aggregate (SSD), and the air content. Then check three things: the w/cm you get back from water ÷ cementitious materials, the volumes summing to 1.000 yd³, and a theoretical density in the normal-weight range, roughly 140 to 150 lb/ft³.</p>
+<h3>Step 9 — Adjust for moisture and make a trial batch</h3>
+<p>The design weights assume SSD aggregate — saturated, surface-dry. Stockpiles are rarely at SSD. If the aggregate is wet, the free moisture on its surface adds water to the mix; if it is dry, it absorbs water from the mix.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 190" role="img" aria-labelledby="fig3-title">
+  <title id="fig3-title">The four moisture states of aggregate</title>
+  <g font-family="var(--font-mono)" font-weight="600" font-size="12" fill="var(--dark)" text-anchor="middle">
+    <text x="150" y="24">Oven-dry</text>
+    <text x="300" y="24">Air-dry</text>
+    <text x="450" y="24">Saturated, surface-dry</text>
+    <text x="600" y="24">Wet</text>
+  </g>
+  <circle cx="150" cy="88" r="34" fill="var(--bg)" stroke="var(--dark)" stroke-width="2.5"/>
+  <circle cx="300" cy="88" r="34" fill="var(--bg)" stroke="var(--dark)" stroke-width="2.5"/>
+  <circle cx="296" cy="91" r="19" fill="var(--icy)"/>
+  <circle cx="450" cy="88" r="34" fill="var(--icy)" stroke="var(--dark)" stroke-width="2.5"/>
+  <circle cx="600" cy="88" r="46" fill="var(--icy)"/>
+  <circle cx="600" cy="88" r="34" fill="var(--icy)" stroke="var(--dark)" stroke-width="2.5"/>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="11" fill="var(--muted)">
+    <text x="10" y="150">Total moisture</text>
+    <text x="10" y="172">Free water</text>
+  </g>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="11" fill="var(--muted)" text-anchor="middle">
+    <text x="150" y="150">None</text>
+    <text x="300" y="150">Less than absorption</text>
+    <text x="450" y="150">Equal to absorption</text>
+    <text x="600" y="150">More than absorption</text>
+    <text x="150" y="172">Negative (takes water)</text>
+    <text x="300" y="172">Negative (takes water)</text>
+    <text x="450" y="172">Zero</text>
+    <text x="600" y="172">Positive (adds water)</text>
+  </g>
+</svg>
+<figcaption>Figure 3. Aggregate moisture states. Only at SSD does the aggregate neither add water to the mix nor take it away.</figcaption>
+</figure>
+<p>The correction uses the total moisture content MC and the absorption A of each aggregate, both as fractions of the oven-dry mass:</p>
+<div class="eq">free moisture = <i>MC</i> − <i>A</i></div>
+<p>A positive value means the aggregate adds water to the mix; a negative value means it takes water away. Adjust both the water and the aggregate weights:</p>
+<div class="eq">batch water = design water − Σ free water</div>
+<div class="eq">batch aggregate = SSD mass × <span class="frac"><span>1 + <i>MC</i></span><span>1 + <i>A</i></span></span></div>
+<p>For example, coarse aggregate at 1,872 lb SSD with MC = 2.0 percent and A = 0.5 percent carries about 28 lb of free water. So the coarse aggregate is batched at about 1,900 lb and the water drops from 299 to 271 lb — and then you repeat the same correction for the sand.</p>
+<h3>Step 10 — Test and refine</h3>
+<p>Batch it, then measure what you assumed: slump, air content, unit weight, and cylinders for strength at the specified age (ASTM C39). Adjust the water, the admixture dose, or the sand-to-aggregate proportion, and batch again. The ACI values are starting estimates. The trial batch is the answer.</p>
+<p class="see-also"><a href="example/#summary">See it worked in Part 2 →</a></p>
+
+<h2 id="takeaways"><span class="num">13</span>Key takeaways</h2>
+<ol>
+  <li>ACI PRC-211.1-22 gives <strong>starting estimates</strong>, not final answers.</li>
+  <li>Use a <strong>consistent workflow</strong>: the same ten steps, in the same order, every time. Then trial-batch and adjust.</li>
+  <li>Use the <strong>lower w/cm</strong> required by strength and durability. The lower one always governs.</li>
+  <li>Keep the <strong>moisture basis consistent</strong> — oven-dry or SSD, never mixed. Then test and refine.</li>
+</ol>
+<p>Mix design is not memorizing numbers. It is understanding the sequence. Part 2 runs the whole sequence on one real problem.</p>
+
+<nav class="article-nav" aria-label="Series">
+  <a class="prev" href="../"><span class="dir">← Study</span><span class="ttl">All study materials</span></a>
+  <a class="next" href="example/"><span class="dir">Next →</span><span class="ttl">Part 2: Worked example — a 3,000 psi beam</span></a>
+</nav>
+
+</article>
+</main>
+
+<footer class="site-footer">
+  <span>© <span id="year"></span> Jisoo Park. All rights reserved.</span>
+  <a href="../../">← Home</a>
+</footer>
+<script src="../article.js"></script>
+</body>
+</html>
