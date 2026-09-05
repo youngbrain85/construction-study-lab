@@ -4,106 +4,127 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Construction Study Lab</title>
+<meta name="description" content="Hands-on labs for construction materials and surveying, with notes and reference tables to study alongside.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/theme.css">
 <style>
-/* ── 허브 전용 스타일 (theme.css 공통 컴포넌트 위에 얹는 최소 보정) ── */
-.hero { padding:8px 0 4px; }
-/* 잠긴(비활성) 랩 카드: 클릭 무동작 + 시각적으로 톤 다운, hover 리프트 애니메이션 비활성화 */
-.lab-card-locked { cursor:default; opacity:.65; align-items:center; text-align:center;
-  justify-content:center; min-height:172px; }
-.lab-card-locked:hover { transform:none; box-shadow:var(--shadow); }
-.lab-card-locked .icon { font-size:36px; filter:grayscale(1); }
-.lab-card-locked .desc { flex:none; }
-footer.site-footer { max-width:1100px; margin:0 auto; padding:8px 24px 48px;
-  color:var(--faint); font-size:12.5px; text-align:center; }
+/* ── 홈 전용: 한 화면, 청사진 격자 + 선화 배경 (목업 home-desktop.html 수치) ── */
+html, body { background:var(--royal); }
+.home { position:relative; min-height:100vh; min-height:100dvh; overflow:hidden; color:#fff;
+  display:flex; flex-direction:column;
+  background-color:var(--royal);
+  background-image:
+    linear-gradient(rgba(184,245,255,.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(184,245,255,.10) 1px, transparent 1px),
+    linear-gradient(180deg, #003665 0%, #0053a5 100%);
+  background-size:48px 48px, 48px 48px, 100% 100%; }
+.home-art { position:absolute; left:0; right:0; bottom:0; width:100%; height:auto; max-height:70%;
+  opacity:.32; pointer-events:none; }
+.home-art--mobile { display:none; }
+.home-top, .home-foot { position:relative; z-index:2; display:flex; align-items:center;
+  justify-content:space-between; gap:16px; padding:0 48px; flex-shrink:0;
+  font:500 12px/1 var(--font-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--neon); }
+.home-top { height:64px; border-bottom:1px solid rgba(184,245,255,.3); }
+.home-foot { height:48px; border-top:1px solid rgba(184,245,255,.3); color:var(--icy);
+  letter-spacing:0; text-transform:none; font-size:11.5px; }
+.home-body { position:relative; z-index:2; flex-grow:1; display:flex; flex-direction:column;
+  justify-content:center; gap:36px; padding:24px 48px 40px; }
+.home-eyebrow { font:600 13px/1 var(--font-mono); letter-spacing:.14em; text-transform:uppercase; color:var(--neon); }
+.home-title { font:800 clamp(72px, 11.6vw, 168px)/.88 var(--font-head); text-transform:uppercase;
+  letter-spacing:-.01em; color:#fff; margin:16px 0; }
+.home-sub { font:400 18px/1.55 var(--font); color:var(--icy); max-width:44ch; margin:0; }
+.home-menu { display:flex; gap:16px; align-items:stretch; flex-wrap:wrap; }
+.menu-btn { display:flex; align-items:center; justify-content:space-between; gap:40px; min-width:300px;
+  padding:22px 26px; border-radius:var(--radius); text-decoration:none; border:1px solid transparent;
+  transition:background .15s; }
+.menu-btn strong { display:block; font:800 34px/1 var(--font-head); text-transform:uppercase; letter-spacing:.02em; }
+.menu-btn small { display:block; margin-top:6px; font:500 11.5px/1 var(--font-mono); letter-spacing:.08em; text-transform:uppercase; }
+.menu-btn .arrow { font:800 34px/1 var(--font-head); }
+.menu-btn--lab { background:#fff; color:var(--dark); }
+.menu-btn--lab small { color:var(--muted); }
+.menu-btn--lab:hover { background:var(--icy); }
+.menu-btn--study { background:rgba(0,54,101,.55); color:#fff; border-color:var(--neon); }
+.menu-btn--study small, .menu-btn--study .arrow { color:var(--neon); }
+.menu-btn--study:hover { background:rgba(0,54,101,.8); }
+@media (max-width:700px) {
+  .home { background-size:40px 40px, 40px 40px, 100% 100%; }
+  .home-art--desktop { display:none; } .home-art--mobile { display:block; max-height:40%; opacity:.3; }
+  .home-top { height:52px; padding:0 20px; font-size:10.5px; letter-spacing:.08em; }
+  .home-top .domain { display:none; }
+  .home-body { padding:16px 20px 24px; gap:28px; }
+  .home-eyebrow { font-size:11px; }
+  .home-title { font-size:62px; line-height:.9; margin:12px 0; }
+  .home-sub { font-size:15px; }
+  .home-menu { flex-direction:column; gap:12px; }
+  .menu-btn { min-width:0; padding:18px 22px; }
+  .menu-btn strong, .menu-btn .arrow { font-size:30px; }
+  .home-foot { height:auto; padding:12px 20px 14px; font-size:10px; line-height:1.5; }
+}
 </style>
 </head>
 <body>
-<header class="appbar"><div class="appbar-inner">
-  <div class="logo"><span class="mark">⬢</span> Construction Study Lab</div>
-</div></header>
-<main>
-  <div class="hero">
-    <h1>Construction Study Lab</h1>
-    <p class="sub">Interactive labs for construction materials — CNST-111</p>
-  </div>
-  <div id="lab-grid" class="mission-grid"></div>
-</main>
-<footer class="site-footer">CNST-111 · Construction Materials, Methods, and Equipment</footer>
-<script>
-'use strict';
+<div class="home">
+  <svg class="home-art home-art--desktop" viewBox="0 0 1440 620" fill="none" stroke="#b8f5ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M0 600 H1440"></path>
+    <path d="M780 600 V230 M900 600 V230 M1020 600 V230"></path>
+    <path d="M780 230 H1020 M780 322 H1020 M780 414 H1020 M780 506 H1020"></path>
+    <path d="M780 322 L900 230 M900 600 L1020 506" stroke-dasharray="6 6"></path>
+    <path d="M760 230 H1040" stroke-width="3"></path>
+    <path d="M760 600 H1040" stroke-width="4"></path>
+    <path d="M1100 600 V90" stroke-width="3"></path>
+    <path d="M1140 600 V90" stroke-width="3"></path>
+    <path d="M1100 560 L1140 520 M1140 560 L1100 520 M1100 480 L1140 440 M1140 480 L1100 440 M1100 400 L1140 360 M1140 400 L1100 360 M1100 320 L1140 280 M1140 320 L1100 280 M1100 240 L1140 200 M1140 240 L1100 200 M1100 160 L1140 120 M1140 160 L1100 120"></path>
+    <path d="M1100 90 H1140 M1080 90 H1160 V60 H1080 Z"></path>
+    <path d="M760 90 H1080" stroke-width="3"></path>
+    <path d="M760 110 H1080"></path>
+    <path d="M780 110 L800 90 M820 110 L840 90 M860 110 L880 90 M900 110 L920 90 M940 110 L960 90 M980 110 L1000 90 M1020 110 L1040 90"></path>
+    <path d="M1160 90 H1300 M1160 110 H1300 M1300 90 V125 H1250 V110"></path>
+    <path d="M1120 60 V10 M1120 10 L800 90 M1120 10 L1290 90"></path>
+    <path d="M870 110 V150 M856 150 H884 M870 150 V172"></path>
+    <path d="M870 172 c-14 0 -14 22 0 22 c8 0 12 -6 12 -10"></path>
+    <path d="M830 206 H910 V226 H830 Z"></path>
+    <path d="M1360 600 L1380 470 L1400 600 M1380 470 L1370 600 M1380 470 V450 M1366 452 H1394"></path>
+  </svg>
+  <svg class="home-art home-art--mobile" viewBox="0 0 390 300" fill="none" stroke="#b8f5ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    <path d="M0 290 H390"></path>
+    <path d="M30 290 V110 M90 290 V110 M150 290 V110 M210 290 V110"></path>
+    <path d="M30 110 H210 M30 170 H210 M30 230 H210"></path>
+    <path d="M30 170 L90 110 M150 290 L210 230" stroke-dasharray="4 4"></path>
+    <path d="M300 290 V60 M318 290 V60" stroke-width="2"></path>
+    <path d="M300 260 L318 240 M318 260 L300 240 M300 210 L318 190 M318 210 L300 190 M300 160 L318 140 M318 160 L300 140 M300 110 L318 90 M318 110 L300 90"></path>
+    <path d="M200 60 H290 M200 72 H290 M330 60 H380 M330 72 H380 M309 60 V30 M309 30 L215 60 M309 30 L375 60"></path>
+    <path d="M230 72 V150 M222 150 H238"></path>
+  </svg>
 
-// ── DOM 빌더 (모듈과 동일한 헬퍼) ──────────────────────────────────
-function h(tag, attrs = {}, ...children) {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(attrs)) {
-    if (k === 'class') el.className = v;
-    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
-    else el.setAttribute(k, v);
-  }
-  for (const c of children.flat(9)) {
-    if (c == null) continue;
-    el.append(c.nodeType ? c : document.createTextNode(c));
-  }
-  return el;
-}
+  <header class="home-top">
+    <span>Thompson Thrift Department of Construction Management</span>
+    <span class="domain">cnstlab.org</span>
+  </header>
 
-// ── 랩 레지스트리 ──────────────────────────────────────────────────
-const LABS = [
-  { id: 'mix-design', name: 'Mix Design Lab', icon: '🧪', href: 'labs/mix-design/',
-    desc: 'Proportion a concrete mix with the ACI tables, then put it through virtual slump and strength tests.',
-    meta: '5 missions · ACI PRC-211.1-22', active: true },
-  { id: 'soon-1', active: false }, { id: 'soon-2', active: false },
-];
+  <main class="home-body">
+    <div>
+      <p class="home-eyebrow">Interactive labs and study materials</p>
+      <h1 class="home-title">Construction<br>Study Lab</h1>
+      <p class="home-sub">Build it, test it, prove it — hands-on labs for construction materials and surveying, with notes and reference tables to study alongside.</p>
+    </div>
+    <nav class="home-menu" aria-label="Sections">
+      <a class="menu-btn menu-btn--lab" href="labs/" aria-label="Lab — Material and Survey labs">
+        <span><strong>Lab</strong><small>Material · Survey</small></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="menu-btn menu-btn--study" href="study/" aria-label="Study — notes, tables, and worked examples">
+        <span><strong>Study</strong><small>Notes · Tables · Examples</small></span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </a>
+    </nav>
+  </main>
 
-// ── 점수 → 등급 변환 (Mix Design Lab의 채점 등급과 동일한 경계값) ───
-function scoreToGrade(score) {
-  if (score >= 90) return 'A';
-  if (score >= 80) return 'B';
-  if (score >= 70) return 'C';
-  if (score >= 60) return 'D';
-  return 'F';
-}
-// mixlab-best 저장 형식은 { missionId: score }. 미션들 중 최고 점수를 등급으로
-// 변환해 "Best: A" 형식의 배지로 보여준다. 기록이 없으면 배지를 표시하지 않는다.
-function bestGradeBadge() {
-  try {
-    const best = JSON.parse(localStorage.getItem('mixlab-best') || '{}');
-    const scores = Object.values(best);
-    if (!scores.length) return null;
-    return scoreToGrade(Math.max(...scores));
-  } catch (e) { return null; } // localStorage 접근 불가 환경 무시
-}
-
-// ── 카드 렌더 ──────────────────────────────────────────────────────
-function activeCard(lab) {
-  const grade = bestGradeBadge();
-  return h('a', { class: 'card mission-card', href: lab.href },
-    h('div', { class: 'icon' }, lab.icon),
-    h('h2', {}, lab.name),
-    h('div', { class: 'meta' },
-      h('span', { class: 'badge badge-blue' }, lab.meta),
-      grade ? h('span', { class: 'badge badge-green' }, `Best: ${grade}`) : null),
-    h('div', { class: 'desc' }, lab.desc),
-    h('span', { class: 'btn btn-primary' }, 'Enter Lab →'));
-}
-function lockedCard() {
-  return h('div', { class: 'card mission-card lab-card-locked' },
-    h('div', { class: 'icon' }, '🔒'),
-    h('div', { class: 'desc' }, 'New lab coming soon'));
-}
-
-const grid = document.getElementById('lab-grid');
-function renderGrid() {
-  grid.innerHTML = '';
-  LABS.forEach(lab => grid.append(lab.active ? activeCard(lab) : lockedCard()));
-}
-renderGrid();
-// bfcache(뒤로가기/앞으로가기 캐시) 복원 시 Best 배지가 stale 상태로 남지 않도록 재렌더
-window.addEventListener('pageshow', (e) => { if (e.persisted) renderGrid(); });
-</script>
+  <footer class="home-foot">
+    <span>© <span id="year"></span> Thompson Thrift Department of Construction Management, Indiana State University. All rights reserved.</span>
+  </footer>
+</div>
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
