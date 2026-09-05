@@ -172,7 +172,7 @@ Part 2의 모든 수치는 슬라이드 19–25와 동일하다(위 표가 정�
 
 1. `tools/registry.test.mjs` 보강: MATERIALS `type:'page'` 항목마다 `site/study/<href>index.html` 파일이 존재한다(href는 `/`로 끝남).
 2. `tools/study-tables.test.mjs`: Part 1 HTML을 읽어 `#tbl-water`(nonAE·ae 각 3행 × NMAS 0.375–1.5, entrapped, air 3행)·`#tbl-wcm`(2000–6000 × 2)·`#tbl-bb0`(NMAS 0.375–1.5 × FM 4)의 값이 `MixEngine.DATA`의 `WATER_TABLE`(`nonAE`/`ae`/`entrappedAir`/`targetAir`)·`WC_TABLE`·`CA_VOLUME_TABLE`과 정확히 같다. 파싱은 정규식(`<tr …>…</tr>`, `data-*`, 첫 숫자)으로 하고 HTML 파서 의존성은 추가하지 않는다.
-3. `tools/site-guards.test.mjs`: (a) `site/` 아래 `.html/.js/.css`(vendor 제외)에 문자열 `CNST`가 없다 (b) `site/study/article.css`에 `#` 리터럴 색이 없다(`var(--…)`만) (c) Part 1·Part 2 HTML의 내부 링크(`href`가 `http`로 시작하지 않고 `#`만이 아닌 것)가 파일로 존재한다(디렉터리 링크는 `index.html`).
+3. `tools/site-guards.test.mjs`: (a) `site/` 아래 `.html/.js/.css`(vendor 제외)에 대문자 문자열 `CNST`가 없다(대소문자 구분 — 도메인 `cnstlab.org`는 소문자라 해당 없음) (b) `site/study/article.css`에 `#` 리터럴 색이 없다(`var(--…)`만) (c) Part 1·Part 2 HTML의 내부 링크(`href`가 `http`로 시작하지 않고 `#`만이 아닌 것)가 파일로 존재한다(디렉터리 링크는 `index.html`).
 4. 기존 `engine.test.mjs`·`contrast-check.test.mjs` 불변 통과. 실행: `node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs`. README의 테스트 명령을 이것으로 갱신.
 
 ## 8. 화면 검증(필수)
