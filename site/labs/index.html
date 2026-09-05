@@ -7,9 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="modulepreload" href="../shared/vendor/three.module.js">
+<link rel="modulepreload" href="mix-design/scene3d.js">
 <link rel="stylesheet" href="../shared/theme.css">
 </head>
-<body class="section-page">
+<body class="section-page room-page">
 <header class="appbar"><div class="appbar-inner appbar-inner--wide">
   <a class="logo" href="../">Construction Study Lab</a>
   <nav class="appbar-nav" aria-label="Sections">
@@ -18,15 +20,18 @@
   </nav>
 </div></header>
 
-<section class="band-dark section-head">
-  <div>
-    <p class="eyebrow" style="margin:0">01 · Interactive labs</p>
-    <h1>Lab</h1>
+<main class="room-main">
+  <div class="room-viewport" id="room" role="region" aria-label="Virtual construction lab">
+    <div class="room-caption">
+      <h1 class="visually-hidden">Lab</h1>
+      <p class="eyebrow">01 · Interactive labs</p>
+      <p class="room-hint">Pick a station</p>
+    </div>
+    <div class="room-labels" id="room-labels"></div>
+    <div class="room-fade" aria-hidden="true"></div>
   </div>
-  <p>Pick a lab. Each one runs in the browser and grades your work at the end.</p>
-</section>
-
-<main id="groups" class="section-main"></main>
+  <div id="fallback" class="section-main" hidden></div>
+</main>
 
 <footer class="site-footer">
   <span>© <span id="year"></span> Jisoo Park. All rights reserved.</span>
@@ -35,46 +40,15 @@
 
 <script src="../shared/registry.js"></script>
 <script src="../shared/dom.js"></script>
+<script src="lab-list.js"></script>
 <script>
-'use strict';
-const S = window.SITE;
-
-// ── 행 렌더 ───────────────────────────────────────────────────────
-function activeRow(lab, n) {
-  const grade = lab.bestKey ? S.bestGrade(lab.bestKey) : null;
-  const meta = grade ? `${lab.meta}\nBest grade · ${grade}` : lab.meta;
-  return h('div', { class: 'ledger-row is-active' },
-    h('div', { class: 'num' }, n),
-    h('div', {}, h('h3', { class: 'title' }, lab.name), h('p', { class: 'desc' }, lab.desc)),
-    h('div', { class: 'meta', style: 'white-space:pre-line' }, meta),
-    h('a', { class: 'btn btn-primary', href: lab.href }, 'Enter →'));
-}
-function soonRow(n) {
-  return h('div', { class: 'ledger-row is-soon' },
-    h('div', { class: 'num' }, n),
-    h('div', {}, h('h3', { class: 'title' }, 'New lab coming soon')),
-    h('div', { class: 'meta' }, '—'),
-    h('div', { class: 'soon' }, 'Soon'));
-}
-
-// ── 그룹 렌더 (번호는 그룹을 가로질러 01, 02, 03… 연속) ───────────────
-function render() {
-  const root = document.getElementById('groups');
-  root.innerHTML = '';
-  let n = 0;
-  for (const g of S.LAB_GROUPS) {
-    const labs = S.LABS.filter(l => l.group === g.id).sort((a, b) => (b.active === true) - (a.active === true));
-    const rows = labs.map(lab => { n += 1; const num = String(n).padStart(2, '0'); return lab.active ? activeRow(lab, num) : soonRow(num); });
-    if (rows.length === 0) rows.push(soonRow(String(++n).padStart(2, '0')));
-    root.append(h('section', { class: 'group', id: `lab-${g.id}` },
-      h('div', { class: 'group-head' }, h('h2', {}, g.name), h('p', {}, g.blurb)),
-      ...rows));
-  }
-  document.getElementById('year').textContent = new Date().getFullYear();
-}
-render();
-// bfcache 복원 시 Best grade 배지가 stale 상태로 남지 않도록 재렌더
-window.addEventListener('pageshow', (e) => { if (e.persisted) render(); });
+  document.getElementById('year').textContent = new Date().getFullYear(); // 경로와 무관하게 항상
+  // 3D 모듈이 8 s 안에 body.room-page--3d 를 붙이지 못하면(404·구문 오류 등) 대체 목록을 띄운다
+  window.__labRoomGuard = setTimeout(function () {
+    if (!document.body.classList.contains('room-page--3d')) LabList.showFallback('module-timeout');
+  }, 8000);
 </script>
+<script nomodule>LabList.showFallback('nomodule');</script>
+<script type="module" src="room/lab-room.js" onerror="LabList.showFallback('module-error')"></script>
 </body>
 </html>

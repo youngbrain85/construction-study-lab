@@ -209,3 +209,48 @@ h3 { font-size:22px; font-weight:700; margin:0; }
   .ledger-row.is-soon .meta, .ledger-row.is-soon .soon { display:none; }
   .site-footer { padding:14px 20px; font-size:10.5px; }
 }
+
+/* ── Lab 페이지: 3D 랩실 (labs/index.html + labs/room/lab-room.js) — 스펙 2026-09-05-lab-room-3d §2.2·§5.4 ── */
+body.room-page { min-height:0; height:100vh; height:100dvh; overflow:hidden; } /* .section-page 의 min-height:100vh 를 눌러야 iOS 주소창 상태에서 푸터가 안 잘림 */
+.room-main { flex:1; min-height:0; display:flex; flex-direction:column; max-width:none; margin:0; padding:0; overflow:auto; }
+.room-main > [hidden] { display:none !important; } /* .section-main{display:flex} 가 UA [hidden] 을 이기므로 명시 */
+.room-viewport { position:relative; flex:1; min-height:0; background:var(--icy); overflow:hidden; }
+.room-viewport canvas { position:absolute; inset:0; z-index:1; }
+.room-caption { position:absolute; left:40px; top:28px; z-index:2; pointer-events:none; }
+.room-caption .eyebrow { margin:0; }
+.room-hint { font:400 15px/1.4 var(--font); color:var(--muted); margin:4px 0 0; }
+.room-labels { position:absolute; inset:0; z-index:3; pointer-events:none; }
+.station-label { position:absolute; left:0; top:0; display:inline-flex; flex-direction:column; gap:3px; pointer-events:auto;
+  will-change:transform; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:var(--radius);
+  padding:6px 10px; text-decoration:none; box-shadow:0 2px 8px rgba(0,54,101,.18); white-space:nowrap; cursor:pointer; }
+.station-label .name { font:600 13px/1.2 var(--font); }
+.station-label .status { font:500 11px/1 var(--font-mono); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.station-label .grade { font:500 11px/1 var(--font-mono); letter-spacing:.06em; color:var(--royal); }
+.station-label.is-soon { background:var(--surface2); border:1px dashed var(--faint); color:var(--faint); cursor:default; }
+.station-label.is-soon .status { color:var(--faint); }
+.station-label.is-hover, .station-label:focus-visible { background:var(--royal); border-color:#fff; color:#fff; }
+.station-label.is-hover .status, .station-label.is-hover .grade, .station-label:focus-visible .status, .station-label:focus-visible .grade { color:#fff; }
+.station-label::after { content:''; position:absolute; left:50%; top:100%; width:1px; height:var(--lead, 0px); background:var(--faint); } /* 밀린 라벨 → 앵커 리더선 */
+@keyframes room-nudge { 0%, 100% { opacity:1; } 50% { opacity:.15; } }
+.station-label.is-nudge .status { animation:room-nudge .3s ease-in-out 2; }
+.room-fade { position:absolute; inset:0; z-index:4; background:var(--dark); opacity:0; pointer-events:none; transition:opacity .45s ease-out; }
+.room-fade.is-on { opacity:1; }
+#fallback { padding:40px 40px 64px; }
+.visually-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+@media (prefers-reduced-motion: reduce) {
+  .station-label.is-nudge { border-color:var(--royal); }
+  .station-label.is-nudge .status { animation:none; }
+  .room-fade { transition:none; }
+}
+@media (max-height:640px) { /* 가로로 눕힌 폰·낮은 창: 방 420px 고정, 페이지 자연 스크롤 */
+  body.room-page { height:auto; min-height:100dvh; overflow:auto; }
+  .room-viewport { flex:none; height:420px; }
+}
+@media (max-width:700px) {
+  .room-caption { left:20px; top:18px; }
+  .station-label { padding:5px 8px; }
+  .station-label .name { font-size:12px; }
+  .station-label .status { font-size:10.5px; }
+  .station-label .grade { display:none; }
+  #fallback { padding:28px 20px 40px; }
+}

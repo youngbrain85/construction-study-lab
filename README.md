@@ -9,14 +9,15 @@ First lab: **Mix Design Lab** — proportion a concrete mix with the ACI PRC-211
 https://cnstlab.org
 
 - `/` — home: one screen with two doors, **Lab** and **Study**
-- `/labs/` — Lab section: Material Lab (Mix Design Lab, …) and Survey Lab
+- `/labs/` — Lab section: a one-screen 3D lab room (fixed top-down view; hover a station, click to enter). Falls back to the text list when WebGL is unavailable
 - `/study/` — Study section: notes, reference tables, worked examples (Materials, Surveying)
 - `/labs/mix-design/` — Mix Design Lab module
 
 ## Structure
 
 - `site/index.html` — home
-- `site/labs/index.html`, `site/study/index.html` — section pages, rendered from the registry
+- `site/labs/index.html` — Lab page: 3D room built by `site/labs/room/` (`layout.js` placement + camera math, `props.js` procedural equipment, `lab-room.js` assembly and interaction); `site/labs/lab-list.js` renders the text list used as the fallback
+- `site/study/index.html` — Study section page, rendered from the registry
 - `site/shared/registry.js` — `window.SITE`: `LAB_GROUPS`, `LABS`, `STUDY_GROUPS`, `MATERIALS`
 - `site/shared/dom.js` — shared DOM builder (`window.h`) used by the section pages
 - `site/shared/theme.css` — design tokens and shared components (ISU brand palette and type)
@@ -25,7 +26,7 @@ https://cnstlab.org
 - `site/labs/mix-design/` — Mix Design Lab module (`engine.js` scoring, `scene3d.js` three.js scenes)
 - `docs/design/mockups/` — the approved mockups the pages are built from
 
-**Add a lab:** create `site/labs/<id>/`, then add one entry to `LABS` in `site/shared/registry.js` (`group` = `material` or `survey`).
+**Add a lab:** the room already has a station for each lab (`station` = `mix` | `soil` | `steel` | `wood` | `survey`). Create `site/labs/<id>/`, then fill in that station's `LABS` entry in `site/shared/registry.js` (`href`, `desc`, `meta`, `active: true`) — the station lights up and links to it.
 **Add study material:** add one entry to `MATERIALS` (`type` = `pdf` | `link` | `page`, `group` = `materials` or `surveying`). For a `page`, create `site/study/<id>/index.html` from `site/study/mix-design/index.html` as the template (link `article.css` and `article.js`, keep the contents `<nav class="toc">` in sync with the `h2` ids) and set `href` to `<id>/`.
 
 ## Dev
@@ -39,5 +40,5 @@ Then open http://localhost:8123 (the custom server serves `.js` with the right M
 ## Test
 
 ```sh
-node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs
+node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs tools/layout.test.mjs tools/props.test.mjs
 ```
