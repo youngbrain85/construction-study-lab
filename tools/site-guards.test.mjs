@@ -29,3 +29,13 @@ test('article.css 는 theme.css 토큰만 쓴다(리터럴 색 없음)', () => {
   assert.deepEqual(literals, []);
   assert.ok(css.includes('var(--royal)'), 'uses tokens');
 });
+
+test('Study 사진 4장이 존재하고 용량 예산 안이다', () => {
+  const IMG = join(SITE, 'study/mix-design/img');
+  const budget = { 'pour.jpg': 180 * 1024, 'slump-test.jpg': 90 * 1024, 'graded-aggregate.jpg': 25 * 1024, 'angular-rounded.jpg': 12 * 1024 };
+  for (const [name, max] of Object.entries(budget)) {
+    const p = join(IMG, name);
+    assert.ok(existsSync(p), `${name} missing`);
+    assert.ok(statSync(p).size <= max, `${name} is ${statSync(p).size} B > ${max} B`);
+  }
+});
