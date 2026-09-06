@@ -623,7 +623,7 @@ Block B:
     <div class="num-field"><label for="gs">Specific gravity of solids, <i>G</i><sub>s</sub></label><div class="wrap"><input id="gs" name="gs" type="number" step="0.01" value="2.70"><span class="unit">—</span></div><p class="hint">Only for the zero-air-voids line. 2.65 to 2.75 for most soils.</p></div>
     <div class="num-field"><label for="gdf">Field dry unit weight</label><div class="wrap"><input id="gdf" name="gdf" type="number" step="0.1" value="106.5"><span class="unit">pcf</span></div><p class="hint">From the sand cone or the gauge, after removing water.</p></div>
     <div class="num-field"><label for="wf">Field water content</label><div class="wrap"><input id="wf" name="wf" type="number" step="0.1" value="11.5"><span class="unit">%</span></div></div>
-    <div class="num-field"><label for="spec">Required percent compaction</label><div class="wrap"><input id="spec" name="spec" type="number" step="1" value="95"><span class="unit">%</span></div></div>
+    <div class="num-field"><label for="spec-input">Required percent compaction</label><div class="wrap"><input id="spec-input" name="spec" type="number" step="1" value="95"><span class="unit">%</span></div></div>
     <div class="num-field"><label for="lo">Moisture window, below optimum</label><div class="wrap"><input id="lo" name="lo" type="number" step="0.5" value="-2"><span class="unit">%</span></div></div>
     <div class="num-field"><label for="hi">Moisture window, above optimum</label><div class="wrap"><input id="hi" name="hi" type="number" step="0.5" value="2"><span class="unit">%</span></div></div>
   </div>
@@ -702,14 +702,14 @@ if (form) {
 
   function readInputs() {
     const errors = [];
-    const points = [];
+    const points = [], rows = []; // rows: 각 유효 점이 온 입력 행 번호(1–5) — 빈 행이 섞여도 건조밀도를 제 행에 표시한다
     for (let i = 1; i <= 5; i++) {
       const w = num('w' + i), wet = num('g' + i);
       if (form.elements['w' + i].value === '' && form.elements['g' + i].value === '') continue; // 빈 행은 무시
       const ew = validate('w', w), eg = validate('wet', wet);
       if (ew) errors.push(`Point ${i} water content: ${ew}.`);
       if (eg) errors.push(`Point ${i} wet unit weight: ${eg}.`);
-      if (!ew && !eg) points.push({ w, wet });
+      if (!ew && !eg) { points.push({ w, wet }); rows.push(i); }
     }
     const fields = { gs: ['Gs', 'Specific gravity'], gdf: ['gd', 'Field dry unit weight'], wf: ['w', 'Field water content'],
       spec: ['spec', 'Required compaction'], lo: ['window', 'Moisture window (below)'], hi: ['window', 'Moisture window (above)'] };
@@ -720,7 +720,7 @@ if (form) {
       if (e) errors.push(`${label}: ${e}.`);
     }
     if (Number.isFinite(v.lo) && Number.isFinite(v.hi) && v.lo > v.hi) errors.push('Moisture window: the lower limit must not exceed the upper limit.');
-    return { points, ...v, errors };
+    return { points, rows, ...v, errors };
   }
 
   function el(tag, attrs, text) {
@@ -785,11 +785,12 @@ if (form) {
     const inp = readInputs();
     $('calc-errors').textContent = inp.errors.join(' ');
     const fit = fitProctor(inp.points);
-    for (let i = 1; i <= 5; i++) { const p = fit.points[i - 1]; $('dry' + i).textContent = p ? fmt(p.dry) : '—'; }
+    for (let i = 1; i <= 5; i++) $('dry' + i).textContent = '—';
+    fit.points.forEach((p, idx) => { $('dry' + inp.rows[idx]).textContent = fmt(p.dry); }); // fitProctor 는 유효 점만 받으므로 rows 와 평행하다
     if (fit.error || inp.errors.length) {
       for (const id of ['out-wopt', 'out-gdmax', 'out-percent', 'out-verdict']) $(id).textContent = '—';
       $('out-verdict').className = '';
-      $('out-notes').textContent = fit.error || 'Fix the highlighted inputs to see a result.';
+      $('out-notes').textContent = fit.error || 'Fix the inputs listed above to see a result.';
       return;
     }
     const res = evaluate({ gdField: inp.gdf, wField: inp.wf, gdMax: fit.gdMax, wOpt: fit.wOpt, specPct: inp.spec, lo: inp.lo, hi: inp.hi });
