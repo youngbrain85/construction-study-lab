@@ -64,27 +64,49 @@ if (form) {
     g.appendChild(el('line', { x1: L, y1: T, x2: L, y2: B, stroke: 'var(--dark)', 'stroke-width': 1.5 }));
     g.appendChild(el('text', { x: (L + R) / 2, y: 344, 'text-anchor': 'middle', fill: 'var(--dark)' }, 'water content, w (%)'));
     g.appendChild(el('text', { x: 18, y: (T + B) / 2, 'text-anchor': 'middle', fill: 'var(--dark)', transform: `rotate(-90 18 ${(T + B) / 2})` }, 'dry unit weight (pcf)'));
-    // 영공기간극선(플롯 범위 안만)
+    // 영공기간극선(플롯 범위 안만) — 위쪽 경계(yMax)를 지나는 지점은 상자 경계에서 보간해 정확히 자른다(최종 리뷰 반영)
     if (Number.isFinite(gs)) {
       const pts = [];
-      for (let i = 0; i <= 60; i++) { const w = xMin + (xMax - xMin) * i / 60, z = zavDensity(gs, w); if (z >= yMin && z <= yMax) pts.push(`${X(w).toFixed(1)},${Y(z).toFixed(1)}`); }
+      let prevW, prevZ;
+      for (let i = 0; i <= 60; i++) {
+        const w = xMin + (xMax - xMin) * i / 60, z = zavDensity(gs, w);
+        if (i > 0 && (prevZ > yMax) !== (z > yMax)) {
+          const t = (yMax - prevZ) / (z - prevZ);
+          pts.push(`${X(prevW + (w - prevW) * t).toFixed(1)},${Y(yMax).toFixed(1)}`);
+        }
+        if (z >= yMin && z <= yMax) pts.push(`${X(w).toFixed(1)},${Y(z).toFixed(1)}`);
+        prevW = w; prevZ = z;
+      }
       if (pts.length > 1) g.appendChild(el('polyline', { points: pts.join(' '), fill: 'none', stroke: 'var(--amber)', 'stroke-width': 2, 'stroke-dasharray': '7 5' }));
-      g.appendChild(el('text', { x: R - 4, y: T + 14, 'text-anchor': 'end', fill: 'var(--amber)' }, `zero air voids, Gs = ${fmt(gs, 2)}`));
+      if (pts.length > 1) {
+        // 범례: 선이 상자 안으로 들어오는 첫 점 위치에 그린다. 실제 렌더 너비를 재서 오른쪽 경계(R)를 넘치면 오른쪽 정렬로 바꾸고,
+        // 점선과 겹치는 자리는 배경색 후광(halo)으로 가려 글자가 선에 꿰뚫려 보이지 않게 한다(최종 리뷰 반영)
+        const [fx, fy] = pts[0].split(',').map(Number);
+        const legendY = fy + 14, legendText = `zero air voids, Gs = ${fmt(gs, 2)}`;
+        const label = el('text', { x: fx + 6, y: legendY, 'text-anchor': 'start', fill: 'var(--amber)' }, legendText);
+        g.appendChild(label);
+        if (fx + 6 + label.getComputedTextLength() > R) { label.setAttribute('x', R - 4); label.setAttribute('text-anchor', 'end'); }
+        const box = label.getBBox(); // 실측 박스 + 여유 패딩으로 후광을 그려 글꼴 지표 가정 오차 없이 완전히 가린다
+        g.insertBefore(el('rect', { x: box.x - 3, y: box.y - 2, width: box.width + 6, height: box.height + 4, fill: 'var(--bg)' }), label);
+      }
     }
     // 적합 곡선(시험 범위 안)
     if (!fit.flags.includes('no-peak')) {
       const pts = [];
       for (let i = 0; i <= 40; i++) { const w = fit.wMin + (fit.wMax - fit.wMin) * i / 40; pts.push(`${X(w).toFixed(1)},${Y(fit.a * w * w + fit.b * w + fit.c).toFixed(1)}`); }
       g.appendChild(el('polyline', { points: pts.join(' '), fill: 'none', stroke: 'var(--royal)', 'stroke-width': 3 }));
-      g.appendChild(el('line', { x1: X(fit.wOpt), y1: Y(fit.gdMax), x2: X(fit.wOpt), y2: B, stroke: 'var(--royal)', 'stroke-width': 1, 'stroke-dasharray': '4 4' }));
-      g.appendChild(el('text', { x: X(fit.wOpt) + 6, y: Y(fit.gdMax) - 8, fill: 'var(--royal)' }, `optimum ${fmt(fit.wOpt)} % · ${fmt(fit.gdMax)} pcf`));
+      const xOpt = Math.min(R, Math.max(L, X(fit.wOpt))); // 최적점이 시험 범위 밖이면 상자 가장자리로 클램프(최종 리뷰 반영)
+      const optAnchor = xOpt > (L + R) / 2 ? 'end' : 'start';
+      g.appendChild(el('line', { x1: xOpt, y1: Y(fit.gdMax), x2: xOpt, y2: B, stroke: 'var(--royal)', 'stroke-width': 1, 'stroke-dasharray': '4 4' }));
+      g.appendChild(el('text', { x: optAnchor === 'end' ? xOpt - 6 : xOpt + 6, y: Y(fit.gdMax) - 8, 'text-anchor': optAnchor, fill: 'var(--royal)' }, `optimum ${fmt(fit.wOpt)} % · ${fmt(fit.gdMax)} pcf`));
     }
     for (const p of fit.points) g.appendChild(el('circle', { cx: X(p.w), cy: Y(p.dry), r: 5, fill: 'var(--royal)', stroke: 'var(--bg)', 'stroke-width': 1.5 }));
     // 현장 점(마름모)
     if (Number.isFinite(field.gd) && Number.isFinite(field.w)) {
-      const x = X(field.w), y = Y(field.gd);
+      const x = Math.min(R, Math.max(L, X(field.w))), y = Y(field.gd); // 현장점 x도 상자 가장자리로 클램프(최종 리뷰 반영)
+      const fieldAnchor = x > (L + R) / 2 ? 'end' : 'start';
       g.appendChild(el('polygon', { points: `${x},${y - 7} ${x + 7},${y} ${x},${y + 7} ${x - 7},${y}`, fill: field.pass ? 'var(--green)' : 'var(--amber)', stroke: 'var(--dark)', 'stroke-width': 1 }));
-      g.appendChild(el('text', { x: x + 10, y: y + 4, fill: 'var(--dark)' }, `field ${fmt(field.gd)} pcf`));
+      g.appendChild(el('text', { x: fieldAnchor === 'end' ? x - 6 : x + 6, y: y + 4, 'text-anchor': fieldAnchor, fill: 'var(--dark)' }, `field ${fmt(field.gd)} pcf`));
     }
     svg.setAttribute('aria-label', `Compaction curve: optimum ${fmt(fit.wOpt)} percent, maximum dry unit weight ${fmt(fit.gdMax)} pcf; field test ${fmt(field.gd)} pcf at ${fmt(field.w)} percent`);
   }
@@ -99,12 +121,15 @@ if (form) {
       for (const id of ['out-wopt', 'out-gdmax', 'out-percent', 'out-verdict']) $(id).textContent = '—';
       $('out-verdict').className = '';
       $('out-notes').textContent = fit.error || 'Fix the inputs listed above to see a result.';
+      const plot = $('calc-plot'); // 오류 경로: 이전 결과의 곡선·마름모·라벨이 남아있지 않도록 비운다(최종 리뷰 반영)
+      while (plot.firstChild) plot.removeChild(plot.firstChild);
+      plot.setAttribute('aria-label', 'No result — fix the inputs to see the compaction curve');
       return;
     }
     const res = evaluate({ gdField: inp.gdf, wField: inp.wf, gdMax: fit.gdMax, wOpt: fit.wOpt, specPct: inp.spec, lo: inp.lo, hi: inp.hi });
     $('out-wopt').textContent = `${fmt(fit.wOpt)} %`;
     $('out-gdmax').textContent = `${fmt(fit.gdMax)} pcf`;
-    $('out-percent').textContent = `${fmt(res.percent)} % of ${fmt(fit.gdMax)} pcf`;
+    $('out-percent').textContent = `${fmt(res.percent)} %`;
     const verdict = $('out-verdict');
     verdict.textContent = res.pass ? 'PASS' : 'FAIL';
     verdict.className = res.pass ? 'verdict-pass' : 'verdict-fail';

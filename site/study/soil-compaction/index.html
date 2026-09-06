@@ -106,7 +106,7 @@
   </tbody>
 </table>
 </div>
-<p class="ref-note">Methods A, B and C differ only in the sieve the soil is prepared through and the mold: A uses the 4 in. mold with soil passing the No. 4 (4.75 mm) sieve when 25 % or less is retained on it; B uses the 4 in. mold with soil passing the 3/8 in. (9.5 mm) sieve; C uses the 6 in. mold with soil passing the 3/4 in. (19.0 mm) sieve when 30 % or less is retained on it.</p>
+<p class="ref-note">Methods A, B and C differ only in the sieve the soil is prepared through and the mold: A uses the 4 in. mold with soil passing the No. 4 (4.75 mm) sieve when 25 % or less is retained on it; B uses the 4 in. mold with soil passing the 3/8 in. (9.5 mm) sieve when 25 % or less is retained on it; C uses the 6 in. mold with soil passing the 3/4 in. (19.0 mm) sieve when 30 % or less is retained on it.</p>
 <figure>
   <img src="img/proctor-compactor.jpg" width="1200" height="900" alt="An automatic mechanical compactor in a soils laboratory with a compaction mold clamped under its rammer" loading="lazy">
   <figcaption>An automatic compactor delivers the rammer blows with the same energy every time. Photo: Zaher.Kadour, Wikimedia Commons, CC BY-SA 3.0.</figcaption>
@@ -162,7 +162,7 @@
 
 <h2 id="field"><span class="num">4</span>Measuring density in the field</h2>
 <p>The field test has one job: find the dry unit weight of the lift as compacted. Two methods do it — one by digging, one by radiation — and both end with the same pair of numbers, wet density and water content.</p>
-<h3>The sand cone (ASTM D1556)</h3>
+<h3>The sand cone (ASTM D1556/D1556M)</h3>
 <figure>
 <svg class="fig-svg" viewBox="0 0 720 300" role="img" aria-labelledby="fig3-title">
   <title id="fig3-title">Sand cone apparatus seated over a test hole</title>
@@ -193,7 +193,7 @@
   <li><strong>Find the hole volume.</strong> Sand used, minus the calibrated mass that fills the cone and plate, divided by the sand's bulk density, is the volume of the hole.</li>
   <li><strong>Compute.</strong> Wet soil mass over hole volume is the wet unit weight; divide by (1 + <i>w</i>) for the dry unit weight.</li>
 </ol>
-<p>The sand is the instrument. D1556 wants it clean, dry, free-flowing and uniformly graded — a coefficient of uniformity below 2, nothing coarser than 2.0 mm, and less than 3 % passing the No. 60 (250 µm) sieve — and it wants its bulk density re-calibrated at least every 14 days, after any large change in humidity, and for every new batch. A damp jar of sand bulks up, reads a smaller hole, and turns a passing lift into a failing one. The sand cone is slow, but it is a direct physical measurement with nothing to license, which is why it is the referee method when a nuclear gauge result is disputed.</p>
+<p>The sand is the instrument. D1556 wants it clean, dry, free-flowing and uniformly graded — a coefficient of uniformity below 2, nothing coarser than 2.0 mm, and less than 3 % passing the No. 60 (250 µm) sieve — and it wants its bulk density re-calibrated at least every 14 days, after any large change in humidity, and for every new batch. A damp jar of sand bulks up, reads a smaller hole, and turns a failing lift into a passing one — the dangerous direction. The sand cone is slow, but it is a direct physical measurement with nothing to license, which is why it is the referee method when a nuclear gauge result is disputed.</p>
 <h3>The nuclear gauge (ASTM D6938)</h3>
 <figure>
   <img src="img/nuclear-gauge.jpg" width="1200" height="900" alt="A technician's boot on a yellow nuclear moisture-density gauge with its source rod lowered into the ground" loading="lazy">
@@ -290,7 +290,7 @@
     <div class="num-field"><label for="lo">Moisture window, below optimum</label><div class="wrap"><input id="lo" name="lo" type="number" step="0.5" value="-2"><span class="unit">%</span></div></div>
     <div class="num-field"><label for="hi">Moisture window, above optimum</label><div class="wrap"><input id="hi" name="hi" type="number" step="0.5" value="2"><span class="unit">%</span></div></div>
   </div>
-  <p class="calc-error" id="calc-errors" role="alert"></p>
+  <p class="calc-error" id="calc-errors" aria-live="polite"></p>
 </form>
 <div class="calc-result" aria-live="polite">
   <dl class="calc-summary">
@@ -316,7 +316,7 @@
   <li><strong>Skipping the standard count, or testing on a rough surface.</strong> Both shift the gauge reading. Voids under the gauge read low; a missed standard count hides drift.</li>
   <li><strong>Damp sand in the cone.</strong> Sand that has picked up humidity bulks, the hole volume reads small, and the density reads high. Recalibrate.</li>
   <li><strong>Lifts thicker than the roller reaches.</strong> The top passes; the bottom stays loose, and the settlement shows up under the slab a year later. Test at the depth of the lift, not its skin.</li>
-  <li><strong>Passing on density alone.</strong> A lift at 96 % but four points wet of optimum is outside the spec. Both numbers count.</li>
+  <li><strong>Passing on density alone.</strong> A lift at 96 % but 4 % wet of optimum is outside the spec. Both numbers count.</li>
 </ul>
 
 <h2 id="takeaways"><span class="num">8</span>Key takeaways</h2>

@@ -123,7 +123,8 @@ main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; d
 .calc-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:4px 20px; }
 .calc .num-field { margin:10px 0 0; }
 .calc .num-field .wrap { max-width:none; }
-.calc-error { min-height:1.4em; margin:12px 0 0; font:500 13px/1.4 var(--font-mono); color:var(--amber); }
+/* .calc-error·.calc-notes·.calc-plot-wrap: 클래스 하나뿐이면 특이성(0,1,0)이 .article p·.article figure(0,1,1)에 밀려 마진이 무시된다 — .article 조상으로 특이성을 올려 이긴다(최종 리뷰 반영) */
+.article .calc-error { min-height:1.4em; margin:12px 0 0; font:500 13px/1.4 var(--font-mono); color:var(--amber); }
 .calc-result { margin:16px 0 0; padding:18px 22px; background:var(--icy); border-left:4px solid var(--royal); border-radius:var(--radius); }
 .calc-summary { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:12px; margin:0; }
 .calc-summary dt { font:600 11px/1 var(--font-mono); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
@@ -132,9 +133,9 @@ main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; d
 .calc-summary .verdict-pass, .calc-summary .verdict-fail { display:inline-block; padding:2px 10px; border-radius:var(--radius-sm); font:800 16px/1.5 var(--font-head); letter-spacing:.04em; }
 .calc-summary .verdict-pass { background:var(--green-50); color:var(--green); }
 .calc-summary .verdict-fail { background:var(--amber-50); color:var(--amber); }
-.calc-notes { margin:12px 0 0; font-size:14px; color:var(--muted); }
-.calc-notes:empty { display:none; }
-.calc-plot-wrap { margin-top:20px; }
+.article .calc-notes { margin:12px 0 0; font-size:14px; color:var(--muted); }
+.article .calc-notes:empty { display:none; }
+.article .calc-plot-wrap { margin-top:20px; }
 
 @media (max-width:900px) {
   .article-hero { padding:36px 20px 32px; }

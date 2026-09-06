@@ -23,6 +23,7 @@ https://cnstlab.org
 - `site/shared/theme.css` — design tokens and shared components (ISU brand palette and type)
 - `site/study/article.css`, `site/study/article.js` — shared layout for study articles (hero, sticky contents, callouts, equations, tables)
 - `site/study/mix-design/` — *Concrete mix design*, part 1 (method) and part 2 (worked example); photos in `img/`, prepared by `tools/prep-study-images.py`
+- `site/study/slump-test/` — *The slump test, step by step* (`index.html`); photos in `img/`
 - `site/study/soil-compaction/` — *Compaction control: the Proctor test and field density* (`index.html` + `compaction.js` + `calc.js`); photos in `img/`
 - `site/labs/mix-design/` — Mix Design Lab module (`engine.js` scoring, `scene3d.js` three.js scenes)
 - `docs/design/mockups/` — the approved mockups the pages are built from
