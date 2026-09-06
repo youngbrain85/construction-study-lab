@@ -38,6 +38,16 @@ if (form) {
     return n;
   }
 
+  // SVG 요소의 실측 박스를 반환한다. 렌더되지 않은 상태(대체 목록 전환 중 등)에서는 getBBox 가 예외를 던지거나
+  // 폭 0인 박스를 줄 수 있으므로, 그런 경우 null 을 돌려주고 호출부에서 후광 없이 넘어가게 한다
+  function measure(node) {
+    try {
+      const b = node.getBBox();
+      if (b && b.width > 0) return b;
+    } catch (e) { /* 렌더 전에는 측정 불가 */ }
+    return null;
+  }
+
   // 플롯: x = 함수비(%), y = 건조단위중량(pcf). 색은 theme.css 토큰만 쓴다.
   function draw(fit, gs, field) {
     const svg = $('calc-plot');
@@ -85,9 +95,14 @@ if (form) {
         const legendY = fy + 14, legendText = `zero air voids, Gs = ${fmt(gs, 2)}`;
         const label = el('text', { x: fx + 6, y: legendY, 'text-anchor': 'start', fill: 'var(--amber)' }, legendText);
         g.appendChild(label);
-        if (fx + 6 + label.getComputedTextLength() > R) { label.setAttribute('x', R - 4); label.setAttribute('text-anchor', 'end'); }
-        const box = label.getBBox(); // 실측 박스 + 여유 패딩으로 후광을 그려 글꼴 지표 가정 오차 없이 완전히 가린다
-        g.insertBefore(el('rect', { x: box.x - 3, y: box.y - 2, width: box.width + 6, height: box.height + 4, fill: 'var(--bg)' }), label);
+        // getComputedTextLength 은 렌더 전(대체 목록 전환 중 등)에는 예외를 던지거나 0을 줄 수 있어, 실패 시 글자 수 기반 추정 폭으로 대체한다
+        const width = (() => {
+          try { const w = label.getComputedTextLength(); return w > 0 ? w : null; }
+          catch (e) { return null; }
+        })() ?? label.textContent.length * 7.2; // 7.2 ≈ 12 유닛 모노스페이스 글자 1개의 대략적 폭
+        if (fx + 6 + width > R) { label.setAttribute('x', R - 4); label.setAttribute('text-anchor', 'end'); }
+        const box = measure(label); // getBBox 실패(렌더 전 등) 시 null — 이때는 후광 없이 라벨만 그린다
+        if (box) g.insertBefore(el('rect', { x: box.x - 3, y: box.y - 2, width: box.width + 6, height: box.height + 4, fill: 'var(--surface)' }), label); // 실측 박스 + 여유 패딩으로 후광을 그려 글꼴 지표 가정 오차 없이 완전히 가린다
       }
     }
     // 적합 곡선(시험 범위 안)
