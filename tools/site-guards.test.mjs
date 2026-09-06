@@ -97,6 +97,7 @@ test('글 페이지의 내부 링크·이미지·스타일 경로가 파일로 �
       assert.ok(w > 0 && h > 0, `${rel}: <img src="${src}"> needs width/height`);
       const real = jpegSize(readFileSync(resolve(dirname(file), src)));
       assert.deepEqual({ w, h }, real, `${rel}: ${src} attrs ${w}×${h} vs file ${real.w}×${real.h}`);
+      assert.ok(Math.max(real.w, real.h) <= 1200, `${rel}: ${src} is ${real.w}×${real.h}, longer side over 1200 px`);
     }
   }
 });

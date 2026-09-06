@@ -29,11 +29,17 @@ test('evaluateTests on the example: test 4 passes (b) but the average of tests 2
   assert.equal(r.limitB, 3500);
   assert.deepEqual(r.tests.map(t => t.avg), [4370, 4120, 4010, 3660, 4520, 4270]);
   assert.deepEqual(r.tests.map(t => t.okB), [true, true, true, true, true, true]);
-  assert.deepEqual(r.tests.map(t => t.avg3), [null, null, 4167, 3930, 4063, 4150]);
+  assert.deepEqual(r.tests.map(t => t.avg3), [null, null, 4170, 3930, 4060, 4150]);
   assert.deepEqual(r.tests.map(t => t.okA), [null, null, true, false, true, true]);
   assert.equal(r.pass, false);
   assert.deepEqual(r.reasons, ['Tests 2–4: average 3,930 psi is below f\'c = 4,000 psi (criterion a).']);
   assert.ok(r.tests.every(t => !t.rangeWide));
+});
+
+test('evaluateTests: a missing test id (test 3 blank) makes the (a) reason list the ids instead of an en dash', () => {
+  const r = C.evaluateTests([{ id: 2, strengths: [3800] }, { id: 4, strengths: [3800] }, { id: 5, strengths: [3800] }], 4000);
+  assert.equal(r.tests[2].avg3, 3800); assert.equal(r.tests[2].okA, false);
+  assert.deepEqual(r.reasons, ['Tests 2, 4, 5: average 3,800 psi is below f\'c = 4,000 psi (criterion a).']);
 });
 
 test('evaluateTests: a single low test breaks criterion (b); limit is 0.10 f\'c above 5,000 psi', () => {

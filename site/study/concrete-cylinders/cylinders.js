@@ -27,10 +27,15 @@ export function evaluateTests(tests, fc, size = '6x12') {
     const rangePct = withinTestRange(t.strengths);
     return { id: t.id, avg, okB, avg3: null, okA: null, rangePct, rangeWide: rangePct > RANGE_LIMIT[t.size || size] };
   });
-  for (let i = 2; i < rows.length; i++) { // 기준 (a): 임의의 연속 3회 평균 ≥ f'c
-    rows[i].avg3 = Math.round((rows[i - 2].avg + rows[i - 1].avg + rows[i].avg) / 3);
+  for (let i = 2; i < rows.length; i++) { // 기준 (a): 임의의 연속 3회 평균 ≥ f'c(10 psi 단위로 보고)
+    const ids = [rows[i - 2].id, rows[i - 1].id, rows[i].id];
+    rows[i].avg3 = round10((rows[i - 2].avg + rows[i - 1].avg + rows[i].avg) / 3);
     rows[i].okA = rows[i].avg3 >= fc;
-    if (!rows[i].okA) reasons.push(`Tests ${rows[i - 2].id}–${rows[i].id}: average ${fmt(rows[i].avg3)} psi is below f'c = ${fmt(fc)} psi (criterion a).`);
+    if (!rows[i].okA) {
+      // 시험 번호가 연속(id 간격 2)일 때만 en-dash 범위로 쓰고, 중간이 빈 경우(예: 3번 결측)에는 나열한다
+      const label = ids[2] - ids[0] === 2 ? `Tests ${ids[0]}–${ids[2]}` : `Tests ${ids.join(', ')}`;
+      reasons.push(`${label}: average ${fmt(rows[i].avg3)} psi is below f'c = ${fmt(fc)} psi (criterion a).`);
+    }
   }
   return { limitB, tests: rows, pass: reasons.length === 0, reasons };
 }

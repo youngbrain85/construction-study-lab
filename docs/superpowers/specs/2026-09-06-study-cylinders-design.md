@@ -34,7 +34,7 @@
 ### 화면 (`calc.js`)
 - 로드 시 기본값 계산. 시험 표: 행마다 공시체 강도 셀·평균 셀·(b) 판정·(a) 3회 평균/판정 배지. 요약: 시험 수, 합격/불합격, 이유 목록, 편차 경고. `aria-live="polite"`, 오류 `aria-live="polite"`.
 - 플롯 1(관리도, viewBox 720×300): x = 시험 번호, y = psi; 시험 평균 점·선, 3회 이동평균 점선, f'c 선과 f'c − 500 선(토큰 색), 불합격 점은 amber 마름모. 플롯 2(재령 곡선, viewBox 720×300): x = 일(로그 아님, 0–90), 곡선 40점 + 마커 7개 + 값 라벨; 라벨 클램프·후광 규칙은 다짐 글 `calc.js`와 동일(측정 API try/catch 폴백).
-- 오류 시: 요약 "—", 플롯 비움 + aria-label "No result…". JS 없음: `<noscript>`에 기본값 결과(T1–T3 4,170 OK, T2–T4 3,930 FAIL → overall not accepted; 7일 추정 3,060 psi) 표기 — 정확한 값은 계획에서 node로 고정.
+- 오류 시: 요약 "—", 플롯 비움 + aria-label "No result…". JS 없음: `<noscript>`에 기본값 결과(T1–T3 4,170 OK, T2–T4 3,930 FAIL → overall not accepted; 7일 추정 3,050 psi (28일 정규화 후)) 표기 — 정확한 값은 계획에서 node로 고정.
 
 ## 3. 사실 검증 원칙
 - 수치는 ASTM C31·C39·C617·C1231·C42, ACI 318-19 §26.12, ACI 209R-92 값만(research.txt §1–4). CAVEAT 항목(C39 정밀도 %, 8시간 미이동)은 정성 서술.
