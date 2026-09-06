@@ -42,13 +42,16 @@ test('Study 사진 4장이 존재하고 용량 예산 안이다', () => {
   }
 });
 
-test('Slump 글 사진 7장이 존재하고 img/ 의 모든 파일이 각 220 KB 이하다', () => {
-  const IMG = join(SITE, 'study/slump-test/img');
-  const files = readdirSync(IMG);
-  assert.equal(files.length, 7, `expected 7 photos, found ${files.join(', ')}`);
-  for (const name of files) { // 목록을 디렉터리에서 얻어, 나중에 추가된 사진도 예산을 벗어나지 못하게 한다
-    assert.ok(/\.jpg$/.test(name), `${name}: only .jpg`);
-    assert.ok(statSync(join(IMG, name)).size <= 220 * 1024, `${name} is ${statSync(join(IMG, name)).size} B > 220 KB`);
+test('Study 글 사진 폴더(slump 7장 · soil 6장)의 모든 파일이 .jpg 이고 각 220 KB 이하다', () => {
+  const dirs = { 'study/slump-test/img': 7, 'study/soil-compaction/img': 6 };
+  for (const [rel, count] of Object.entries(dirs)) {
+    const files = readdirSync(join(SITE, rel));
+    assert.equal(files.length, count, `${rel}: expected ${count} photos, found ${files.join(', ')}`);
+    for (const name of files) { // 목록을 디렉터리에서 얻어, 나중에 추가된 사진도 예산을 벗어나지 못하게 한다
+      assert.ok(/\.jpg$/.test(name), `${rel}/${name}: only .jpg`);
+      const size = statSync(join(SITE, rel, name)).size;
+      assert.ok(size <= 220 * 1024, `${rel}/${name} is ${size} B > 220 KB`);
+    }
   }
 });
 
