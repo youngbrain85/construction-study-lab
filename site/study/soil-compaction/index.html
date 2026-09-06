@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compaction control: the Proctor test and field density — Construction Study Lab</title>
+<meta name="description" content="How compacted fill is specified and checked: the Proctor test (ASTM D698 / D1557), reading the compaction curve, sand cone and nuclear gauge field density tests, percent compaction, and a calculator to try the numbers.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../article.css">
+</head>
+<body class="section-page article-page">
+<header class="appbar"><div class="appbar-inner appbar-inner--wide">
+  <a class="logo" href="../../">Construction Study Lab</a>
+  <nav class="appbar-nav" aria-label="Sections">
+    <a href="../../labs/">Lab</a>
+    <a href="../" class="is-active" aria-current="true">Study</a>
+  </nav>
+</div></header>
+
+<section class="band-royal article-hero"><div class="article-hero-inner">
+  <p class="eyebrow">Materials · Earthwork QC</p>
+  <h1>Compaction control</h1>
+  <p class="lede">From the Proctor curve to the density test on the lift: how fill is specified, checked, and accepted — with a calculator to try the numbers yourself.</p>
+  <p class="byline">Jisoo Park · September 2026 · 13 min read</p>
+</div></section>
+
+<main class="article-layout">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#why">1. Why we compact</a></li>
+    <li><a href="#proctor">2. The Proctor test</a></li>
+    <li><a href="#curve">3. Reading the curve</a></li>
+    <li><a href="#field">4. Density in the field</a></li>
+    <li><a href="#spec">5. Percent compaction and the spec</a></li>
+    <li><a href="#calculator">6. Try it: the calculator</a></li>
+    <li><a href="#mistakes">7. Common mistakes</a></li>
+    <li><a href="#takeaways">8. Key takeaways</a></li>
+  </ol>
+</nav>
+
+<article class="article">
+
+<h2 id="why"><span class="num">1</span>Why we compact — and how much is enough</h2>
+<figure>
+  <img src="img/earthwork-hero.jpg" width="1200" height="900" alt="A bulldozer spreading fill while a padfoot roller compacts the lift behind it on a large earthwork site" loading="eager">
+  <figcaption>Spreading and compacting fill, one lift at a time. Photo: Nixdorf, Wikimedia Commons, CC BY 4.0.</figcaption>
+</figure>
+<p>Fill that is simply dumped and spread is a loose pile of particles and air. Load it and it settles; wet it and it softens. Compaction is the mechanical work of driving the air out so the particles lock together at a higher <em>dry density</em> — and dry density is the number that everything else follows. Denser fill is stiffer and stronger, settles less, lets less water through, and holds up the slab, pavement, or footing that will sit on it for decades.</p>
+<div class="callout callout-def"><span class="label">Definition</span>
+  <p>Compaction is densification of soil by mechanical energy that expels <em>air</em> from the voids, at essentially constant water content. Consolidation is different: that is water squeezed out of a saturated soil by a sustained load, slowly, over months or years.</p>
+</div>
+<p>Compaction happens in <em>lifts</em>, thin layers placed loose and rolled before the next one goes down. The roller has to match the soil. Padfoot (sheepsfoot) rollers knead cohesive soils with their protruding feet and "walk out" of a lift as it densifies; smooth-drum vibratory rollers shake granular soils into a tighter packing; plate compactors and rammers do the same job in trenches and against walls. As typical practice, cohesive soils go down in loose lifts of about 6 to 8 in. and granular soils in lifts up to about 12 in., because a roller only works to a certain depth and a lift thicker than that stays loose at the bottom, no matter how many passes it gets.</p>
+<div class="fig-grid">
+  <figure><img src="img/padfoot-roller.jpg" width="1200" height="857" alt="A padfoot roller with rows of protruding feet on its drum compacting a lift of clayey fill" loading="lazy"><figcaption>Padfoot roller on cohesive fill. Photo: U.S. Air Force, public domain.</figcaption></figure>
+  <figure><img src="img/vibratory-roller.jpg" width="1200" height="845" alt="A smooth-drum vibratory soil compactor parked next to an articulated dump truck" loading="lazy"><figcaption>Smooth-drum vibratory roller for granular fill. Photo: Spielvogel, Wikimedia Commons, CC0.</figcaption></figure>
+</div>
+<p>So the question on every earthwork job is the same: <em>is this lift dense enough?</em> Answering it takes two measurements. In the laboratory, the Proctor test tells you the densest this soil can get with a standard amount of effort, and at what water content. In the field, a density test tells you what the roller actually achieved. The ratio of the two is the number the specification is written around.</p>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>The laboratory gives you the target; the field test gives you the score. Both are reported as <em>dry</em> unit weight, because water in the voids adds weight without adding strength.</p>
+</div>
+
+<h2 id="proctor"><span class="num">2</span>The Proctor test (ASTM D698 and D1557)</h2>
+<p>In 1933 R. R. Proctor, working on earth dams for the City of Los Angeles, showed that for a fixed compactive effort the dry density of a soil rises with water content up to a peak and then falls. The test that carries his name reproduces that experiment in a mold: you compact the same soil at several water contents with the same energy and find the peak. ASTM D698 does it with <em>standard effort</em>; ASTM D1557 does it with <em>modified effort</em>, about four and a half times more, introduced when heavier aircraft and heavier rollers demanded denser fills.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 320" role="img" aria-labelledby="fig1-title">
+  <title id="fig1-title">Proctor mold and rammer dimensions</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <rect x="150" y="248" width="220" height="14" fill="var(--border)" stroke="var(--dark)" stroke-width="1.5"/>
+    <rect x="200" y="110" width="120" height="138" fill="var(--icy)" stroke="var(--dark)" stroke-width="2"/>
+    <rect x="200" y="60" width="120" height="50" fill="none" stroke="var(--dark)" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="330" y="88" fill="var(--muted)">collar (removed before strike-off)</text>
+    <line x1="200" y1="284" x2="320" y2="284" stroke="var(--royal)" stroke-width="1.5"/><line x1="200" y1="278" x2="200" y2="290" stroke="var(--royal)" stroke-width="1.5"/><line x1="320" y1="278" x2="320" y2="290" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="260" y="306" text-anchor="middle" fill="var(--royal)">4.0 in. (101.6 mm) inside</text>
+    <line x1="170" y1="110" x2="170" y2="248" stroke="var(--royal)" stroke-width="1.5"/><line x1="164" y1="110" x2="176" y2="110" stroke="var(--royal)" stroke-width="1.5"/><line x1="164" y1="248" x2="176" y2="248" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="40" y="170" fill="var(--royal)">4.584 in.</text><text x="40" y="186" fill="var(--royal)">(116.4 mm)</text>
+    <text x="40" y="220" fill="var(--muted)" font-size="11">1/30 ft³ (944 cm³)</text>
+    <text x="150" y="276" fill="var(--muted)" font-size="11">base plate</text>
+    <rect x="520" y="40" width="8" height="150" fill="var(--dark)"/>
+    <rect x="500" y="190" width="48" height="44" rx="3" fill="var(--dark)"/>
+    <line x1="580" y1="40" x2="580" y2="234" stroke="var(--royal)" stroke-width="1.5"/><line x1="574" y1="40" x2="586" y2="40" stroke="var(--royal)" stroke-width="1.5"/><line x1="574" y1="234" x2="586" y2="234" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="590" y="120" fill="var(--royal)">free drop</text>
+    <text x="590" y="136" fill="var(--royal)">12 in. standard</text>
+    <text x="590" y="152" fill="var(--royal)">18 in. modified</text>
+    <text x="524" y="262" text-anchor="middle" fill="var(--muted)">rammer 5.5 lbf standard</text>
+    <text x="524" y="278" text-anchor="middle" fill="var(--muted)">10 lbf modified · 2 in. face</text>
+    <text x="524" y="28" text-anchor="middle" fill="var(--muted)">guide sleeve</text>
+  </g>
+</svg>
+<figcaption>Figure 1. The 4 in. compaction mold with its collar and base plate, and the rammer. Both standards also use a 6 in. mold (1/13.33 ft³, 2,124 cm³) for coarser soils.</figcaption>
+</figure>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-effort">
+  <caption>Table 1. Standard and modified effort</caption>
+  <thead><tr><th scope="col"></th><th scope="col">ASTM D698 (standard)</th><th scope="col">ASTM D1557 (modified)</th></tr></thead>
+  <tbody>
+    <tr><td>Compactive effort</td><td>12,400 ft·lbf/ft³ (600 kN·m/m³)</td><td>56,000 ft·lbf/ft³ (2,700 kN·m/m³)</td></tr>
+    <tr><td>Rammer</td><td>5.5 lbf (24.5 N)</td><td>10 lbf (44.5 N)</td></tr>
+    <tr><td>Drop</td><td>12 in. (305 mm)</td><td>18 in. (457 mm)</td></tr>
+    <tr><td>Layers</td><td>3</td><td>5</td></tr>
+    <tr><td>Blows per layer, 4 in. mold</td><td>25</td><td>25</td></tr>
+    <tr><td>Blows per layer, 6 in. mold</td><td>56</td><td>56</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="ref-note">Methods A, B and C differ only in the sieve the soil is prepared through and the mold: A uses the 4 in. mold with soil passing the No. 4 (4.75 mm) sieve when 25 % or less is retained on it; B uses the 4 in. mold with soil passing the 3/8 in. (9.5 mm) sieve; C uses the 6 in. mold with soil passing the 3/4 in. (19.0 mm) sieve when 30 % or less is retained on it.</p>
+<figure>
+  <img src="img/proctor-compactor.jpg" width="1200" height="900" alt="An automatic mechanical compactor in a soils laboratory with a compaction mold clamped under its rammer" loading="lazy">
+  <figcaption>An automatic compactor delivers the rammer blows with the same energy every time. Photo: Zaher.Kadour, Wikimedia Commons, CC BY-SA 3.0.</figcaption>
+</figure>
+<h3>The procedure in five moves</h3>
+<ol class="steps">
+  <li><strong>Prepare four or five specimens.</strong> Take enough soil for one mold per point, add water so the points sit about 2 % apart and bracket the expected optimum — at least two dry of it and two wet of it — and let each batch cure so the water spreads evenly through the soil.</li>
+  <li><strong>Compact in layers.</strong> Weigh the empty mold. Place the soil in three layers (five for modified) and give each the prescribed blows with the rammer, spread evenly over the surface, with the collar on so the last layer finishes above the mold.</li>
+  <li><strong>Strike off and weigh.</strong> Remove the collar, trim the soil flush with the top of the mold with a straightedge, and weigh mold plus soil. Wet unit weight is the soil mass divided by the mold volume.</li>
+  <li><strong>Take the water content.</strong> Extrude the specimen, take a representative sample from its full height, and dry it to constant mass in a 110 ± 5 °C oven (ASTM D2216). Water content is the mass of water divided by the mass of dry soil.</li>
+  <li><strong>Plot and read.</strong> Convert each wet unit weight to dry, plot dry unit weight against water content, draw a smooth curve through the points, and read the peak: the <em>maximum dry unit weight</em> and the <em>optimum water content</em>.</li>
+</ol>
+<div class="callout callout-warn"><span class="label">Watch out</span>
+  <p>The mold only holds what passes the method's sieve. If the fill in the field carries more oversize rock than the laboratory specimen did, the laboratory maximum is too low for that material. ASTM D4718 corrects the maximum dry unit weight and optimum water content for the oversize fraction before you compare them with a field test.</p>
+</div>
+
+<h2 id="curve"><span class="num">3</span>Reading the compaction curve</h2>
+<p>Each point on the curve is a dry unit weight. You never weigh dry soil in the mold; you weigh it wet and take the water back out arithmetically:</p>
+<div class="eq"><i>γ</i><sub>d</sub> = <i>γ</i><sub>wet</sub> / (1 + <i>w</i>)</div>
+<p>where <i>w</i> is the water content as a decimal. A mold that holds 122.9 pcf of wet soil at 12 % water holds 122.9 / 1.12 = 109.7 pcf of dry soil.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 360" role="img" aria-labelledby="fig2-title">
+  <title id="fig2-title">Compaction curves for standard and modified effort with the zero-air-voids line</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <line x1="80" y1="300" x2="680" y2="300" stroke="var(--dark)" stroke-width="1.5"/>
+    <line x1="80" y1="30" x2="80" y2="300" stroke="var(--dark)" stroke-width="1.5"/>
+    <text x="380" y="340" text-anchor="middle" fill="var(--dark)">water content, w (%)  →</text>
+    <text x="24" y="170" transform="rotate(-90 24 170)" text-anchor="middle" fill="var(--dark)">dry unit weight, γd (pcf)  →</text>
+    <path d="M110 250 C 200 180, 260 110, 330 100 S 470 150, 600 240" fill="none" stroke="var(--royal)" stroke-width="3"/>
+    <path d="M110 200 C 180 120, 220 60, 270 56 S 400 100, 520 190" fill="none" stroke="var(--dark)" stroke-width="2.5"/>
+    <path d="M300 20 C 400 70, 520 170, 680 250" fill="none" stroke="var(--amber)" stroke-width="2" stroke-dasharray="7 5"/>
+    <line x1="330" y1="100" x2="330" y2="300" stroke="var(--royal)" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="80" y1="100" x2="330" y2="100" stroke="var(--royal)" stroke-width="1" stroke-dasharray="4 4"/>
+    <circle cx="330" cy="100" r="5" fill="var(--royal)"/>
+    <circle cx="270" cy="56" r="5" fill="var(--dark)"/>
+    <text x="336" y="318" fill="var(--royal)">w opt</text>
+    <text x="86" y="96" fill="var(--royal)">γd,max</text>
+    <text x="560" y="222" fill="var(--royal)">standard effort (D698)</text>
+    <text x="440" y="70" fill="var(--dark)">modified effort (D1557)</text>
+    <text x="520" y="122" fill="var(--amber)">zero air voids (S = 100 %)</text>
+    <text x="150" y="290" fill="var(--muted)">dry side: stiff, brittle</text>
+    <text x="470" y="290" fill="var(--muted)">wet side: soft, low permeability</text>
+  </g>
+</svg>
+<figcaption>Figure 2. More effort raises the peak and moves it to the left. No curve can cross the zero-air-voids line, because that line is the density at which every void is full of water.</figcaption>
+</figure>
+<p>Dry of optimum the soil is stiff and the rammer cannot rearrange the particles; the water is a lubricant, and adding some lets the same energy pack them closer. Past the optimum the voids are nearly full of water, and water cannot be compacted, so extra water only takes up space that solids could have occupied. The curve therefore bends over, and it can never cross the <em>zero-air-voids</em> line:</p>
+<div class="eq"><i>γ</i><sub>d,zav</sub> = <i>G</i><sub>s</sub> <i>γ</i><sub>w</sub> / (1 + <i>w</i> <i>G</i><sub>s</sub>)</div>
+<p>with <i>G</i><sub>s</sub> the specific gravity of the soil solids (about 2.65 to 2.75 for most soils) and <i>γ</i><sub>w</sub> = 62.4 pcf. Points plotting on the wrong side of that line are arithmetic errors, not soil. Two more things the curve tells you. First, more compactive effort raises the maximum and lowers the optimum, which is why a fill specified against D1557 is a stiffer, drier fill than one specified against D698. Second, a clay compacted wet of optimum is less permeable but weaker than the same clay compacted dry of optimum at the same density; the spec's moisture window is there for a reason.</p>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>A compaction curve belongs to one soil and one effort. Change the borrow pit, the sieve fraction, or the standard, and you need a new curve.</p>
+</div>
+
+<h2 id="field"><span class="num">4</span>Measuring density in the field</h2>
+<p>The field test has one job: find the dry unit weight of the lift as compacted. Two methods do it — one by digging, one by radiation — and both end with the same pair of numbers, wet density and water content.</p>
+<h3>The sand cone (ASTM D1556)</h3>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 300" role="img" aria-labelledby="fig3-title">
+  <title id="fig3-title">Sand cone apparatus seated over a test hole</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <rect x="40" y="200" width="640" height="90" fill="var(--surface2)"/>
+    <path d="M40 200 H300 Q300 200 300 214 L318 282 Q360 292 402 282 L420 214 Q420 200 420 200 H680" fill="none" stroke="var(--dark)" stroke-width="1.5"/>
+    <path d="M300 214 L318 282 Q360 292 402 282 L420 214 Z" fill="var(--border)"/>
+    <rect x="230" y="192" width="260" height="8" fill="var(--dark)"/>
+    <polygon points="300,192 420,192 372,120 348,120" fill="var(--border)" stroke="var(--dark)" stroke-width="1.5"/>
+    <rect x="352" y="104" width="16" height="16" fill="var(--dark)"/>
+    <path d="M320 104 H400 V40 Q400 26 386 26 H334 Q320 26 320 40 Z" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/>
+    <text x="410" y="60" fill="var(--muted)">jar of calibrated sand</text>
+    <text x="410" y="116" fill="var(--muted)">valve</text>
+    <text x="430" y="160" fill="var(--muted)">cone (funnel)</text>
+    <text x="500" y="188" fill="var(--muted)">base plate</text>
+    <text x="60" y="250" fill="var(--muted)">compacted lift</text>
+    <text x="300" y="275" fill="var(--dark)" font-size="11">test hole</text>
+    <text x="440" y="250" fill="var(--muted)" font-size="11">hole fills with sand;</text>
+    <text x="440" y="266" fill="var(--muted)" font-size="11">sand mass ÷ sand density = hole volume</text>
+  </g>
+</svg>
+<figcaption>Figure 3. The sand cone measures the volume of a hole by filling it with sand of known density; the soil dug from the hole is weighed and dried.</figcaption>
+</figure>
+<ol class="steps">
+  <li><strong>Seat the plate.</strong> Level a spot on the lift, set the base plate, and dig a hole through its opening — roughly the width of a hand and about the depth of the lift — keeping <em>every</em> crumb of soil in a sealed container.</li>
+  <li><strong>Weigh the soil.</strong> Weigh the wet soil from the hole and take a sample for water content.</li>
+  <li><strong>Fill the hole with sand.</strong> Weigh the jar, invert it on the plate, open the valve, and let sand run until it stops; close the valve and weigh the jar again.</li>
+  <li><strong>Find the hole volume.</strong> Sand used, minus the calibrated mass that fills the cone and plate, divided by the sand's bulk density, is the volume of the hole.</li>
+  <li><strong>Compute.</strong> Wet soil mass over hole volume is the wet unit weight; divide by (1 + <i>w</i>) for the dry unit weight.</li>
+</ol>
+<p>The sand is the instrument. D1556 wants it clean, dry, free-flowing and uniformly graded — a coefficient of uniformity below 2, nothing coarser than 2.0 mm, and less than 3 % passing the No. 60 (250 µm) sieve — and it wants its bulk density re-calibrated at least every 14 days, after any large change in humidity, and for every new batch. A damp jar of sand bulks up, reads a smaller hole, and turns a passing lift into a failing one. The sand cone is slow, but it is a direct physical measurement with nothing to license, which is why it is the referee method when a nuclear gauge result is disputed.</p>
+<h3>The nuclear gauge (ASTM D6938)</h3>
+<figure>
+  <img src="img/nuclear-gauge.jpg" width="1200" height="900" alt="A technician's boot on a yellow nuclear moisture-density gauge with its source rod lowered into the ground" loading="lazy">
+  <figcaption>Direct transmission: the source rod is lowered into a pre-drilled hole and the gauge reads density and moisture in about a minute. Photo: U.S. Nuclear Regulatory Commission, CC BY 2.0.</figcaption>
+</figure>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 260" role="img" aria-labelledby="fig4-title">
+  <title id="fig4-title">Nuclear gauge in direct transmission and in backscatter</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <rect x="40" y="150" width="300" height="90" fill="var(--surface2)"/>
+    <rect x="380" y="150" width="300" height="90" fill="var(--surface2)"/>
+    <rect x="90" y="110" width="200" height="40" rx="4" fill="var(--dark)"/>
+    <rect x="430" y="110" width="200" height="40" rx="4" fill="var(--dark)"/>
+    <rect x="120" y="150" width="8" height="70" fill="var(--royal)"/>
+    <circle cx="124" cy="222" r="6" fill="var(--amber)"/>
+    <circle cx="470" cy="152" r="6" fill="var(--amber)"/>
+    <rect x="240" y="142" width="30" height="8" fill="var(--royal)"/>
+    <rect x="580" y="142" width="30" height="8" fill="var(--royal)"/>
+    <path d="M130 222 Q190 190 240 150" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <path d="M130 222 Q170 200 236 152" fill="none" stroke="var(--amber)" stroke-width="1" stroke-dasharray="4 3"/>
+    <path d="M476 156 Q520 210 580 150" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <path d="M476 156 Q530 190 584 148" fill="none" stroke="var(--amber)" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="190" y="30" text-anchor="middle" fill="var(--dark)" font-weight="600">Direct transmission</text>
+    <text x="190" y="50" text-anchor="middle" fill="var(--muted)">source rod in the soil, up to 12 in. (300 mm)</text>
+    <text x="190" y="66" text-anchor="middle" fill="var(--muted)">detector at the surface — the mode for soil lifts</text>
+    <text x="530" y="30" text-anchor="middle" fill="var(--dark)" font-weight="600">Backscatter</text>
+    <text x="530" y="50" text-anchor="middle" fill="var(--muted)">source and detector both at the surface</text>
+    <text x="530" y="66" text-anchor="middle" fill="var(--muted)">reads the top 3 in. (75 mm) or so — asphalt, thin layers</text>
+    <text x="60" y="180" fill="var(--muted)" font-size="11">source</text><line x1="88" y1="184" x2="118" y2="218" stroke="var(--faint)" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <text x="250" y="132" fill="var(--muted)" font-size="11">detector</text>
+    <text x="590" y="132" fill="var(--muted)" font-size="11">detector</text>
+    <text x="440" y="180" fill="var(--muted)" font-size="11">source</text>
+  </g>
+</svg>
+<figcaption>Figure 4. Gamma photons that reach the detector are counted; the denser the soil, the fewer get through. Direct transmission measures the full lift; backscatter only its skin.</figcaption>
+</figure>
+<p>The gauge holds two sealed sources. Gamma photons from cesium-137 are scattered and absorbed in proportion to the density of what they pass through, so the count that reaches the detectors gives the wet density. Fast neutrons from an americium-241:beryllium source are slowed by hydrogen, and a helium-3 detector counts the slow ones, so that count gives the water content — with the caveat that <em>any</em> hydrogen counts, including chemically bound water in gypsum or the hydrogen in organics, which is why unusual soils get an oven check. The gauge then reports wet density, water content, dry density, and, if you have entered the laboratory maximum, percent compaction.</p>
+<ol class="steps">
+  <li><strong>Standardize.</strong> Take a standard count on the reference block at the start of each day of use, and after rough handling, so the gauge tracks source decay and drift.</li>
+  <li><strong>Prepare the surface.</strong> Smooth and level a spot, fill surface voids with native fines, set the guide plate, drive the drill rod to the test depth, and remove it.</li>
+  <li><strong>Seat and read.</strong> Set the gauge over the hole, lower the source rod to the depth notch, pull the gauge gently so the rod bears against the hole wall toward the detector, and take a one-minute count (four minutes when the result matters).</li>
+  <li><strong>Record.</strong> Note wet density, water content, dry density and percent compaction, the test depth, and the location on the lift.</li>
+</ol>
+<div class="callout callout-warn"><span class="label">Watch out</span>
+  <p>The sources are radioactive. The gauge is licensed by the Nuclear Regulatory Commission or an Agreement State, its operator is trained and wears a dosimeter, it travels in a locked shielded case, and the source rod goes back to the shielded position between readings. Keep bystanders back. None of this is optional, and none of it makes the gauge dangerous when the rules are followed.</p>
+</div>
+<figure>
+  <img src="img/lift-test.jpg" width="1200" height="900" alt="A technician kneeling on a freshly rolled lift of fill holding a test identification board" loading="lazy">
+  <figcaption>A density test on a freshly rolled lift; the roller pattern is still visible. Photo: USAID Vietnam / CDM Smith, public domain.</figcaption>
+</figure>
+<p>Whichever method you use, the water content is worth an independent check now and then: an oven sample per ASTM D2216 (110 ± 5 °C to constant mass, usually overnight) or the faster microwave method of ASTM D4643 when the crew cannot wait.</p>
+<h2 id="spec"><span class="num">5</span>Percent compaction and the spec</h2>
+<p>The specification does not ask for a density in pounds. It asks for a fraction of what the soil can do, so that the same clause works for a silty clay and a crushed stone:</p>
+<div class="eq">percent compaction = <i>γ</i><sub>d,field</sub> / <i>γ</i><sub>d,max</sub> × 100</div>
+<p>Typical project language calls for 95 % of the ASTM D698 maximum dry unit weight under slabs, pavements and structural fill, and 90 % for landscaped or non-structural fill; some specifications are written against D1557 instead, usually with 90 to 95 %, which is a much stiffer requirement. Most also fix a water content window — commonly within 2 % of optimum either way — because a lift that hits the density wet of optimum will not behave like one that hit it dry. Read the clause carefully: <em>which standard</em>, <em>what percentage</em>, and <em>what moisture window</em> are three separate numbers, and "95 %" alone is not a specification.</p>
+<div class="table-wrap">
+<table class="ref-table ref-table--text" id="tbl-fail">
+  <caption>Table 2. When a lift fails</caption>
+  <thead><tr><th scope="col">Result</th><th scope="col">What it usually means</th><th scope="col">Fix, then retest</th></tr></thead>
+  <tbody>
+    <tr><td>Low density, dry of the window</td><td>Not enough water to lubricate the particles</td><td>Add water, mix it in, re-roll</td></tr>
+    <tr><td>Low density, wet of the window</td><td>Voids full of water; rolling only pumps it</td><td>Scarify and let it dry back, then re-roll</td></tr>
+    <tr><td>Low density, moisture in the window</td><td>Too few passes, or the lift is thicker than the roller reaches</td><td>More passes; thinner lifts; heavier roller</td></tr>
+    <tr><td>Density fine, moisture outside the window</td><td>Right number, wrong soil structure</td><td>Rework to the window; the spec calls for both</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Testing frequency is set by the spec too — typically a test per lift for every so many square feet of area or cubic yards placed, with at least one test per lift — and a test that fails means the lift is reworked and <em>retested</em>, not averaged with its neighbours. Keep the laboratory curve, the field readings, the depth and location of each test, and the moisture check together; the day someone asks why a slab cracked, that record is the answer.</p>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>Percent compaction is a ratio of two dry unit weights measured on the same soil against the same standard. A different borrow source, a different sieve fraction, or a switch from D698 to D1557 changes the denominator — and the number.</p>
+</div>
+
+<h2 id="calculator"><span class="num">6</span>Try it: from the Proctor points to a pass or fail</h2>
+<p>The numbers below are example numbers, not a real test. Change any of them and the curve, the peak, and the verdict update. Wet unit weights are what you weigh in the mold; the calculator takes the water back out, fits a parabola through the dry unit weights, and compares the field test with the peak.</p>
+<form id="calc" class="calc" novalidate>
+  <fieldset class="calc-points">
+    <legend>Proctor points — water content and wet unit weight in the mold</legend>
+    <table class="calc-table">
+      <thead><tr><th scope="col">Point</th><th scope="col"><i>w</i>, %</th><th scope="col"><i>γ</i><sub>wet</sub>, pcf</th><th scope="col"><i>γ</i><sub>d</sub>, pcf</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">1</th><td><input type="number" step="0.1" name="w1" value="8.0" aria-label="Point 1 water content, percent"></td><td><input type="number" step="0.1" name="g1" value="112.3" aria-label="Point 1 wet unit weight, pcf"></td><td class="out" id="dry1">—</td></tr>
+        <tr><th scope="row">2</th><td><input type="number" step="0.1" name="w2" value="10.0" aria-label="Point 2 water content, percent"></td><td><input type="number" step="0.1" name="g2" value="118.5" aria-label="Point 2 wet unit weight, pcf"></td><td class="out" id="dry2">—</td></tr>
+        <tr><th scope="row">3</th><td><input type="number" step="0.1" name="w3" value="12.0" aria-label="Point 3 water content, percent"></td><td><input type="number" step="0.1" name="g3" value="122.9" aria-label="Point 3 wet unit weight, pcf"></td><td class="out" id="dry3">—</td></tr>
+        <tr><th scope="row">4</th><td><input type="number" step="0.1" name="w4" value="14.0" aria-label="Point 4 water content, percent"></td><td><input type="number" step="0.1" name="g4" value="122.1" aria-label="Point 4 wet unit weight, pcf"></td><td class="out" id="dry4">—</td></tr>
+        <tr><th scope="row">5</th><td><input type="number" step="0.1" name="w5" value="16.0" aria-label="Point 5 water content, percent"></td><td><input type="number" step="0.1" name="g5" value="118.0" aria-label="Point 5 wet unit weight, pcf"></td><td class="out" id="dry5">—</td></tr>
+      </tbody>
+    </table>
+  </fieldset>
+  <div class="calc-grid">
+    <div class="num-field"><label for="gs">Specific gravity of solids, <i>G</i><sub>s</sub></label><div class="wrap"><input id="gs" name="gs" type="number" step="0.01" value="2.70"><span class="unit">—</span></div><p class="hint">Only for the zero-air-voids line. 2.65 to 2.75 for most soils.</p></div>
+    <div class="num-field"><label for="gdf">Field dry unit weight</label><div class="wrap"><input id="gdf" name="gdf" type="number" step="0.1" value="106.5"><span class="unit">pcf</span></div><p class="hint">From the sand cone or the gauge, after removing water.</p></div>
+    <div class="num-field"><label for="wf">Field water content</label><div class="wrap"><input id="wf" name="wf" type="number" step="0.1" value="11.5"><span class="unit">%</span></div></div>
+    <div class="num-field"><label for="spec">Required percent compaction</label><div class="wrap"><input id="spec" name="spec" type="number" step="1" value="95"><span class="unit">%</span></div></div>
+    <div class="num-field"><label for="lo">Moisture window, below optimum</label><div class="wrap"><input id="lo" name="lo" type="number" step="0.5" value="-2"><span class="unit">%</span></div></div>
+    <div class="num-field"><label for="hi">Moisture window, above optimum</label><div class="wrap"><input id="hi" name="hi" type="number" step="0.5" value="2"><span class="unit">%</span></div></div>
+  </div>
+  <p class="calc-error" id="calc-errors" role="alert"></p>
+</form>
+<div class="calc-result" aria-live="polite">
+  <dl class="calc-summary">
+    <div><dt>Optimum water content</dt><dd id="out-wopt">—</dd></div>
+    <div><dt>Maximum dry unit weight</dt><dd id="out-gdmax">—</dd></div>
+    <div><dt>Percent compaction</dt><dd id="out-percent">—</dd></div>
+    <div><dt>Verdict</dt><dd id="out-verdict">—</dd></div>
+  </dl>
+  <p id="out-notes" class="calc-notes"></p>
+</div>
+<figure class="calc-plot-wrap">
+  <svg id="calc-plot" class="fig-svg calc-svg" viewBox="0 0 720 360" role="img" aria-label="Compaction curve plot"></svg>
+  <figcaption>Figure 5. Dry unit weight against water content: the five points, the fitted curve, the zero-air-voids line, the optimum, and the field test.</figcaption>
+</figure>
+<noscript><p class="ref-note">The calculator needs JavaScript. With the example numbers it finds an optimum of about 11.7 % and a maximum dry unit weight of about 109.4 pcf; the field test at 106.5 pcf and 11.5 % is 97.4 % compaction and passes a 95 % specification.</p></noscript>
+<p class="ref-note">Units: pcf throughout (1 pcf = 0.157 kN/m³). The curve is a least-squares parabola through the dry unit weights, which is what a hand-drawn smooth curve approximates; with points far from the peak it will warn you.</p>
+
+<h2 id="mistakes"><span class="num">7</span>Common mistakes</h2>
+<ul>
+  <li><strong>Comparing against the wrong curve.</strong> A field test judged against a D1557 maximum when the spec says D698 fails a good lift; the reverse passes a bad one. Write the standard on the report.</li>
+  <li><strong>Judging by wet density.</strong> A wet lift weighs more. Only the dry unit weight tells you how much soil is in the hole.</li>
+  <li><strong>Forgetting the oversize.</strong> Rock that never fit in the mold makes the field material denser than the laboratory curve predicts. Apply the D4718 correction, or the fill "passes" at 102 % and nobody trusts the numbers.</li>
+  <li><strong>Skipping the standard count, or testing on a rough surface.</strong> Both shift the gauge reading. Voids under the gauge read low; a missed standard count hides drift.</li>
+  <li><strong>Damp sand in the cone.</strong> Sand that has picked up humidity bulks, the hole volume reads small, and the density reads high. Recalibrate.</li>
+  <li><strong>Lifts thicker than the roller reaches.</strong> The top passes; the bottom stays loose, and the settlement shows up under the slab a year later. Test at the depth of the lift, not its skin.</li>
+  <li><strong>Passing on density alone.</strong> A lift at 96 % but four points wet of optimum is outside the spec. Both numbers count.</li>
+</ul>
+
+<h2 id="takeaways"><span class="num">8</span>Key takeaways</h2>
+<ol>
+  <li>Compaction drives out <strong>air</strong>, and the number that matters is <strong>dry unit weight</strong>: <i>γ</i><sub>d</sub> = <i>γ</i><sub>wet</sub> / (1 + <i>w</i>).</li>
+  <li>The <strong>Proctor test</strong> (D698 standard, D1557 modified) gives one soil's maximum dry unit weight and optimum water content for one effort — 12,400 or 56,000 ft·lbf/ft³.</li>
+  <li>The <strong>field test</strong> — sand cone or nuclear gauge — gives the dry unit weight of the lift; <strong>percent compaction</strong> is the ratio, typically specified at 95 % with a moisture window.</li>
+  <li>A failed test is reworked and <strong>retested</strong>; the fix depends on whether the lift was dry, wet, or simply under-rolled.</li>
+</ol>
+
+<p class="ref-note">Sources: ASTM D698 and D1557 (laboratory compaction, standard and modified effort); ASTM D1556/D1556M (sand cone); ASTM D6938 (nuclear methods, shallow depth); ASTM D2216 and D4643 (water content); ASTM D4718 (oversize correction). Specification values are typical project language, not ASTM requirements.</p>
+<p class="ref-note">Photo credits: <a href="https://commons.wikimedia.org/wiki/File:Landscape_shaping_at_Brunnsh%C3%B6g,_Lund,_Sweden.jpg">Landscape shaping at Brunnshög</a> by Nixdorf, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Proctor_device1.JPG">Proctor device 1</a> by Zaher.Kadour, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Moisture_Density_Guage_(7845749948).jpg">Moisture density gauge</a> by the U.S. Nuclear Regulatory Commission, <a href="https://creativecommons.org/licenses/by/2.0/">CC BY 2.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Seabees_compactor_roller.jpg">Seabees compactor roller</a>, U.S. Air Force photo, public domain; <a href="https://commons.wikimedia.org/wiki/File:Caterpillar_CS_663E_Vibratory_soil_compacter._Spielvogel_1.jpg">Caterpillar CS 663E vibratory soil compactor</a> by Spielvogel, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>; <a href="https://commons.wikimedia.org/wiki/File:Testing_compaction_of_soil_sediment_placed_in_the_thermal_treatment._(26203673263).jpg">Testing compaction of soil sediment</a>, USAID Vietnam / CDM Smith, public domain; all via Wikimedia Commons. The photos were resized and recompressed for the web.</p>
+
+<nav class="article-nav" aria-label="Series">
+  <a class="prev" href="../slump-test/"><span class="dir">← Related</span><span class="ttl">The slump test, step by step</span></a>
+  <a class="next" href="../"><span class="dir">Study →</span><span class="ttl">All study materials</span></a>
+</nav>
+
+</article>
+</main>
+
+<footer class="site-footer">
+  <span>© <span id="year"></span> Jisoo Park. All rights reserved.</span>
+  <a href="../../">← Home</a>
+</footer>
+<script src="../article.js"></script>
+<script type="module" src="calc.js"></script>
+</body>
+</html>
