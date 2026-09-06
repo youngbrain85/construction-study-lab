@@ -54,7 +54,8 @@ function build() {
   key.shadow.camera.updateProjectionMatrix();
 
   scene.add(P.buildRoomShell(L.ROOM, L.YARD, L.DOOR));
-  scene.add(D.buildBayDoor(L.DOOR, L.ROOM), D.buildWallDecor(L.ROOM), D.buildYardExtras(L.YARD)); // 디테일 패스(스펙 §12)
+  const decorPal = D.decorPalette(); // 장식 재질은 호버 대상이 아니므로 세 그룹이 하나의 팔레트를 공유해도 된다
+  scene.add(D.buildBayDoor(L.DOOR, L.ROOM, decorPal), D.buildWallDecor(L.ROOM, decorPal), D.buildYardExtras(L.YARD, decorPal)); // 디테일 패스(스펙 §12)
   const rng = L.mulberry32(11);
   const BUILDERS = { soil: P.buildSoilBench, steel: P.buildTensileFrame, wood: P.buildFramingStation, survey: P.buildSurveyStation };
 

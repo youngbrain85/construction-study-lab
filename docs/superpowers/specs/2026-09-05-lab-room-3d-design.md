@@ -229,7 +229,7 @@ mount():
 
 ## 8. 성능·오류 처리
 
-- 예산: draw call ≤ 400(`__labRoomDebug.info()`로 검증), 메쉬 총 ≤ 400, DPR ≤ 2, 그림자는 키 라이트 하나(2048).
+- 예산: draw call ≤ 500·메쉬 총 ≤ 500(§12 디테일 패스에서 상향; `__labRoomDebug.info()`로 검증, 2026-09-05 측정 371 / 395), DPR ≤ 2, 그림자는 키 라이트 하나(2048).
 - 다운로드: 새 JS 4개(≤ 60 KB)에 더해 **이 페이지에서 처음 받는** `three.module.js`(1.37 MB raw, 압축 후 약 330 KB)와 `scene3d.js`(68 KB). `<head>`의 `modulepreload` 2개(§2.1)로 직렬 대기를 없앤다. Mix Design Lab을 다녀온 방문자는 캐시로 받는다.
 - 첫 프레임 목표: 데스크톱 캐시 없음 ≤ 1.5 s, 모바일 390×844에서 Fast 3G 에뮬레이션(CDP `Network.emulateNetworkConditions`) ≤ 6 s, 캐시 있음 ≤ 2 s.
 - 오류 처리: 대체 경로 §2.3. 마운트 전체가 `try/catch`로 감싸이며, 실패 시 부분적으로 만들어진 스테이지는 `dispose`한다.

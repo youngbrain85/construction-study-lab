@@ -51,7 +51,7 @@ export function buildBayDoor(DOOR, ROOM, pal = decorPalette()) {
     g.add(box(0.35, DOOR.h + 0.2, 0.35, pal.darkSteel, x, (DOOR.h + 0.2) / 2, zc + s * (W / 2 + 0.175)));
     g.add(box(0.12, DOOR.h, 0.08, pal.steel, x, DOOR.h / 2, zc + s * (W / 2 - 0.04)));
   }
-  g.add(box(0.55, 0.55, W + 0.7, pal.royal, x, DOOR.h + 0.275, zc));         // 롤업 하우징
+  g.add(box(0.55, 0.4, W + 0.7, pal.royal, x, DOOR.h + 0.2, zc));            // 롤업 하우징(윗면 = 벽 높이 3.2 m, BOUNDS 안)
   g.add(box(0.57, 0.08, W + 0.72, pal.navy, x, DOOR.h + 0.06, zc));           // 하우징 하단 립
   const drum = cyl(0.2, 0.2, W - 0.1, pal.steel, x, DOOR.h - 0.05, zc, 24); drum.rotation.x = Math.PI / 2; g.add(drum);
   for (let i = 0; i < 5; i++) {                                                // 절반 내려온 슬랫 커튼(하단 ≥ 1.5 m 열림)
@@ -178,7 +178,7 @@ export function buildYardExtras(YARD, pal = decorPalette()) {
   const bag = (x, y, z, ry = 0) => { g.add(box(0.44, 0.14, 0.7, pal.white, x, y, z, ry)); g.add(box(0.45, 0.05, 0.3, pal.royal, x, y, z, ry)); };
   bag(px - 0.24, 0.2, pz); bag(px + 0.24, 0.2, pz); bag(px - 0.24, 0.34, pz, 0.05); bag(px + 0.24, 0.34, pz, -0.05); bag(px, 0.48, pz, 0.1);
   // 모래 더미(납작한 반구)
-  const sand = dome(0.8, pal.sand, 9.3, 0, -3.4, 28); sand.scale.y = 0.55; g.add(sand);
+  const sand = dome(0.8, pal.sand, 9.3, 0, -3.65, 28); sand.scale.y = 0.55; g.add(sand); // 측량 로드와 화면상 겹쳐 보이지 않게 뒤로
   // Royal 배럴 2개(문 옆)
   for (const bz of [2.9, 3.55]) {
     g.add(cyl(0.29, 0.29, 0.88, pal.royal, 6.55, 0.44, bz, 28));

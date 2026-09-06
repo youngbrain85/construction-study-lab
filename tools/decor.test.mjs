@@ -22,6 +22,7 @@ test('bayDoor: 문 위치에 있고 개구부 하단 1.5 m 는 열려 있다', (
   for (const { box: b } of boxes) {
     assert.ok(b.min.x >= L.DOOR.x - 0.6 && b.max.x <= L.DOOR.x + 1.2, `x range ${b.min.x.toFixed(2)}..${b.max.x.toFixed(2)}`);
     assert.ok(b.min.z >= L.ROOM.zMin - 0.05 && b.max.z <= L.ROOM.zMax + 0.05, `z range ${b.min.z.toFixed(2)}..${b.max.z.toFixed(2)}`);
+    assert.ok(b.max.y <= L.ROOM.wallH + 0.01 && b.min.y >= -0.01, `door part y ${b.min.y.toFixed(2)}..${b.max.y.toFixed(2)} vs wallH ${L.ROOM.wallH}`); // 벽 높이(=BOUNDS 상한)를 넘지 않는다
     const inOpening = b.min.z < L.DOOR.zMax - 0.3 && b.max.z > L.DOOR.zMin + 0.3 && b.min.x < L.DOOR.x + 0.3 && b.max.x > L.DOOR.x - 0.3;
     if (inOpening) assert.ok(b.max.y <= 0.05 || b.min.y >= 1.5, `opening blocked at y ${b.min.y.toFixed(2)}..${b.max.y.toFixed(2)}`);
   }
