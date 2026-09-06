@@ -42,14 +42,27 @@ test('Study 사진 4장이 존재하고 용량 예산 안이다', () => {
   }
 });
 
-test('Slump 글 사진 7장이 존재하고 각 220 KB 이하다', () => {
+test('Slump 글 사진 7장이 존재하고 img/ 의 모든 파일이 각 220 KB 이하다', () => {
   const IMG = join(SITE, 'study/slump-test/img');
-  for (const name of ['slump-hero.jpg', 'kit.jpg', 'abrams-01.jpg', 'abrams-02.jpg', 'abrams-03.jpg', 'abrams-04.jpg', 'abrams-05.jpg']) {
-    const p = join(IMG, name);
-    assert.ok(existsSync(p), `${name} missing`);
-    assert.ok(statSync(p).size <= 220 * 1024, `${name} is ${statSync(p).size} B > 220 KB`);
+  const files = readdirSync(IMG);
+  assert.equal(files.length, 7, `expected 7 photos, found ${files.join(', ')}`);
+  for (const name of files) { // 목록을 디렉터리에서 얻어, 나중에 추가된 사진도 예산을 벗어나지 못하게 한다
+    assert.ok(/\.jpg$/.test(name), `${name}: only .jpg`);
+    assert.ok(statSync(join(IMG, name)).size <= 220 * 1024, `${name} is ${statSync(join(IMG, name)).size} B > 220 KB`);
   }
 });
+
+// JPEG SOF 마커에서 픽셀 크기를 읽는다 (width/height 속성 검증용)
+function jpegSize(buf) {
+  let i = 2;
+  while (i < buf.length) {
+    if (buf[i] !== 0xff) throw new Error('bad JPEG marker');
+    const m = buf[i + 1];
+    if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) return { h: buf.readUInt16BE(i + 5), w: buf.readUInt16BE(i + 7) };
+    i += 2 + buf.readUInt16BE(i + 2);
+  }
+  throw new Error('no SOF');
+}
 
 const ARTICLE_PAGES = ['study/mix-design/index.html', 'study/mix-design/example/index.html', 'study/slump-test/index.html'];
 test('글 페이지의 내부 링크·이미지·스타일 경로가 파일로 존재한다', () => {
@@ -71,5 +84,15 @@ test('글 페이지의 내부 링크·이미지·스타일 경로가 파일로 �
     // 페이지 안 앵커(#id)도 실제 id 가 있어야 한다
     const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
     for (const m of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.has(m[1]), `${rel}: missing anchor #${m[1]}`);
+    // <img> 의 width/height 속성은 실제 JPEG 픽셀과 같아야 한다(레이아웃 이동 방지)
+    for (const m of html.matchAll(/<img\b[^>]*>/g)) {
+      const tag = m[0];
+      const src = /\bsrc="([^"]+)"/.exec(tag)?.[1];
+      if (!src || !/\.jpe?g$/i.test(src)) continue;
+      const w = Number(/\bwidth="(\d+)"/.exec(tag)?.[1]), h = Number(/\bheight="(\d+)"/.exec(tag)?.[1]);
+      assert.ok(w > 0 && h > 0, `${rel}: <img src="${src}"> needs width/height`);
+      const real = jpegSize(readFileSync(resolve(dirname(file), src)));
+      assert.deepEqual({ w, h }, real, `${rel}: ${src} attrs ${w}×${h} vs file ${real.w}×${real.h}`);
+    }
   }
 });

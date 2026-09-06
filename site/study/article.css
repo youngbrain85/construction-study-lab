@@ -63,8 +63,8 @@ main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; d
 .article figure.fig-small img { width:auto; max-width:100%; }
 .fig-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:28px 0 8px; }   /* 연속 사진 2열 격자 */
 .fig-grid figure { margin:0; }
-.fig-grid figcaption { font-size:12px; }
 .article figcaption { font:500 12.5px/1.5 var(--font-mono); color:var(--muted); margin-top:10px; }
+.article .fig-grid figcaption { font-size:12px; }   /* .article figcaption(0,1,1)보다 높은 특이성으로 격자 캡션만 살짝 줄인다 */
 .fig-svg { width:100%; height:auto; display:block; }
 
 /* 수식: 가운데 정렬, 분수는 세로 flex */
