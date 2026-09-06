@@ -12,7 +12,7 @@ const fade = document.querySelector('.room-fade');
 const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 const IDLE_MS = 20000, DOLLY_MS = 450, NUDGE_MS = 600, HOVER_EMISSIVE = 0x0053a5, HOVER_INTENSITY = 0.18;
 
-let THREE, L, P, S3, stage, renderer, scene, camera;
+let THREE, L, P, D, S3, stage, renderer, scene, camera;
 const camTarget = { x: 0, y: 0, z: 0 };
 let dirVec = null;
 const stations = [], byKey = {}, hitBoxes = [];
@@ -30,7 +30,7 @@ function fallback(reason, err) {
 async function mount() {
   if (new URLSearchParams(location.search).get('no3d') === '1') return fallback('no3d');
   try {
-    [S3, L, P] = await Promise.all([import('../mix-design/scene3d.js'), import('./layout.js'), import('./props.js')]);
+    [S3, L, P, D] = await Promise.all([import('../mix-design/scene3d.js'), import('./layout.js'), import('./props.js'), import('./decor.js')]);
   } catch (err) { return fallback('import-failed', err); }
   const fb = document.getElementById('fallback');
   if (fb && !fb.hidden) return; // 12 s 가드가 이미 대체 목록을 띄웠다면 3D 를 만들지 않는다
@@ -54,6 +54,7 @@ function build() {
   key.shadow.camera.updateProjectionMatrix();
 
   scene.add(P.buildRoomShell(L.ROOM, L.YARD, L.DOOR));
+  scene.add(D.buildBayDoor(L.DOOR, L.ROOM), D.buildWallDecor(L.ROOM), D.buildYardExtras(L.YARD)); // 디테일 패스(스펙 §12)
   const rng = L.mulberry32(11);
   const BUILDERS = { soil: P.buildSoilBench, steel: P.buildTensileFrame, wood: P.buildFramingStation, survey: P.buildSurveyStation };
 

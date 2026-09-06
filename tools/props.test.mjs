@@ -69,7 +69,7 @@ test('Mix 스테이션: 재활용 소품 3종이 축척 후 발자국·라벨 �
 
 test('방 껍데기·링·히트박스', () => {
   const shell = P.buildRoomShell(L.ROOM, L.YARD, L.DOOR);
-  assert.ok(shell.children.length >= 8, `shell parts ${shell.children.length}`);
+  assert.ok(shell.children.length >= 7, `shell parts ${shell.children.length}`); // 바닥·줄눈·마당·벽 2·허리띠 2 (문은 decor.js)
   const b = new THREE.Box3().setFromObject(shell);
   assert.ok(b.min.x <= L.ROOM.xMin && b.max.x >= L.YARD.xMax && b.max.y >= L.ROOM.wallH, 'shell spans room+yard and wall height');
   const ring = P.buildFloorRing({ w: 3, d: 2 });

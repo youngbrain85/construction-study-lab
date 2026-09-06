@@ -16,7 +16,7 @@ https://cnstlab.org
 ## Structure
 
 - `site/index.html` — home
-- `site/labs/index.html` — Lab page: 3D room built by `site/labs/room/` (`layout.js` placement + camera math, `props.js` procedural equipment, `lab-room.js` assembly and interaction); `site/labs/lab-list.js` renders the text list used as the fallback
+- `site/labs/index.html` — Lab page: 3D room built by `site/labs/room/` (`layout.js` placement + camera math, `props.js` procedural equipment, `decor.js` bay door / wall fittings / yard gear, `lab-room.js` assembly and interaction); `site/labs/lab-list.js` renders the text list used as the fallback
 - `site/study/index.html` — Study section page, rendered from the registry
 - `site/shared/registry.js` — `window.SITE`: `LAB_GROUPS`, `LABS`, `STUDY_GROUPS`, `MATERIALS`
 - `site/shared/dom.js` — shared DOM builder (`window.h`) used by the section pages
@@ -40,5 +40,5 @@ Then open http://localhost:8123 (the custom server serves `.js` with the right M
 ## Test
 
 ```sh
-node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs tools/layout.test.mjs tools/props.test.mjs
+node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs tools/layout.test.mjs tools/props.test.mjs tools/decor.test.mjs
 ```

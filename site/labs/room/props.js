@@ -46,7 +46,7 @@ export function rod(a, b, r, mat, seg = 8) {
   return m;
 }
 
-// ── 방 껍데기: 바닥·줄눈·마당·북/서 벽·허리띠·문틀 ────────────────────────
+// ── 방 껍데기: 바닥·줄눈·마당·북/서 벽·허리띠 (문은 decor.js) ────────────────────
 export function buildRoomShell(ROOM, YARD, DOOR) {
   const g = new THREE.Group(); g.name = 'roomShell';
   const W = ROOM.xMax - ROOM.xMin, D = ROOM.zMax - ROOM.zMin;
@@ -72,9 +72,8 @@ export function buildRoomShell(ROOM, YARD, DOOR) {
   const bandN = new THREE.Mesh(new THREE.BoxGeometry(W, 0.15, 0.02), bandMat); bandN.position.set(cx, 0.975, ROOM.zMin + 0.01); shadowed(bandN); g.add(bandN);
   const bandW = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.15, D), bandMat); bandW.position.set(ROOM.xMin + 0.01, 0.975, cz); shadowed(bandW); g.add(bandW);
 
-  const frameMat = new THREE.MeshStandardMaterial({ color: 0x0053a5, roughness: 0.6 }); // 열린 셔터 문틀(기둥 2 + 보)
-  for (const z of [DOOR.zMin, DOOR.zMax]) g.add(box(0.25, DOOR.h, 0.25, frameMat, DOOR.x, DOOR.h / 2, z));
-  g.add(box(0.25, 0.3, DOOR.zMax - DOOR.zMin + 0.25, frameMat, DOOR.x, DOOR.h + 0.15, (DOOR.zMin + DOOR.zMax) / 2));
+  // 문(베이 도어)은 decor.js 의 buildBayDoor 가 그린다(스펙 §12) — DOOR 인자는 호출 호환용
+  void DOOR;
   return g;
 }
 
