@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The slump test, step by step — Construction Study Lab</title>
+<meta name="description" content="How to run the concrete slump test (ASTM C143): apparatus, sampling and timing, filling and rodding, the lift, reading true / shear / collapse, typical ranges, and the mistakes that skew the number.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../article.css">
+</head>
+<body class="section-page article-page">
+<header class="appbar"><div class="appbar-inner appbar-inner--wide">
+  <a class="logo" href="../../">Construction Study Lab</a>
+  <nav class="appbar-nav" aria-label="Sections">
+    <a href="../../labs/">Lab</a>
+    <a href="../" class="is-active" aria-current="true">Study</a>
+  </nav>
+</div></header>
+
+<section class="band-royal article-hero"><div class="article-hero-inner">
+  <p class="eyebrow">Materials · Field test</p>
+  <h1>The slump test, step by step</h1>
+  <p class="lede">Fill a cone, lift it, measure the drop. Two and a half minutes that tell you whether the truck matches the mix design.</p>
+  <p class="byline">Jisoo Park · September 2026 · 9 min read</p>
+</div></section>
+
+<main class="article-layout">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#why">1. What slump measures</a></li>
+    <li><a href="#apparatus">2. The apparatus</a></li>
+    <li><a href="#sampling">3. Sampling and the clock</a></li>
+    <li><a href="#procedure">4. The procedure</a></li>
+    <li><a href="#reading">5. Reading the result</a></li>
+    <li><a href="#ranges">6. What the number should be</a></li>
+    <li><a href="#mistakes">7. Common mistakes</a></li>
+    <li><a href="#takeaways">8. Key takeaways</a></li>
+  </ol>
+</nav>
+
+<article class="article">
+
+<h2 id="why"><span class="num">1</span>What slump measures — and what it does not</h2>
+<figure>
+  <img src="img/slump-hero.jpg" width="1200" height="797" alt="Students filling a slump cone with fresh concrete on a base plate during a practical" loading="eager">
+  <figcaption>Filling the cone during a fresh-concrete practical. Photo: Habib M'henni, Wikimedia Commons, CC BY 4.0.</figcaption>
+</figure>
+<p>The slump test is the oldest and simplest check on fresh concrete: fill a standard cone with the mix, lift the cone straight up, and measure how far the concrete settles. ASTM C143 (and its metric twin, C143M) standardizes every part of that sentence — the cone, the rod, the filling, the lift, and the measurement — so that a reading taken at the plant means the same thing as a reading taken at the forms.</p>
+<div class="callout callout-def"><span class="label">Definition</span>
+  <p>Slump is the vertical distance, in inches (or millimetres), that a cone of fresh concrete settles after the mold is removed. It is an index of <em>consistency</em> — how wet or stiff the batch behaves — measured on a composite sample within minutes of discharge.</p>
+</div>
+<p>Two things the test does not do. First, slump is not the whole of <em>workability</em>. Two mixes can slump the same 4 in. and behave very differently under a vibrator, because aggregate shape, sand content, and admixtures all change how the concrete moves once it is in the form. Second, slump only works in a band. Below about 1/2 in. the concrete is too stiff to settle meaningfully; above about 9 in. it is too fluid to hold a shape, and self-consolidating mixes are measured by <em>slump flow</em> (ASTM C1611) — spread, not drop — instead. Inside that band, the test earns its keep as the fastest way to see whether a delivery matches the mix you designed in <a href="../mix-design/">Part 1</a>.</p>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>Slump is a uniformity check, not a quality number. A slump that drifts from load to load says something changed — water, temperature, time — long before a cylinder test can.</p>
+</div>
+
+<h2 id="apparatus"><span class="num">2</span>The apparatus</h2>
+<p>Everything in the kit is dimensioned by the standard, because the number only means something if the cone is the cone.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 300" role="img" aria-labelledby="fig1-title">
+  <title id="fig1-title">Slump cone and tamping rod dimensions</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <polygon points="230,60 330,60 370,240 190,240" fill="var(--icy)" stroke="var(--dark)" stroke-width="2"/>
+    <rect x="150" y="240" width="260" height="12" fill="var(--border)" stroke="var(--dark)" stroke-width="1.5"/>
+    <rect x="212" y="120" width="10" height="34" fill="var(--dark)"/><rect x="338" y="120" width="10" height="34" fill="var(--dark)"/>
+    <rect x="182" y="222" width="24" height="8" fill="var(--dark)"/><rect x="354" y="222" width="24" height="8" fill="var(--dark)"/>
+    <line x1="230" y1="44" x2="330" y2="44" stroke="var(--royal)" stroke-width="1.5"/><line x1="230" y1="38" x2="230" y2="50" stroke="var(--royal)" stroke-width="1.5"/><line x1="330" y1="38" x2="330" y2="50" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="280" y="34" text-anchor="middle" fill="var(--royal)">4 in. (100 mm) top</text>
+    <line x1="190" y1="264" x2="370" y2="264" stroke="var(--royal)" stroke-width="1.5"/><line x1="190" y1="258" x2="190" y2="270" stroke="var(--royal)" stroke-width="1.5"/><line x1="370" y1="258" x2="370" y2="270" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="280" y="286" text-anchor="middle" fill="var(--royal)">8 in. (200 mm) base</text>
+    <line x1="400" y1="60" x2="400" y2="240" stroke="var(--royal)" stroke-width="1.5"/><line x1="394" y1="60" x2="406" y2="60" stroke="var(--royal)" stroke-width="1.5"/><line x1="394" y1="240" x2="406" y2="240" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="410" y="154" fill="var(--royal)">12 in. (300 mm) high</text>
+    <text x="90" y="128" fill="var(--muted)">handles</text><line x1="130" y1="124" x2="210" y2="136" stroke="var(--faint)" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <text x="80" y="236" fill="var(--muted)">foot pieces</text><line x1="150" y1="232" x2="182" y2="226" stroke="var(--faint)" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <rect x="560" y="40" width="10" height="220" rx="5" fill="var(--dark)"/>
+    <line x1="590" y1="40" x2="590" y2="260" stroke="var(--royal)" stroke-width="1.5"/><line x1="584" y1="40" x2="596" y2="40" stroke="var(--royal)" stroke-width="1.5"/><line x1="584" y1="260" x2="596" y2="260" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="600" y="154" fill="var(--royal)">24 in. (600 mm)</text>
+    <text x="565" y="285" text-anchor="middle" fill="var(--muted)">rod 5/8 in. (16 mm) dia.</text>
+    <text x="565" y="28" text-anchor="middle" fill="var(--muted)">hemispherical tip</text>
+  </g>
+</svg>
+<figcaption>Figure 1. The mold (an inverted, open-ended truncated cone) on its rigid, non-absorbent base plate, and the tamping rod. Dimensions are internal, each with a tolerance of about 1/8 in. (3 mm).</figcaption>
+</figure>
+<ul>
+  <li><strong>Mold.</strong> Metal, smooth inside, at least 1/16 in. (1.6 mm) thick. Inside: 8 in. at the base, 4 in. at the top, 12 in. tall. Foot pieces to stand on and handles to lift by; some sets clamp to the base plate instead.</li>
+  <li><strong>Tamping rod.</strong> Straight steel, 5/8 in. (16 mm) in diameter and about 24 in. (600 mm) long, with at least one end rounded to a hemisphere of the same diameter. The rounded tip is what you rod with.</li>
+  <li><strong>Base plate.</strong> Flat, rigid, non-absorbent, and at least as big as the cone's base — plywood soaks up water and reads stiff.</li>
+  <li><strong>Scoop and rule.</strong> A scoop big enough to place each layer without segregating it, and a rule graduated to 1/4 in. (5 mm) or finer.</li>
+</ul>
+<figure>
+  <img src="img/kit.jpg" width="1200" height="797" alt="Slump cone, base plate, tamping rod, scoop and trowel laid out on the floor next to a pile of aggregate" loading="lazy">
+  <figcaption>The kit laid out: mold on its base plate, tamping rod, trowel and sample pan. Photo: Habib M'henni, Wikimedia Commons, CC BY 4.0.</figcaption>
+</figure>
+<p class="ref-note">Metric kits are the same shape restated in millimetres: EN 12350-2 (and the Korean KS F 2402 / Japanese JIS A 1101 tests built on the same cone) use a 100 / 200 / 300 mm mold with a 16 × 600 mm rod.</p>
+
+<h2 id="sampling"><span class="num">3</span>Sampling and the clock</h2>
+<p>A slump reading is only as good as the sample. ASTM C172 says to build a <em>composite</em> sample from two or more portions taken at regular intervals while the load discharges — never from the first or last tenth of the truck — with no more than 15 minutes between the first and last portion, and only after all the water and admixtures are in and mixed.</p>
+<p>Then the clock starts. The test must begin within <strong>5 minutes</strong> of obtaining the sample, and the whole operation — from the first scoop into the mold to lifting the mold off — must be finished within <strong>2 1/2 minutes</strong>, without interruption. Concrete stiffens as it sits, so a slow test reads low.</p>
+<div class="callout callout-warn"><span class="label">Watch out</span>
+  <p>Dampen the mold and the base plate before you fill them. A dry steel surface pulls water out of the mix at the wall, and the specimen reads stiffer than the batch really is.</p>
+</div>
+
+<h2 id="procedure"><span class="num">4</span>The procedure</h2>
+<p>Set the dampened mold on the dampened plate, on a level, rigid surface, and stand on the foot pieces (or clamp the mold down) for the whole of the filling. Then work through four moves. The photographs follow one test from the empty cone to the reading.</p>
+<div class="fig-grid">
+  <figure><img src="img/abrams-01.jpg" width="1024" height="768" alt="Empty slump cone standing on its base plate" loading="lazy"><figcaption>The empty mold on its plate.</figcaption></figure>
+  <figure><img src="img/abrams-02.jpg" width="1024" height="768" alt="Fresh concrete being scooped into the slump cone" loading="lazy"><figcaption>Filling — three layers of roughly equal volume.</figcaption></figure>
+  <figure><img src="img/abrams-03.jpg" width="1024" height="768" alt="Tamping rod consolidating a layer inside the slump cone" loading="lazy"><figcaption>Rodding — 25 strokes per layer, spread over the whole cross-section.</figcaption></figure>
+  <figure><img src="img/abrams-04.jpg" width="1024" height="768" alt="Hands on the handles of the slump cone, about to lift it off the concrete" loading="lazy"><figcaption>The lift — hands on the handles, straight up in about 5 seconds.</figcaption></figure>
+</div>
+<p class="ref-note">Photos: Tano4595, Wikimedia Commons, CC BY-SA 2.5.</p>
+<h3>Move 1 — Fill in three layers of equal volume</h3>
+<p>Because the cone tapers, equal <em>volume</em> does not mean equal <em>height</em>. The first layer is done when the concrete stands about 2 5/8 in. (67 mm) above the plate; the second when it stands about 6 1/8 in. (156 mm); the third is heaped above the rim.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 260" role="img" aria-labelledby="fig2-title">
+  <title id="fig2-title">Three layers of equal volume: fill heights and rodding depth</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <polygon points="250,40 330,40 370,220 210,220" fill="var(--icy)" stroke="var(--dark)" stroke-width="2"/>
+    <polygon points="260,86 320,86 370,220 210,220" fill="var(--border)" opacity=".9"/>
+    <polygon points="270,131 310,131 320,86 260,86" fill="var(--border)" opacity=".6"/>
+    <line x1="210" y1="180" x2="370" y2="180" stroke="var(--dark)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <line x1="210" y1="127" x2="370" y2="127" stroke="var(--dark)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <rect x="172" y="180" width="38" height="4" fill="var(--dark)"/><rect x="172" y="127" width="38" height="4" fill="var(--dark)"/>
+    <text x="30" y="176" fill="var(--dark)">2 5/8 in. (67 mm)</text>
+    <text x="30" y="123" fill="var(--dark)">6 1/8 in. (156 mm)</text>
+    <text x="40" y="60" fill="var(--dark)">heap above the rim</text><line x1="160" y1="56" x2="248" y2="42" stroke="var(--faint)" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <text x="400" y="205" fill="var(--muted)">Layer 1 · 25 strokes, full depth</text>
+    <text x="400" y="155" fill="var(--muted)">Layer 2 · 25 strokes, 1 in. into layer 1</text>
+    <text x="400" y="105" fill="var(--muted)">Layer 3 · 25 strokes, 1 in. into layer 2,</text>
+    <text x="400" y="121" fill="var(--muted)">then strike off flush with the rim</text>
+    <rect x="296" y="20" width="6" height="130" rx="3" fill="var(--dark)"/>
+    <text x="300" y="248" text-anchor="middle" fill="var(--muted)" font-size="11">base plate at 0 in.</text>
+  </g>
+</svg>
+<figcaption>Figure 2. Fill heights for the three layers and how deep the rod goes on each. Strokes spiral from the perimeter toward the center.</figcaption>
+</figure>
+<h3>Move 2 — Rod each layer 25 times</h3>
+<p>Give each layer 25 strokes with the rounded end of the rod, distributed uniformly — half-strokes around the perimeter first, then spiralling toward the center. On the bottom layer, rod the full depth without hammering the plate. On the second and third layers, push about 1 in. (25 mm) into the layer below so the layers knit together.</p>
+<h3>Move 3 — Strike off and clean up</h3>
+<p>After rodding the heaped top layer, strike the surface off flush with the rim using a rolling motion of the rod (a straightedge works too). Clear away any concrete that spilled around the base — it would hold the mold down when you lift.</p>
+<h3>Move 4 — Lift, then measure at once</h3>
+<p>Raise the mold carefully and only vertically — no twisting, no sideways drift — through its full 12 in. in <strong>5 ± 2 seconds</strong>. Immediately invert the empty mold and set it down beside the specimen, lay the rod across the top of the inverted mold so it reaches over the concrete, and measure from the underside of the rod down to the <em>displaced original center</em> of the specimen's top. Record to the nearest 1/4 in. (5 mm).</p>
+<figure class="fig-small">
+  <img src="img/abrams-05.jpg" width="1024" height="768" alt="The settled cone of concrete standing on the base plate after the mold has been lifted" loading="lazy">
+  <figcaption>After the lift: a true slump, holding its shape and ready to measure. Photo: Tano4595, Wikimedia Commons, CC BY-SA 2.5.</figcaption>
+</figure>
+<div class="eq">slump = 12 in. − height of the displaced center</div>
+<p>Then walk to the mix design and compare: a 3–4 in. target with a 3 1/2 in. reading is a delivery you can place. Put the number, the time, and the concrete temperature on the ticket.</p>
+
+<h2 id="reading"><span class="num">5</span>Reading the result</h2>
+<p>The number is only half the reading. The <em>shape</em> the concrete takes when the mold comes off tells you whether the number is valid at all.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 220" role="img" aria-labelledby="fig3-title">
+  <title id="fig3-title">True, shear and collapse slump</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <polygon points="60,180 200,180 170,90 90,90" fill="var(--border)" stroke="var(--dark)" stroke-width="1.5"/>
+    <polygon points="60,180 200,180 160,40 100,40" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="4 4"/>
+    <line x1="230" y1="40" x2="230" y2="90" stroke="var(--royal)" stroke-width="1.5"/><line x1="224" y1="40" x2="236" y2="40" stroke="var(--royal)" stroke-width="1.5"/><line x1="224" y1="90" x2="236" y2="90" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="238" y="70" fill="var(--royal)">slump</text>
+    <text x="130" y="205" text-anchor="middle" fill="var(--dark)" font-weight="600">True — report it</text>
+    <polygon points="300,180 440,180 410,120 330,120" fill="var(--border)" stroke="var(--dark)" stroke-width="1.5"/>
+    <polygon points="335,120 400,120 445,82 400,60 350,66" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/>
+    <polygon points="300,180 440,180 400,40 340,40" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="370" y="205" text-anchor="middle" fill="var(--dark)" font-weight="600">Shear — repeat</text>
+    <path d="M540 180 Q 520 130 560 128 Q 610 118 640 128 Q 690 132 680 180 Z" fill="var(--border)" stroke="var(--dark)" stroke-width="1.5"/>
+    <polygon points="540,180 680,180 640,40 580,40" fill="none" stroke="var(--faint)" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="610" y="205" text-anchor="middle" fill="var(--dark)" font-weight="600">Collapse — repeat</text>
+    <line x1="40" y1="180" x2="700" y2="180" stroke="var(--dark)" stroke-width="1"/>
+  </g>
+</svg>
+<figcaption>Figure 3. The original cone is dashed. A true slump keeps its shape and just gets shorter; a shear slump slides off to one side; a collapse spreads out flat.</figcaption>
+</figure>
+<ul>
+  <li><strong>True slump.</strong> The specimen settles evenly and stays roughly conical. This is the only shape that gives a valid number.</li>
+  <li><strong>Shear slump.</strong> The top half shears off and slides down an inclined plane. The mix lacks cohesion, or the test went wrong. Disregard the reading and repeat on a fresh portion of the same sample.</li>
+  <li><strong>Collapse.</strong> The concrete falls apart or spreads flat — usually a very wet mix that this test cannot describe. Disregard and repeat.</li>
+</ul>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>Two shear or collapse results in a row is itself the result: the concrete lacks the plasticity and cohesiveness the slump test assumes. Report that — do not average two bad numbers into a good one.</p>
+</div>
+
+<h2 id="ranges"><span class="num">6</span>What the number should be</h2>
+<p>The mix design sets the target. For concrete consolidated by vibration, ACI 211.1 recommends these ranges as a starting point; project specifications, and mixes with water reducers, often allow more.</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-aci-slump">
+  <caption>Table 1. Recommended slumps for concrete consolidated by vibration (ACI 211.1)</caption>
+  <thead><tr><th scope="col">Type of construction</th><th scope="col">Maximum, in.</th><th scope="col">Minimum, in.</th></tr></thead>
+  <tbody>
+    <tr><td>Reinforced foundation walls and footings</td><td>3</td><td>1</td></tr>
+    <tr><td>Plain footings, caissons, substructure walls</td><td>3</td><td>1</td></tr>
+    <tr><td>Beams and reinforced walls</td><td>4</td><td>1</td></tr>
+    <tr><td>Building columns</td><td>4</td><td>1</td></tr>
+    <tr><td>Pavements and slabs</td><td>3</td><td>1</td></tr>
+    <tr><td>Mass concrete</td><td>2</td><td>1</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="ref-note">ACI 211.1 allows the maximum to be raised when a chemical admixture provides the extra slump at the same or lower w/cm without segregation. The starting ranges in Part 1 (2–5 in., 3–5 in.) assume such admixtures are in play; pumped concrete usually runs 4–6 in.</p>
+<p>European practice specifies a <em>consistence class</em> instead of a range, using the metric cone:</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-en-classes">
+  <caption>Table 2. Slump classes, EN 206 / EN 12350-2</caption>
+  <thead><tr><th scope="col">Class</th><th scope="col">Slump, mm</th><th scope="col">Reads as</th></tr></thead>
+  <tbody>
+    <tr><td>S1</td><td>10–40</td><td>very stiff</td></tr>
+    <tr><td>S2</td><td>50–90</td><td>plastic</td></tr>
+    <tr><td>S3</td><td>100–150</td><td>soft — the usual pumped range</td></tr>
+    <tr><td>S4</td><td>160–210</td><td>very soft</td></tr>
+    <tr><td>S5</td><td>≥ 220</td><td>flowing — watch for segregation</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Above the top of the band, stop measuring drop and measure spread: self-consolidating concrete is tested by slump flow (ASTM C1611), where the same cone is filled in one lift without rodding and the diameter of the spread, typically 18–30 in., is the result.</p>
+
+<h2 id="mistakes"><span class="num">7</span>Common mistakes and what they do to the number</h2>
+<ul>
+  <li><strong>Not holding the mold down.</strong> It creeps or lifts while you rod, and the specimen reads high.</li>
+  <li><strong>A dry mold or plate.</strong> Water is pulled out at the wall; the specimen reads low.</li>
+  <li><strong>Uneven rodding.</strong> All 25 strokes in the middle, or all around the edge, leaves part of the layer loose. The result can go either way, which is worse than a bias.</li>
+  <li><strong>A slow, fast, or twisting lift.</strong> Anything but a steady 5-second vertical lift drags the concrete and invalidates the test.</li>
+  <li><strong>Testing late.</strong> Miss the 5-minute start or the 2 1/2-minute window and the concrete has already stiffened — the reading no longer describes the concrete being placed.</li>
+  <li><strong>"Fixing" a stiff load with water at the truck.</strong> The slump comes up, and so does the w/cm; strength and durability go down. The test cannot see the difference, which is why the ticket matters as much as the cone.</li>
+</ul>
+<p>Slump is also perishable. A load that read 4 in. at the plant can read an inch or more lower after half an hour in the sun; heat, low humidity, and delay all speed the loss, and admixtures change the rate. That is why the standard cares so much about <em>when</em> you test, and why a slump taken at the point of placement is the one that counts.</p>
+<div class="callout callout-def"><span class="label">Precision</span>
+  <p>ASTM C143 carries a precision statement: repeat tests by the same operator on the same batch should agree within roughly half an inch at everyday slumps, and results between laboratories spread a little wider. A 1/4 in. difference between two tests is noise; a 2 in. difference is a change in the concrete.</p>
+</div>
+
+<h2 id="takeaways"><span class="num">8</span>Key takeaways</h2>
+<ol>
+  <li>Slump measures <strong>consistency</strong> — a uniformity check, not a strength or workability guarantee — and only within about 1/2 to 9 in.</li>
+  <li>The standard is the recipe: dampened mold, held down; <strong>three layers of equal volume, 25 strokes each</strong>, rod 1 in. into the layer below; strike off; clean around the base.</li>
+  <li><strong>Start within 5 minutes, finish within 2 1/2</strong>, lift straight up in 5 ± 2 seconds, measure to the displaced center to the nearest 1/4 in.</li>
+  <li>Only a <strong>true</strong> slump counts. Shear or collapse means repeat; twice in a row means the mix, not the test, is the problem.</li>
+</ol>
+
+<div class="cta-lab">
+  <div>
+    <h3>Run a virtual slump test</h3>
+    <p>The Mix Design Lab fills, rods, and lifts the cone in 3D for the mix you proportion — and shows you a true, shear, or collapse result.</p>
+  </div>
+  <a class="btn btn-primary" href="../../labs/mix-design/">Open the lab →</a>
+</div>
+
+<p class="ref-note">Sources: ASTM C143/C143M and C172; AASHTO T 119; ACI 211.1; EN 206 and EN 12350-2; Iowa DOT Materials I.M. 317. Photo credits: "Cono de Abrams 01–05" by Tano4595 (CC BY-SA 2.5) and "Essais sur béton DSC 2154 / DSC 2166" by Habib M'henni (CC BY 4.0), via Wikimedia Commons.</p>
+
+<nav class="article-nav" aria-label="Series">
+  <a class="prev" href="../mix-design/"><span class="dir">← Related</span><span class="ttl">How to design a concrete mix</span></a>
+  <a class="next" href="../"><span class="dir">Study →</span><span class="ttl">All study materials</span></a>
+</nav>
+
+</article>
+</main>
+
+<footer class="site-footer">
+  <span>© <span id="year"></span> Jisoo Park. All rights reserved.</span>
+  <a href="../../">← Home</a>
+</footer>
+<script src="../article.js"></script>
+</body>
+</html>

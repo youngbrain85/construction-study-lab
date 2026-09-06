@@ -35,6 +35,9 @@
     { id: 'mix-design-2', group: 'materials', type: 'page', title: 'Worked example: a 3,000 psi beam',
       desc: 'Concrete mix design, part 2 — every step of one mix, from 325 lb of water to a checked 1 yd³ batch.',
       href: 'mix-design/example/' },
+    { id: 'slump-test', group: 'materials', type: 'page', title: 'The slump test, step by step',
+      desc: 'ASTM C143 in the field — apparatus, sampling and timing, filling and rodding, the lift, and how to read true, shear, or collapse.',
+      href: 'slump-test/' },
   ];
 
   // 점수 → 등급 (Mix Design Lab 채점 등급과 동일한 경계값)

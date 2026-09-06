@@ -61,6 +61,9 @@ main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; d
 .article figure { margin:28px 0; }
 .article figure img { width:100%; height:auto; border-radius:var(--radius); display:block; }
 .article figure.fig-small img { width:auto; max-width:100%; }
+.fig-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:28px 0 8px; }   /* 연속 사진 2열 격자 */
+.fig-grid figure { margin:0; }
+.fig-grid figcaption { font-size:12px; }
 .article figcaption { font:500 12.5px/1.5 var(--font-mono); color:var(--muted); margin-top:10px; }
 .fig-svg { width:100%; height:auto; display:block; }
 
@@ -119,6 +122,7 @@ main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; d
 }
 @media (max-width:700px) {
   .toc ol { columns:1; }
+  .fig-grid { grid-template-columns:1fr; }
   .article-nav { grid-template-columns:1fr; }
   .article-nav a.next { text-align:left; }
   .cta-lab { flex-direction:column; align-items:flex-start; padding:22px; }

@@ -24,7 +24,7 @@ test('site/ 어디에도 대문자 과목 코드 CNST 가 없다', () => {
 });
 
 test('article.css 와 글 페이지는 theme.css 토큰만 쓴다(리터럴 색 없음)', () => {
-  const files = ['study/article.css', 'study/mix-design/index.html', 'study/mix-design/example/index.html'];
+  const files = ['study/article.css', 'study/mix-design/index.html', 'study/mix-design/example/index.html', 'study/slump-test/index.html'];
   for (const rel of files) {
     const src = readFileSync(join(SITE, rel), 'utf8');
     assert.deepEqual(src.match(/#[0-9a-fA-F]{3,8}\b/g) || [], [], `${rel} has literal colours`);
@@ -42,7 +42,16 @@ test('Study 사진 4장이 존재하고 용량 예산 안이다', () => {
   }
 });
 
-const ARTICLE_PAGES = ['study/mix-design/index.html', 'study/mix-design/example/index.html'];
+test('Slump 글 사진 7장이 존재하고 각 220 KB 이하다', () => {
+  const IMG = join(SITE, 'study/slump-test/img');
+  for (const name of ['slump-hero.jpg', 'kit.jpg', 'abrams-01.jpg', 'abrams-02.jpg', 'abrams-03.jpg', 'abrams-04.jpg', 'abrams-05.jpg']) {
+    const p = join(IMG, name);
+    assert.ok(existsSync(p), `${name} missing`);
+    assert.ok(statSync(p).size <= 220 * 1024, `${name} is ${statSync(p).size} B > 220 KB`);
+  }
+});
+
+const ARTICLE_PAGES = ['study/mix-design/index.html', 'study/mix-design/example/index.html', 'study/slump-test/index.html'];
 test('글 페이지의 내부 링크·이미지·스타일 경로가 파일로 존재한다', () => {
   for (const rel of ARTICLE_PAGES) {
     const file = join(SITE, rel);
