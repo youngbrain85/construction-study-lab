@@ -94,8 +94,10 @@ test('fitProctor: no peak (rising points) → best point + flag', () => {
 });
 
 test('fitProctor: optimum outside the tested range is flagged', () => {
-  const r = C.fitProctor([{ w: 4, wet: 118 }, { w: 6, wet: 121 }, { w: 8, wet: 123 }]); // 여전히 오르는 중, 미세한 곡률
-  assert.ok(r.flags.includes('outside-range') || r.flags.includes('no-peak'));
+  // 건조밀도 100 → 106 → 110 pcf: 오목(a < 0)하지만 꼭짓점이 w ≈ 11 %, 시험 범위 4–8 % 밖
+  const r = C.fitProctor([{ w: 4, wet: 104.0 }, { w: 6, wet: 112.36 }, { w: 8, wet: 118.8 }]);
+  assert.ok(r.flags.includes('outside-range'), `flags: ${r.flags}`);
+  assert.ok(r.wOpt > 8, `wOpt ${r.wOpt}`);
 });
 
 test('evaluate: 106.5 pcf at 11.5 % passes 95 % and the ±2 % window', () => {
