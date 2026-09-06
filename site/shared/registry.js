@@ -23,7 +23,7 @@
   ];
 
   const STUDY_GROUPS = [
-    { id: 'materials', name: 'Materials', blurb: 'Concrete, aggregates, and mix design.' },
+    { id: 'materials', name: 'Materials', blurb: 'Concrete, aggregates, soils, and mix design.' },
     { id: 'surveying', name: 'Surveying', blurb: 'Leveling, traversing, and site layout.' },
   ];
 
@@ -38,6 +38,9 @@
     { id: 'slump-test', group: 'materials', type: 'page', title: 'The slump test, step by step',
       desc: 'ASTM C143 in the field — apparatus, sampling and timing, filling and rodding, the lift, and how to read true, shear, or collapse.',
       href: 'slump-test/' },
+    { id: 'soil-compaction', group: 'materials', type: 'page', title: 'Compaction control: the Proctor test and field density',
+      desc: 'How fill is specified and checked — the Proctor curve, sand cone and nuclear gauge tests, percent compaction, and a calculator to try it.',
+      href: 'soil-compaction/' },
   ];
 
   // 점수 → 등급 (Mix Design Lab 채점 등급과 동일한 경계값)
