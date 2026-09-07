@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Automatic level: a field manual — Construction Study Lab</title>
+<meta name="description" content="How to run a level loop with an automatic level: setting up, reading the rod, backsights and foresights, closing and checking the loop, and the daily two-peg test. Field manual in US units.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../article.css">
+</head>
+<body class="section-page article-page">
+<header class="appbar"><div class="appbar-inner appbar-inner--wide">
+  <a class="logo" href="../../">Construction Study Lab</a>
+  <nav class="appbar-nav" aria-label="Sections">
+    <a href="../../labs/">Lab</a>
+    <a href="../" class="is-active" aria-current="true">Study</a>
+  </nav>
+</div></header>
+
+<section class="band-royal article-hero"><div class="article-hero-inner">
+  <p class="eyebrow">Surveying · Field manual</p>
+  <h1>Automatic level</h1>
+  <p class="lede">Take this one outside. Everything here is what you do with the instrument in front of you: set it up, read the rod, run a loop of elevations, and prove the work closes before you pack up.</p>
+  <p class="byline">Jisoo Park · September 2026 · 14 min read</p>
+</div></section>
+
+<main class="article-layout">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#instrument">1. The instrument</a></li>
+    <li><a href="#before">2. Before you go out</a></li>
+    <li><a href="#setup">3. Setting up</a></li>
+    <li><a href="#reading">4. Reading the rod</a></li>
+    <li><a href="#run">5. Running the loop</a></li>
+    <li><a href="#close">6. Closing the loop</a></li>
+    <li><a href="#peg">7. The two-peg test</a></li>
+    <li><a href="#example">8. Worked example</a></li>
+    <li><a href="#mistakes">9. Common mistakes</a></li>
+    <li><a href="#takeaways">10. Key takeaways</a></li>
+  </ol>
+</nav>
+
+<article class="article">
+
+<h2 id="instrument"><span class="num">1</span>The instrument</h2>
+<figure>
+  <img src="img/setup.jpg" width="1200" height="900" alt="A survey level on a yellow tripod in an open field, with a person holding a rod in the distance" loading="eager">
+  <figcaption>The whole job in one picture: instrument on a tripod, rod held on a point some distance away, two people. The instrument here is a digital level; an automatic level sits on the same tripod and is used the same way. Photo: Cvstr, Wikimedia Commons, CC BY 4.0.</figcaption>
+</figure>
+<p>An automatic level gives you one thing: a <strong>horizontal line of sight</strong>. It does not measure angles, and it does not measure distance except roughly. Everything you get from it comes from comparing rod readings taken along that one horizontal line.</p>
+<p>What makes it "automatic" is the <strong>compensator</strong> — a small prism assembly hung on wires inside the telescope. You only bring the circular bubble to the middle, which gets the instrument close to level; the compensator swings under gravity and bends the line of sight the rest of the way to horizontal. That is why there is no long bubble tube to re-centre before every sighting, and it is also why the instrument has to be treated as a pendulum: it needs a moment to settle, and it can jam.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 320" role="img" aria-labelledby="fig1-title">
+  <title id="fig1-title">The parts of an automatic level</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <rect x="200" y="120" width="270" height="46" rx="10" fill="var(--icy)" stroke="var(--dark)" stroke-width="2"/>
+    <rect x="470" y="126" width="20" height="34" rx="3" fill="var(--vintage)" stroke="var(--dark)" stroke-width="2"/>
+    <rect x="182" y="130" width="18" height="26" rx="3" fill="var(--vintage)" stroke="var(--dark)" stroke-width="2"/>
+    <rect x="300" y="128" width="60" height="30" rx="4" fill="none" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <path d="M330,128 v10 M330,138 l-8,14 h16 z" fill="var(--royal)" stroke="none"/>
+    <circle cx="395" cy="180" r="13" fill="var(--surface2)" stroke="var(--dark)" stroke-width="2"/>
+    <circle cx="252" cy="184" r="14" fill="var(--bg)" stroke="var(--dark)" stroke-width="2"/>
+    <circle cx="252" cy="184" r="5" fill="none" stroke="var(--royal)" stroke-width="1.5"/>
+    <circle cx="200" cy="190" r="9" fill="var(--surface2)" stroke="var(--dark)" stroke-width="1.5"/>
+    <path d="M210,205 h250 l-16,30 h-218 z" fill="var(--surface2)" stroke="var(--dark)" stroke-width="2"/>
+    <g fill="var(--surface2)" stroke="var(--dark)" stroke-width="2">
+      <rect x="228" y="235" width="12" height="22" rx="3"/><rect x="329" y="235" width="12" height="22" rx="3"/><rect x="430" y="235" width="12" height="22" rx="3"/>
+    </g>
+    <path d="M240,257 l-32,31 M335,257 v31 M430,257 l32,31" stroke="var(--dark)" stroke-width="2" fill="none"/>
+    <path d="M492,140 h34 M366,143 h120 M395,193 h96" stroke="var(--muted)" stroke-width="1" fill="none"/>
+    <text x="532" y="144" fill="var(--dark)">objective lens</text>
+    <text x="500" y="118" fill="var(--royal)">compensator, inside</text>
+    <path d="M330,120 v-8 h164" stroke="var(--royal)" stroke-width="1" fill="none"/>
+    <text x="500" y="197" fill="var(--dark)">focusing knob</text>
+    <path d="M180,143 h-22" stroke="var(--muted)" stroke-width="1" fill="none"/>
+    <text x="152" y="147" text-anchor="end" fill="var(--dark)">eyepiece</text>
+    <path d="M240,175 L180,164" stroke="var(--muted)" stroke-width="1" fill="none"/>
+    <text x="175" y="168" text-anchor="end" fill="var(--dark)">circular bubble</text>
+    <path d="M191,190 h-8" stroke="var(--muted)" stroke-width="1" fill="none"/>
+    <text x="178" y="194" text-anchor="end" fill="var(--dark)">tangent drive</text>
+    <path d="M228,246 h-40" stroke="var(--muted)" stroke-width="1" fill="none"/>
+    <text x="182" y="250" text-anchor="end" fill="var(--dark)">levelling screws (3)</text>
+    <text x="60" y="308">You centre the circular bubble; the compensator does the rest.</text>
+  </g>
+</svg>
+<figcaption>Figure 1. The controls you actually touch. The compensator is the only part doing work you cannot see.</figcaption>
+</figure>
+<div class="callout callout-def"><span class="label">Definitions</span>
+  <p><strong>Benchmark (BM)</strong> — a permanent point whose elevation is known or assumed. <strong>Turning point (TP)</strong> — a temporary point, chosen only so the instrument can move forward; you read a foresight onto it, move the level, and read a backsight from it. <strong>Backsight (BS)</strong> — a reading on a point whose elevation you already have; it goes <em>into</em> the instrument height. <strong>Foresight (FS)</strong> — a reading on a point whose elevation you want; it comes <em>out</em> of the instrument height.</p>
+</div>
+
+<h2 id="before"><span class="num">2</span>Before you go out</h2>
+<div class="fig-grid">
+  <figure><img src="img/instrument.jpg" width="1200" height="675" alt="An automatic level lying in its fitted carrying case" loading="lazy"><figcaption>Check the instrument in the case before it goes on the tripod. Photo: Kskhh, Wikimedia Commons, CC BY-SA 4.0.</figcaption></figure>
+  <figure><img src="img/benchmark.jpg" width="1200" height="901" alt="A metal levelling benchmark disc set into a wall, stamped with the elevation 522.18" loading="lazy"><figcaption>A levelling benchmark with its elevation stamped on it. Every loop starts and ends on one. Photo: Touam, Wikimedia Commons, CC BY-SA 4.0.</figcaption></figure>
+</div>
+<p><strong>What to bring.</strong> Automatic level and tripod; a levelling rod; a rod level (the small circular bubble that clamps to the rod); turning plates or a solid nail-headed stake for each turning point; field book and a pencil, not a pen; and the elevation of the benchmark you are starting from.</p>
+<p><strong>Watch these first.</strong> Three short videos show the motions this manual describes; watch them before the lab so the instrument is not new to you when you get outside.</p>
+<ul>
+  <li><a href="https://www.youtube.com/watch?v=OWERdvgoq8w" rel="noopener" target="_blank">Setting Up the Automatic Level</a> — Illinois Surveyor (Illinois Professional Land Surveyors Association).</li>
+  <li><a href="https://www.youtube.com/watch?v=M2MuCrvMwQs" rel="noopener" target="_blank">Surveying 2/3 (Differential Leveling Exercise)</a> — John Edwards.</li>
+  <li><a href="https://www.youtube.com/watch?v=ij-yIAvChhk" rel="noopener" target="_blank">Surveying 3 — Two peg test</a> — OTEN Building &amp; Construction.</li>
+</ul>
+<div class="callout callout-warn"><span class="label">Do this first</span>
+  <p>Run the <a href="#peg">two-peg test</a> before the day's work and again at the end of it, and write both into the field book. A level that has been jolted in a truck can read perfectly level and still be wrong by a measurable amount over a long sight — and you will not find out from the readings themselves.</p>
+</div>
+
+<h2 id="setup"><span class="num">3</span>Setting up</h2>
+<ol class="steps">
+  <li><strong>Pick the spot.</strong> Roughly midway between the two points you are about to read, on firm ground, out of the way of traffic. Midway matters — see <a href="#run">step 5</a>.</li>
+  <li><strong>Spread and plant the tripod.</strong> Legs well apart, tripod head roughly level by eye and about chest height, then tread each leg firmly into the ground. On pavement, set the points in cracks or joints so they cannot slide.</li>
+  <li><strong>Mount the instrument.</strong> Thread the tripod screw home firmly, not tight enough to strain it. Keep one hand on the level until the screw is engaged.</li>
+  <li><strong>Centre the circular bubble — two screws, then one.</strong> Turn the telescope so it is parallel to any two of the three levelling screws. Turn those two <em>in opposite directions at the same time</em>; the bubble follows your left thumb. Then bring it the rest of the way in with the third screw alone. Repeat once; it converges quickly.</li>
+  <li><strong>Check the compensator.</strong> Sight the rod, then tap the instrument lightly or press the compensator check button if it has one. The crosshair should swing a little and come back to the same reading. If it does not return, the compensator is jammed — stop and get another instrument.</li>
+  <li><strong>Kill the parallax.</strong> Point the telescope at the sky or a blank wall and turn the <em>eyepiece</em> until the crosshairs are as black and sharp as they get. Only then use the <em>focusing knob</em> to bring the rod into focus. Move your eye up and down at the eyepiece: if the crosshair appears to slide along the rod, the parallax is not gone — repeat.</li>
+  <li><strong>Frame the rod.</strong> Use the tangent drive to bring the vertical crosshair onto the middle of the rod so you are reading the face square-on.</li>
+  <li><strong>Do not re-level between sights.</strong> Once the bubble is centred, the compensator handles the rest. If you knock a leg, re-level and re-read <em>everything</em> from that setup.</li>
+</ol>
+
+<h2 id="reading"><span class="num">4</span>Reading the rod</h2>
+<figure>
+  <img src="img/observing.jpg" width="1200" height="847" alt="A surveyor in a hard hat and high-visibility jacket sighting through a level mounted on a tripod" loading="lazy">
+  <figcaption>At the eyepiece. The reading is whatever the horizontal crosshair cuts on the rod. Photo: Crossrail/MOLA, Wikimedia Commons, CC BY 4.0.</figcaption>
+</figure>
+<p>A US levelling rod is graduated in <strong>feet, tenths and hundredths</strong>. Read it in that order: the foot number below the crosshair, the tenth below it, then estimate the hundredth from the small blocks. Write down all three digits every time — <strong>4.32</strong>, never <strong>4.3</strong>.</p>
+<p>The reticle carries <strong>three horizontal wires</strong>. The middle one is the reading. The upper and lower ones — the stadia wires — give you the distance to the rod, which is how you keep your sights balanced without a tape:</p>
+<div class="eq"><i>D</i> = 100 × (upper − lower)</div>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 300" role="img" aria-labelledby="fig2-title">
+  <title id="fig2-title">Reading a levelling rod through the three wires of the reticle</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <text x="125" y="30" text-anchor="middle" fill="var(--dark)">rod</text>
+    <rect x="96" y="40" width="58" height="232" fill="var(--bg)" stroke="var(--dark)" stroke-width="2"/>
+    <g stroke="var(--dark)" stroke-width="1">
+      <path d="M96,80 h20 M96,120 h20 M96,160 h20 M96,200 h20 M96,240 h20"/>
+      <path d="M96,60 h12 M96,100 h12 M96,140 h12 M96,180 h12 M96,220 h12 M96,260 h12"/>
+    </g>
+    <g font-size="11" fill="var(--dark)">
+      <text x="160" y="84">6</text><text x="160" y="124">5</text><text x="160" y="164">4</text><text x="160" y="204">3</text><text x="160" y="244">2</text>
+    </g>
+    <circle cx="400" cy="156" r="96" fill="var(--bg)" stroke="var(--dark)" stroke-width="2"/>
+    <rect x="372" y="78" width="56" height="156" fill="var(--surface2)"/>
+    <g stroke="var(--dark)" stroke-width="1">
+      <path d="M372,92 h20 M372,124 h20 M372,156 h20 M372,188 h20 M372,220 h20"/>
+    </g>
+    <path d="M400,78 v156" stroke="var(--muted)" stroke-width="1"/>
+    <path d="M318,108 h164" stroke="var(--royal)" stroke-width="1.5"/>
+    <path d="M310,156 h180" stroke="var(--royal)" stroke-width="2.5"/>
+    <path d="M318,204 h164" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="506" y="112" fill="var(--dark)">upper 5.07</text>
+    <text x="506" y="160" fill="var(--royal)">middle 4.32 — the reading</text>
+    <text x="506" y="208" fill="var(--dark)">lower 3.57</text>
+    <text x="506" y="238">interval 1.50 ft</text>
+    <text x="506" y="258">D = 100 × 1.50 = 150 ft</text>
+    <text x="506" y="280">(5.07 + 3.57) ÷ 2 = 4.32</text>
+    <text x="60" y="292">Read feet, then tenths, then estimate hundredths.</text>
+  </g>
+</svg>
+<figcaption>Figure 2. The three wires. The mean of the outer two must equal the middle one — that check catches a misread digit on the spot.</figcaption>
+</figure>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>The rod must be <strong>plumb</strong>, not merely upright. Use the rod level; without one, wave the rod slowly toward and away from the instrument and take the <em>smallest</em> reading, which is the one taken when the rod passed through vertical. A rod leaning 3° at a 6 ft reading is 0.008 ft too high — bigger than the tolerance you are working to.</p>
+</div>
+<h2 id="run"><span class="num">5</span>Running the loop</h2>
+<figure>
+  <img src="img/rodman.jpg" width="1200" height="900" alt="A person holding a levelling rod on a wide open excavation site, with spoil heaps behind" loading="lazy">
+  <figcaption>The rodman's job is half the accuracy: right point, rod plumb, and standing still. Photo: Oxford Archaeology, Wikimedia Commons, CC BY 4.0.</figcaption>
+</figure>
+<p>Levelling walks a known elevation forward. From a setup you read <em>back</em> to a point you know, which tells you how high the line of sight is; then you read <em>forward</em> to a point you want, which tells you how far below that line it sits.</p>
+<div class="eq"><i>HI</i> = elevation + <i>BS</i> &nbsp;·&nbsp; elevation = <i>HI</i> − <i>FS</i></div>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 270" role="img" aria-labelledby="fig3-title">
+  <title id="fig3-title">Two instrument setups carrying an elevation from a benchmark through a turning point</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <text x="60" y="40" fill="var(--dark)">Setup 1: 100.00 + 4.32 = 104.32, then 104.32 − 6.75 = 97.57 at TP1.</text>
+    <text x="60" y="60" fill="var(--dark)">Setup 2: 97.57 + 5.18 = 102.75, then 102.75 − 3.04 = 99.71 at TP2.</text>
+    <text x="60" y="80">Keep the backsight and foresight distances equal at each setup.</text>
+    <path d="M60,181 L92,185 L400,214 L652,188 L660,187" fill="none" stroke="var(--dark)" stroke-width="2"/>
+    <path d="M92,185 v-60 M400,214 v-89 M652,188 v-45" stroke="var(--vintage)" stroke-width="6"/>
+    <path d="M84,133 h330" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <path d="M392,152 h268" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <g stroke="var(--dark)" stroke-width="2" fill="var(--surface2)">
+      <rect x="225" y="126" width="42" height="14" rx="3"/><path d="M233,140 l-12,60 M259,140 l12,60 M246,140 v60" fill="none"/>
+      <rect x="505" y="145" width="42" height="14" rx="3"/><path d="M513,159 l-12,42 M539,159 l12,42 M526,159 v42" fill="none"/>
+    </g>
+    <path d="M104,133 v52" stroke="var(--muted)" stroke-width="1"/>
+    <text x="112" y="163" fill="var(--dark)">BS 4.32</text>
+    <path d="M388,133 v81" stroke="var(--muted)" stroke-width="1"/>
+    <text x="380" y="177" text-anchor="end" fill="var(--dark)">FS 6.75</text>
+    <path d="M412,152 v62" stroke="var(--muted)" stroke-width="1"/>
+    <text x="420" y="187" fill="var(--dark)">BS 5.18</text>
+    <path d="M644,152 v36" stroke="var(--muted)" stroke-width="1"/>
+    <text x="636" y="173" text-anchor="end" fill="var(--dark)">FS 3.04</text>
+    <text x="60" y="121" fill="var(--royal)">HI = 104.32</text>
+    <text x="440" y="140" fill="var(--royal)">HI = 102.75</text>
+    <text x="92" y="205" text-anchor="middle" fill="var(--dark)">BM-1</text>
+    <text x="400" y="230" text-anchor="middle" fill="var(--dark)">TP1</text>
+    <text x="652" y="207" text-anchor="middle" fill="var(--dark)">TP2</text>
+  </g>
+</svg>
+<figcaption>Figure 3. One setup produces one instrument height and hands the elevation forward through a turning point.</figcaption>
+</figure>
+<p><strong>Balance the sights.</strong> Set up midway so the backsight and foresight distances are within about 30 ft of each other. Any small tilt left in the line of sight then throws both readings the same way and cancels in the difference — and so do earth curvature and refraction. This one habit does more for your closure than anything else on the list.</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-specs">
+  <caption>Table 1. Third-order differential levelling with a compensator level (Caltrans Surveys Manual, Table 8-2)</caption>
+  <thead><tr><th scope="col">Item</th><th scope="col">Limit</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Maximum sight length</th><td data-spec="sight">300 ft</td></tr>
+    <tr><th scope="row">Difference between back and fore sight lengths, per setup</th><td data-spec="balance">33 ft</td></tr>
+    <tr><th scope="row">Same, accumulated over the loop</th><td data-spec="balance-cum">33 ft</td></tr>
+    <tr><th scope="row">Minimum ground clearance of the sight line</th><td data-spec="clearance">1.6 ft</td></tr>
+    <tr><th scope="row">Maximum loop misclosure</th><td data-spec="loop">0.06 ft × √E</td></tr>
+    <tr><th scope="row">Two-peg (collimation) test</th><td data-spec="peg">daily · 0.007 ft in 200 ft</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="ref-note">E is the length of the loop in miles. Second-order work tightens the two-peg limit to 0.003 ft in 200 ft. On a hot day over pavement or bare ground the air shimmers and the rod dances: cut the sight length by a third or more, whatever the table allows.</p>
+
+<h2 id="close"><span class="num">6</span>Closing the loop</h2>
+<p>A level run that does not come back to a known elevation proves nothing. Finish where you started — or on a second benchmark — and do three things before you leave the site.</p>
+<ol class="steps">
+  <li><strong>Check the arithmetic.</strong> Sum the backsight column and the foresight column. ΣBS − ΣFS must equal the last elevation minus the first. On a closed loop that means ΣBS and ΣFS should be equal. This checks your adding, not your levelling.</li>
+  <li><strong>Find the misclosure.</strong> The elevation you compute back at the starting benchmark minus its known elevation. This is the error in the work.</li>
+  <li><strong>Compare it with the allowance.</strong> Third order allows 0.06 ft × √E, with E the loop length in miles. Over the allowance, the loop is rejected — re-run it; do not adjust it.</li>
+</ol>
+<p>If it closes, distribute the correction. Divide the misclosure by the number of setups and apply it cumulatively: the first computed elevation gets one share, the second two shares, and the last gets all of it, which brings the final elevation exactly back onto the benchmark. The benchmark you started from is never adjusted.</p>
+
+<h2 id="peg"><span class="num">7</span>The two-peg test</h2>
+<p>The compensator can be out of adjustment: it settles, but not quite on horizontal. The error is invisible on a balanced loop — it cancels — and it grows with sight length, so it shows up the moment your sights are uneven. The two-peg test measures it directly.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 320" role="img" aria-labelledby="fig4-title">
+  <title id="fig4-title">Two-peg test: instrument midway between the pegs, then close beside one of them</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <text x="60" y="40" fill="var(--dark)">Setup ① midway — equal sights, so any tilt cancels: this gives the true difference.</text>
+    <path d="M70,120 h580" stroke="var(--dark)" stroke-width="2"/>
+    <path d="M100,120 v-70 M620,120 v-70" stroke="var(--vintage)" stroke-width="6"/>
+    <g stroke="var(--dark)" stroke-width="2" fill="var(--surface2)">
+      <rect x="339" y="52" width="42" height="14" rx="3"/><path d="M347,66 l-12,54 M373,66 l12,54 M360,66 v54" fill="none"/>
+    </g>
+    <path d="M98,72 h234 M388,72 h232" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="100" y="140" text-anchor="middle" fill="var(--dark)">A</text>
+    <text x="620" y="140" text-anchor="middle" fill="var(--dark)">B</text>
+    <text x="230" y="106" text-anchor="middle">100 ft</text>
+    <text x="490" y="106" text-anchor="middle">100 ft</text>
+    <text x="60" y="170" fill="var(--dark)">Setup ② beside A — the tilt (amber) now has 200 ft to act on B, and none on A.</text>
+    <path d="M70,250 h580" stroke="var(--dark)" stroke-width="2"/>
+    <path d="M130,250 v-70 M620,250 v-70" stroke="var(--vintage)" stroke-width="6"/>
+    <g stroke="var(--dark)" stroke-width="2" fill="var(--surface2)">
+      <rect x="74" y="182" width="42" height="14" rx="3"/><path d="M82,196 l-12,54 M108,196 l12,54 M95,196 v54" fill="none"/>
+    </g>
+    <path d="M118,202 h504" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <path d="M118,202 L622,214" stroke="var(--amber)" stroke-width="1.5"/>
+    <text x="130" y="270" text-anchor="middle" fill="var(--dark)">A</text>
+    <text x="620" y="270" text-anchor="middle" fill="var(--dark)">B</text>
+    <text x="376" y="238" text-anchor="middle">200 ft</text>
+    <text x="60" y="300" fill="var(--amber)">The gap between the two answers is the collimation error over 200 ft.</text>
+  </g>
+</svg>
+<figcaption>Figure 4. Equal sights hide the error; unequal sights expose it. That is the whole idea of the test — and the reason to balance sights while levelling.</figcaption>
+</figure>
+<ol class="steps">
+  <li>Drive two pegs, A and B, about 200 ft apart on reasonably flat ground.</li>
+  <li><strong>Setup ①, midway.</strong> Read the rod on A and on B. The difference <strong>a₁ − b₁</strong> is the <em>true</em> difference in elevation, because equal sight lengths cancel any tilt.</li>
+  <li><strong>Setup ②, beside A.</strong> Move the instrument a few feet behind A and read both pegs again. The difference <strong>a₂ − b₂</strong> is what the instrument <em>says</em>, with the tilt acting over the full 200 ft on the B sight.</li>
+  <li><strong>Compare.</strong> The collimation error is <strong>(a₂ − b₂) − (a₁ − b₁)</strong>, expressed as feet in 200 ft. Third order allows 0.007 ft; second order, 0.003 ft.</li>
+  <li><strong>If it fails,</strong> the reading that <em>should</em> appear at B from setup ② is <strong>a₂ − (a₁ − b₁)</strong>. Adjust the reticle to that reading following the maker's instructions, then run the test again to prove it.</li>
+</ol>
+
+<h2 id="example"><span class="num">8</span>Worked example</h2>
+<p>A four-setup loop that leaves benchmark BM-1, turns three times and comes back to it. BM-1 is assumed to be 100.00 ft. Sights were about 150 ft, so the loop is roughly 1,200 ft — 0.227 mile. The example numbers are made up but typical.</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-fieldbook" data-start="100.00" data-loop-ft="1200" data-allow-coeff="0.06">
+  <caption>Table 2. Field book page — differential levelling, closed loop (example numbers)</caption>
+  <thead><tr><th scope="col">Station</th><th scope="col">BS (+)</th><th scope="col">HI</th><th scope="col">FS (−)</th><th scope="col">Elevation</th><th scope="col">Adjusted</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">BM-1</th><td data-bs="4.32">4.32</td><td data-hi="104.32">104.32</td><td>—</td><td data-elev="100.00">100.00</td><td data-adj="100.00">100.00</td></tr>
+    <tr><th scope="row">TP1</th><td data-bs="5.18">5.18</td><td data-hi="102.75">102.75</td><td data-fs="6.75">6.75</td><td data-elev="97.57">97.57</td><td data-adj="97.58">97.58</td></tr>
+    <tr><th scope="row">TP2</th><td data-bs="2.86">2.86</td><td data-hi="102.57">102.57</td><td data-fs="3.04">3.04</td><td data-elev="99.71">99.71</td><td data-adj="99.72">99.72</td></tr>
+    <tr><th scope="row">TP3</th><td data-bs="8.11">8.11</td><td data-hi="103.26">103.26</td><td data-fs="7.42">7.42</td><td data-elev="95.15">95.15</td><td data-adj="95.17">95.17</td></tr>
+    <tr><th scope="row">BM-1</th><td>—</td><td>—</td><td data-fs="3.28">3.28</td><td data-elev="99.98">99.98</td><td data-adj="100.00">100.00</td></tr>
+    <tr><th scope="row">Σ</th><td data-sum="bs">20.47</td><td>—</td><td data-sum="fs">20.49</td><td>—</td><td>—</td></tr>
+  </tbody>
+</table>
+</div>
+<p><strong>Arithmetic check.</strong> ΣBS − ΣFS = 20.47 − 20.49 = −0.02 ft, and the last elevation minus the first is 99.98 − 100.00 = −0.02 ft. The page adds up.</p>
+<p><strong>Misclosure and allowance.</strong> The loop came back 0.02 ft low. At 1,200 ft the loop is 0.227 mile, so third order allows 0.06 × √0.227 = <strong>0.029 ft</strong>. The work is inside the allowance, so it can be adjusted rather than re-run.</p>
+<p><strong>Adjustment.</strong> Four setups, so each carries 0.02 ÷ 4 = 0.005 ft of the correction, applied cumulatively: +0.005 at TP1, +0.010 at TP2, +0.015 at TP3, +0.020 at the closing shot — which lands BM-1 back on 100.00 ft exactly. Those are the adjusted elevations in the last column.</p>
+<p>The same day's two-peg test, taken before the loop:</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-peg" data-a1="5.284" data-b1="4.716" data-a2="4.958" data-b2="4.386" data-limit3="0.007" data-limit2="0.003">
+  <caption>Table 3. Two-peg test, pegs 200 ft apart (example numbers)</caption>
+  <thead><tr><th scope="col">Setup</th><th scope="col">Reading on A</th><th scope="col">Reading on B</th><th scope="col">A − B</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">① midway</th><td>5.284</td><td>4.716</td><td data-result="0.568">0.568 — true</td></tr>
+    <tr><th scope="row">② beside A</th><td>4.958</td><td>4.386</td><td data-result="0.572">0.572 — apparent</td></tr>
+  </tbody>
+</table>
+</div>
+<p>The collimation error is 0.572 − 0.568 = <strong>0.004 ft in 200 ft</strong>. That passes third order (0.007 ft) and fails second order (0.003 ft): fine for a construction loop, not fine for control work. Had it needed adjusting, the reading that should have appeared at B from setup ② is 4.958 − 0.568 = <strong>4.390 ft</strong>, and the reticle would be moved 0.004 ft to suit.</p>
+
+<h2 id="mistakes"><span class="num">9</span>Common mistakes</h2>
+<ul>
+  <li><strong>Leaving the parallax in.</strong> If the crosshair slides on the rod when you move your eye, your readings move with it. Focus the crosshairs on the sky first, every setup.</li>
+  <li><strong>Unbalanced sights.</strong> A long backsight and a short foresight let collimation error, curvature and refraction into the answer instead of cancelling them. Pace it out; keep the two within 30 ft.</li>
+  <li><strong>A rod that is not plumb.</strong> Leaning always reads high. Use the rod bubble, or wave and take the lowest reading.</li>
+  <li><strong>Moving the turning point.</strong> A TP has to be the same physical point for its foresight and its backsight — a nail head, a turning plate, the top of a firm stake. Not the loose soil beside it.</li>
+  <li><strong>Reading two digits.</strong> "4.3" is not a reading. Three digits, always, and record it before you look away from the eyepiece.</li>
+  <li><strong>Adjusting a loop that failed.</strong> The allowance decides whether you may adjust at all. Over it, the run is re-done — distributing a blunder just hides it.</li>
+  <li><strong>Skipping the peg test.</strong> It takes ten minutes and it is the only thing that finds an instrument reading level and lying.</li>
+</ul>
+
+<h2 id="takeaways"><span class="num">10</span>Key takeaways</h2>
+<ol>
+  <li>Centre the circular bubble and let the <strong>compensator</strong> finish the job — then prove it still swings freely before you read.</li>
+  <li>Every reading is <strong>three digits</strong> off a plumb rod, and the <strong>mean of the outer two wires equals the middle one</strong>.</li>
+  <li><i>HI</i> = elevation + <i>BS</i>; elevation = <i>HI</i> − <i>FS</i>. <strong>Balanced sights</strong> cancel what you cannot see.</li>
+  <li>Close the loop, check ΣBS − ΣFS, compare the misclosure with <strong>0.06 ft × √E</strong>, and adjust only if you are inside it.</li>
+</ol>
+
+<p class="ref-note">Sources: Caltrans <i>Surveys Manual</i>, Chapter 8, "Differential Leveling Survey Specifications" (2006), whose Table 8-2 supplies the third-order limits and the two-peg tolerances quoted here; university surveying laboratory notes on differential levelling and stadia, for the field-book form, the sight-length practice and the closure adjustment; and standard definitions of BS, FS, HI, TP and IFS as given in university surveying lecture notes. The videos linked in section 2 are recommended viewing and are not sources for the procedure above.</p>
+<p class="ref-note">Photo credits: <a href="https://commons.wikimedia.org/wiki/File:Survey_level_and_field_technician.jpg">Survey level and field technician</a> by Cvstr, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Level_(instrument).jpg">Level (instrument)</a> by Kskhh, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Archaeologist_Matt_Ginnever_taking_levels_at_Liverpool_Street_Worksite,_Liverpool_Street_(Crossrail_XSM10).jpg">Archaeologist taking levels at Liverpool Street</a> by Crossrail/MOLA, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Archaeologists_using_a_dumpy_level_to_survey_a_trench.jpg">Archaeologists using a dumpy level</a> by Oxford Archaeology, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Saint-%C3%89tienne_-_Rep%C3%A8re_de_nivellement_place_Jean_Plotton.jpg">Repère de nivellement, Saint-Étienne</a> by Touam, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; all via Wikimedia Commons. The photos were resized, cropped and recompressed for the web.</p>
+
+<nav class="article-nav" aria-label="Series">
+  <a class="prev" href="../"><span class="dir">← Study</span><span class="ttl">All study materials</span></a>
+  <a class="next" href="../mix-design/"><span class="dir">Related →</span><span class="ttl">Mix design</span></a>
+</nav>
+
+</article>
+</main>
+
+<footer class="site-footer">
+  <span>© <span id="year"></span> Jisoo Park. All rights reserved.</span>
+  <a href="../../">← Home</a>
+</footer>
+<script src="../article.js"></script>
+</body>
+</html>
