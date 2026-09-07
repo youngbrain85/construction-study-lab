@@ -26,6 +26,7 @@ https://cnstlab.org
 - `site/study/aggregate-gradation/` — *Sieve analysis and the fineness modulus* (`index.html` + `gradation.js` + `calc.js`); photos in `img/`
 - `site/study/slump-test/` — *The slump test, step by step* (`index.html`); photos in `img/`
 - `site/study/concrete-cylinders/` — *Concrete cylinders: from the mold to the acceptance decision* (`index.html` + `cylinders.js` + `calc.js`); photos in `img/`
+- `site/study/rebar-tension/` — *Testing reinforcing steel: the tension test* (`index.html`, static); photos in `img/`
 - `site/study/soil-compaction/` — *Compaction control: the Proctor test and field density* (`index.html` + `compaction.js` + `calc.js`); photos in `img/`
 - `site/labs/mix-design/` — Mix Design Lab module (`engine.js` scoring, `scene3d.js` three.js scenes)
 - `docs/design/mockups/` — the approved mockups the pages are built from
@@ -44,5 +45,5 @@ Then open http://localhost:8123 (the custom server serves `.js` with the right M
 ## Test
 
 ```sh
-node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs tools/layout.test.mjs tools/props.test.mjs tools/decor.test.mjs tools/compaction.test.mjs tools/cylinders.test.mjs tools/gradation.test.mjs
+node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs tools/layout.test.mjs tools/props.test.mjs tools/decor.test.mjs tools/compaction.test.mjs tools/cylinders.test.mjs tools/gradation.test.mjs tools/rebar.test.mjs
 ```

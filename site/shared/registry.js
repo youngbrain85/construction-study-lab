@@ -23,7 +23,7 @@
   ];
 
   const STUDY_GROUPS = [
-    { id: 'materials', name: 'Materials', blurb: 'Concrete, aggregates, soils, and mix design.' },
+    { id: 'materials', name: 'Materials', blurb: 'Concrete, aggregates, reinforcing steel, soils, and mix design.' },
     { id: 'surveying', name: 'Surveying', blurb: 'Leveling, traversing, and site layout.' },
   ];
 
@@ -44,6 +44,9 @@
     { id: 'concrete-cylinders', group: 'materials', type: 'page', title: 'Concrete cylinders: from the mold to the acceptance decision',
       desc: 'Making and curing test cylinders (ASTM C31), breaking them (ASTM C39), reading the fracture, and deciding acceptance the ACI 318 way — with a calculator for strength tests and the age curve.',
       href: 'concrete-cylinders/' },
+    { id: 'rebar-tension', group: 'materials', type: 'page', title: 'Testing reinforcing steel: the tension test',
+      desc: 'What ASTM A615 asks of a reinforcing bar — grade, tensile strength, elongation and the bend — how the tension test (ASTM A370) measures each, and how to read the result and the mill certificate.',
+      href: 'rebar-tension/' },
     { id: 'soil-compaction', group: 'materials', type: 'page', title: 'Compaction control: the Proctor test and field density',
       desc: 'How fill is specified and checked — the Proctor curve, sand cone and nuclear gauge tests, percent compaction, and a calculator to try it.',
       href: 'soil-compaction/' },
