@@ -345,25 +345,31 @@ const STEP_DEFS = [
       'Convert every other ingredient to absolute volume, then find the fine aggregate volume by difference.',
     render(box) {
       const d = game.design, M = E.DATA.MAT;
+      const KEYS = ['vCm', 'vWater', 'vCa', 'vAir'];
+      const WS = E.DATA.WORKSHEET_LB_PER_YD3.toLocaleString('en-US'); // 화면 공식과 엔진 상수를 한 곳에서 맞춘다
       // 이 단계를 표시할 때마다 앞 단계(3~6) 값으로 네 부피를 다시 계산해 덮어쓴다.
       // 앞 단계를 고치고 돌아와도 기본값이 항상 앞 단계와 일치한다(이 네 값은 판정에 쓰이지 않는다).
       // 단계에 머무는 동안에는 재렌더가 없으므로 학생이 직접 고친 값은 그대로 남는다.
+      const before = KEYS.map(k => d[k]);
       const V = E.absoluteVolumes(d);
-      for (const k of ['vCm', 'vWater', 'vCa', 'vAir']) if (V[k] != null) d[k] = V[k];
-      const q = (v) => (v == null ? '—' : v.toLocaleString()); // 힌트에 쓸 앞 단계 값(천 단위 구분)
+      for (const k of KEYS) if (V[k] != null) d[k] = V[k];
+      // 부피가 달라졌으면 이미 적어 둔 잔골재 값은 더 이상 그 합에서 나온 값이 아니다 —
+      // 지워서 다시 계산하게 한다(안 그러면 V_fine 줄과 모순된 채로 Review 로 넘어가 수율 점수를 잃는다).
+      if (KEYS.some((k, i) => before[i] != null && before[i] !== d[k])) d.fa = null;
+      const q = (v) => (v == null ? '—' : v.toLocaleString('en-US')); // 힌트에 쓸 앞 단계 값(식 안에 들어가므로 로캘 고정)
       box.append(
         h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin-bottom:4px' },
-          h('div', {}, h('strong', {}, 'Formula: '), 'V (cu yd) = mass ÷ (relative density × 1,685)'),
+          h('div', {}, h('strong', {}, 'Formula: '), `V (cu yd) = mass ÷ (relative density × ${WS})`),
           h('div', {}, 'V_air = air% ÷ 100'),
           h('div', {}, 'V_fine = 1.000 − ΣV'),
           h('div', { class: 'ref-note' },
             'The four volumes below are carried over from steps 3–6. Edit any of them to work the conversion yourself.')),
         numField({ label: 'Cementitious volume', key: 'vCm', unit: 'cu yd', min: 0, max: 1, step: 0.001,
-          hint: `${q(d.cement)} ÷ (${M.sgCement} × 1,685)` }),
+          hint: `${q(d.cement)} ÷ (${M.sgCement} × ${WS})` }),
         numField({ label: 'Water volume', key: 'vWater', unit: 'cu yd', min: 0, max: 1, step: 0.001,
-          hint: `${q(d.water)} ÷ (1.00 × 1,685)` }),
+          hint: `${q(d.water)} ÷ (1.00 × ${WS})` }),
         numField({ label: 'Coarse agg. volume', key: 'vCa', unit: 'cu yd', min: 0, max: 1, step: 0.001,
-          hint: `${q(d.ca)} ÷ (${M.sgCA} × 1,685)` }),
+          hint: `${q(d.ca)} ÷ (${M.sgCA} × ${WS})` }),
         numField({ label: 'Air volume', key: 'vAir', unit: 'cu yd', min: 0, max: 1, step: 0.001,
           hint: `${q(d.airPct)}% ÷ 100` }));
       // 라이브 표시줄: 요소는 여기서 한 번만 만들고, 이후 갱신은 updateWizNav() → updateVFineLine()가 담당한다

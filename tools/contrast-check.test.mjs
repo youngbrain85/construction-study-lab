@@ -35,6 +35,7 @@ test('배지 의미색 × 틴트 ≥ 4.5', () => {
   AA(T('--amber'), T('--amber-50'), 'amber badge');
   AA(T('--red'), T('--red-50'), 'red badge');
   AA(T('--primary-600'), T('--primary-50'), 'blue badge');
+  AA(T('--faint'), T('--primary-50'), 'ref-note on tint'); // 랩 공식 카드(primary-50) 안의 .ref-note 안내 문구
 });
 
 test('밝은 텍스트 × Dark/Royal ≥ 4.5', () => {

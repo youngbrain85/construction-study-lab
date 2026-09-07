@@ -239,3 +239,18 @@ EOF
 **플레이스홀더**: 없음 — 모든 코드 블록은 그대로 붙여 넣을 수 있는 완성본이다.
 
 **타입 일관성**: Task 1이 내보내는 키 `vCm`·`vWater`·`vCa`·`vAir`가 Task 2의 루프 배열·`numField` `key`·`game.design` 초기화(`index.html`의 `newRun`)와 모두 같다. 입력 키 `cement`·`water`·`ca`·`airPct`도 `game.design`의 필드명과 같아 `d`를 그대로 넘길 수 있다.
+
+---
+
+## 코드리뷰 반영 (머지 전 1회)
+
+머지 전 전체 리뷰(opus)의 지적을 반영해 아래를 추가했다. 리뷰 결론은 READY TO MERGE였고, 아래 항목 중 막는 것은 없었으나 모두 이 변경에서 비롯된 것이라 같은 브랜치에서 처리했다.
+
+- **잔골재 값 초기화 (Important)**: 네 부피 중 하나라도 달라지면 `d.fa = null`. 앞 단계를 고치고 돌아왔을 때 `V_fine` 줄과 잔골재 칸이 모순된 채 `Review mix →`가 열려 수율 점수를 조용히 잃던 경로를 막는다. 아무것도 바꾸지 않은 왕복에서는 합이 같아 잔골재 값이 남는다.
+- **대조 테스트 강화 (Important)**: `tools/study-tables.test.mjs`가 발행된 표의 값뿐 아니라 **계산식 열**도 읽어 인쇄 상수(1,685)가 들어 있는지 확인한다. 값만 같고 식이 1,684.8로 표류하는 경우를 잡는다.
+- **상수 단일화 (Minor)**: `WORKSHEET_LB_PER_YD3`를 `E.DATA`로 내보내고 `index.html`의 공식 카드·힌트 네 곳이 이 값을 참조한다.
+- **로캘 고정 (Minor)**: 힌트의 숫자는 `toLocaleString('en-US')`. 식 안에 들어가는 숫자라 브라우저 로캘에 따라 소수점·자릿점이 뒤바뀌면 안 된다.
+- **배선 가드 (Minor)**: `tools/site-guards.test.mjs`가 랩 페이지에 `E.absoluteVolumes(d)` 호출·키 목록·`d.fa = null`이 남아 있는지 확인한다(실행이 아닌 존재 확인).
+- **대비 가드 (Minor)**: `tools/contrast-check.test.mjs`에 `--faint` × `--primary-50`(공식 카드 안 안내 문구) 쌍 추가 — 실측 5.06:1로 AA 통과.
+
+검증: 게이트 90/90 통과, 헤드리스 브라우저로 세 경우 확인(잔골재 입력 → `Review` 활성 / 변경 없이 왕복 → 값 유지 / 시멘트 526→700 → 부피 갱신·잔골재 초기화·`Review` 비활성).

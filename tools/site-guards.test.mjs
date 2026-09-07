@@ -57,6 +57,15 @@ test('Study 글 사진 폴더(slump 7 · soil 6 · cylinders 7 · gradation 4 ·
   }
 });
 
+test('Mix Design Lab Step 7 이 엔진 absoluteVolumes 로 부피를 채우는 배선이 남아 있다', () => {
+  // 실행이 아니라 배선의 존재만 본다 — 이 호출이나 키 목록이 사라지면 자동 채움이 조용히 없어진다
+  const src = readFileSync(join(SITE, 'labs/mix-design/index.html'), 'utf8');
+  assert.match(src, /E\.absoluteVolumes\(d\)/, 'Step 7 prefill call missing');
+  assert.match(src, /KEYS = \['vCm', 'vWater', 'vCa', 'vAir'\]/, 'prefill key list missing');
+  for (const k of ['vCm', 'vWater', 'vCa', 'vAir']) assert.ok(src.includes(`key: '${k}'`), `numField ${k} missing`);
+  assert.match(src, /d\.fa = null/, 'stale fine-aggregate reset missing');
+});
+
 // JPEG SOF 마커에서 픽셀 크기를 읽는다 (width/height 속성 검증용)
 function jpegSize(buf) {
   let i = 2;

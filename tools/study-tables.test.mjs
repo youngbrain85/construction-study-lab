@@ -97,8 +97,12 @@ const HTML_EXAMPLE = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 
 test('#tbl-volumes: 발행된 워크 예제의 절대용적 = 엔진 absoluteVolumes(강의 예제)', () => {
   const m = HTML_EXAMPLE.match(/<table[^>]*id="tbl-volumes"[^>]*>([\s\S]*?)<\/table>/);
   assert.ok(m, 'table #tbl-volumes missing');
-  const shown = [...m[1].matchAll(/<tr><td>[^<]*<\/td><td>[^<]*<\/td><td>([\d.]+)<\/td><\/tr>/g)].map(x => parseFloat(x[1]));
+  const cells4 = [...m[1].matchAll(/<tr><td>[^<]*<\/td><td>([^<]*)<\/td><td>([\d.]+)<\/td><\/tr>/g)];
+  const shown = cells4.map(x => parseFloat(x[2]));
   const v = E.absoluteVolumes({ cement: 544, water: 299, ca: 1872, airPct: 1.5 });
   assert.deepEqual(shown, [v.vCm, v.vWater, v.vCa, v.vAir]);
   assert.deepEqual(shown, [0.102, 0.177, 0.415, 0.015]);
+  // 값만 같고 식이 다른 표류(예: 1,684.8로 바뀜)를 막는다 — 마지막 행은 공기라 상수가 없다
+  const ws = E.DATA.WORKSHEET_LB_PER_YD3.toLocaleString('en-US');
+  for (const [, calc] of cells4.slice(0, 3)) assert.ok(calc.includes(ws), `calculation "${calc}" must use ${ws}`);
 });

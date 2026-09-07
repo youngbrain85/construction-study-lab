@@ -268,7 +268,7 @@
   }
 
   const MixEngine = {
-    DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, MAT, SHAPE_FACTOR },
+    DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, MAT, SHAPE_FACTOR, WORKSHEET_LB_PER_YD3 },
     MISSIONS,
     fcrFor,
     predictSlump, classifyBehavior, mulberry32, predictStrength, cylinderStrengths,
