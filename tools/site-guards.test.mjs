@@ -78,6 +78,18 @@ function jpegSize(buf) {
   throw new Error('no SOF');
 }
 
+test('Study 목록 썸네일 8장이 360×240 이고 각 40 KB 이하다', () => {
+  const DIR = join(SITE, 'study/img');
+  const files = readdirSync(DIR);
+  assert.equal(files.length, 8, `study/img: expected 8 thumbnails, found ${files.join(', ')}`);
+  for (const name of files) {
+    assert.ok(/\.jpg$/.test(name), `study/img/${name}: only .jpg`);
+    const size = statSync(join(DIR, name)).size;
+    assert.ok(size <= 40 * 1024, `study/img/${name} is ${size} B > 40 KB`);
+    assert.deepEqual(jpegSize(readFileSync(join(DIR, name))), { w: 360, h: 240 }, `study/img/${name} must be 360×240`);
+  }
+});
+
 const ARTICLE_PAGES = ['study/mix-design/index.html', 'study/mix-design/example/index.html', 'study/slump-test/index.html', 'study/soil-compaction/index.html', 'study/concrete-cylinders/index.html', 'study/aggregate-gradation/index.html', 'study/rebar-tension/index.html', 'study/air-yield/index.html'];
 test('글 페이지의 내부 링크·이미지·스타일 경로가 파일로 존재한다', () => {
   for (const rel of ARTICLE_PAGES) {
