@@ -86,7 +86,9 @@ if (form) {
       if (c && c.ok === false) g.appendChild(el('polygon', { points: `${x},${y - 7} ${x + 7},${y} ${x},${y + 7} ${x - 7},${y}`, fill: 'var(--amber)', stroke: 'var(--dark)', 'stroke-width': 1 }));
       else g.appendChild(el('circle', { cx: x, cy: y, r: 5, fill: 'var(--royal)', stroke: 'var(--bg)', 'stroke-width': 1.5 }));
     }
-    const legend = el('text', { x: L + 8, y: T + 14, fill: 'var(--muted)' }, band.length > 1 ? 'shaded: ASTM C33 band · amber: outside the band' : 'no C33 band for this selection');
+    // 범례는 오른쪽 위에 둔다 — 왼쪽 위는 굵은 쪽 끝(통과율 100 %)이라 첫 체의 점과 늘 겹쳤다.
+    // 입도곡선은 왼쪽 위에서 오른쪽 아래로 내려가므로 오른쪽 위가 항상 비어 있다.
+    const legend = el('text', { x: R - 8, y: T + 14, 'text-anchor': 'end', fill: 'var(--muted)' }, band.length > 1 ? 'shaded: ASTM C33 band · amber: outside the band' : 'no C33 band for this selection');
     g.appendChild(legend); addHalo(g, legend);
     const bad = checks.filter(k => k.ok === false).map(k => k.label);
     svg.setAttribute('aria-label', `Grading curve: ${pts.map(r => `${r.label} ${fmt1(r.passing)} % passing`).join(', ')}; ${bad.length ? bad.join(', ') + ' outside the C33 band' : 'all sieves within the C33 band'}`);

@@ -173,8 +173,20 @@ if (form) {
     }
     $('out-reasons').textContent = res.reasons.join(' ');
     const notes = [];
-    for (const t of res.tests) if (t.rangeWide) notes.push(`Test ${t.id}: the cylinders differ by ${t.rangePct.toFixed(1)} % of their average — wider than the method's usual spread (about ${RANGE_LIMIT[inp.size]} %); check that test before using it.`);
-    for (const i of inp.short) notes.push(`Test ${i} has fewer cylinders than a ${inp.size === '4x8' ? '4 × 8 test needs (three)' : '6 × 12 test needs (two)'}.`);
+    // 시험마다 같은 문장을 반복하지 않고, 설명은 한 번만 하고 시험 번호를 나열한다("Tests 1, 2 and 4 …")
+    const listOf = (arr) => (arr.length === 1 ? String(arr[0]) : `${arr.slice(0, -1).join(', ')} and ${arr[arr.length - 1]}`);
+    const wide = res.tests.filter(t => t.rangeWide);
+    if (wide.length) {
+      const one = wide.length === 1;
+      const list = listOf(wide.map(t => `${t.id} (${t.rangePct.toFixed(1)} %)`));
+      notes.push(`${one ? 'Test' : 'Tests'} ${list} ${one ? 'has' : 'have'} cylinders differing by more than the method's usual spread `
+        + `(about ${RANGE_LIMIT[inp.size]} % of the average); check ${one ? 'that test' : 'those tests'} before using ${one ? 'it' : 'them'}.`);
+    }
+    if (inp.short.length) {
+      const one = inp.short.length === 1;
+      notes.push(`${one ? 'Test' : 'Tests'} ${listOf(inp.short)} ${one ? 'has' : 'have'} fewer cylinders than a `
+        + `${inp.size === '4x8' ? '4 × 8 test needs (three)' : '6 × 12 test needs (two)'}.`);
+    }
     if (res.tests.length < 3) notes.push('Criterion (a) needs at least three consecutive tests.');
     $('out-notes').textContent = notes.join(' ');
     const coeff = AGE_COEFF[inp.cement], curve = ageCurve(inp.f28, coeff, DAYS);
