@@ -489,6 +489,10 @@ Block B:
 <h2 id="curve"><span class="num">5</span>Reading the grading curve</h2>
 <p>Percent passing plotted against sieve opening is the grading curve. Openings are plotted on a logarithmic scale because the sieves double in size from one to the next, which turns the standard series into evenly spaced marks.</p>
 <figure>
+  <img src="img/gravel.jpg" width="1200" height="900" alt="Close-up of a natural mix of sand and gravel with particles of many sizes" loading="lazy">
+  <figcaption>A pit-run mix before it is sorted: sand, gravel and everything between — the raw material a sieve analysis separates into sizes. Photo: Sabina Bajracharya, Wikimedia Commons, CC BY-SA 4.0.</figcaption>
+</figure>
+<figure>
 <svg class="fig-svg" viewBox="0 0 720 340" role="img" aria-labelledby="fig3-title">
   <title id="fig3-title">Three grading curves on the ASTM C33 fine-aggregate band: well graded, gap graded, uniformly graded</title>
   <g font-family="var(--font-mono)" font-weight="500" font-size="11" fill="var(--muted)">
