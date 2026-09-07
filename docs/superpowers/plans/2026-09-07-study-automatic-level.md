@@ -236,7 +236,7 @@ Block A:
   <img src="img/observing.jpg" width="1200" height="847" alt="A surveyor in a hard hat and high-visibility jacket sighting through a level mounted on a tripod" loading="lazy">
   <figcaption>At the eyepiece. The reading is whatever the horizontal crosshair cuts on the rod. Photo: Crossrail/MOLA, Wikimedia Commons, CC BY 4.0.</figcaption>
 </figure>
-<p>A US levelling rod is graduated in <strong>feet, tenths and hundredths</strong>. Read it in that order: the foot number below the crosshair, the tenth below it, then estimate the hundredth from the small blocks. Write down all three digits every time — <span class="mono">4.32</span>, never <span class="mono">4.3</span>.</p>
+<p>A US levelling rod is graduated in <strong>feet, tenths and hundredths</strong>. Read it in that order: the foot number below the crosshair, the tenth below it, then estimate the hundredth from the small blocks. Write down all three digits every time — <strong>4.32</strong>, never <strong>4.3</strong>.</p>
 <p>The reticle carries <strong>three horizontal wires</strong>. The middle one is the reading. The upper and lower ones — the stadia wires — give you the distance to the rod, which is how you keep your sights balanced without a tape:</p>
 <div class="eq"><i>D</i> = 100 × (upper − lower)</div>
 <figure>
@@ -381,10 +381,10 @@ Block B:
 </figure>
 <ol class="steps">
   <li>Drive two pegs, A and B, about 200 ft apart on reasonably flat ground.</li>
-  <li><strong>Setup ①, midway.</strong> Read the rod on A and on B. The difference <span class="mono">a₁ − b₁</span> is the <em>true</em> difference in elevation, because equal sight lengths cancel any tilt.</li>
-  <li><strong>Setup ②, beside A.</strong> Move the instrument a few feet behind A and read both pegs again. The difference <span class="mono">a₂ − b₂</span> is what the instrument <em>says</em>, with the tilt acting over the full 200 ft on the B sight.</li>
-  <li><strong>Compare.</strong> The collimation error is <span class="mono">(a₂ − b₂) − (a₁ − b₁)</span>, expressed as feet in 200 ft. Third order allows 0.007 ft; second order, 0.003 ft.</li>
-  <li><strong>If it fails,</strong> the reading that <em>should</em> appear at B from setup ② is <span class="mono">a₂ − (a₁ − b₁)</span>. Adjust the reticle to that reading following the maker's instructions, then run the test again to prove it.</li>
+  <li><strong>Setup ①, midway.</strong> Read the rod on A and on B. The difference <strong>a₁ − b₁</strong> is the <em>true</em> difference in elevation, because equal sight lengths cancel any tilt.</li>
+  <li><strong>Setup ②, beside A.</strong> Move the instrument a few feet behind A and read both pegs again. The difference <strong>a₂ − b₂</strong> is what the instrument <em>says</em>, with the tilt acting over the full 200 ft on the B sight.</li>
+  <li><strong>Compare.</strong> The collimation error is <strong>(a₂ − b₂) − (a₁ − b₁)</strong>, expressed as feet in 200 ft. Third order allows 0.007 ft; second order, 0.003 ft.</li>
+  <li><strong>If it fails,</strong> the reading that <em>should</em> appear at B from setup ② is <strong>a₂ − (a₁ − b₁)</strong>. Adjust the reticle to that reading following the maker's instructions, then run the test again to prove it.</li>
 </ol>
 
 <h2 id="example"><span class="num">8</span>Worked example</h2>
@@ -459,7 +459,7 @@ Block B:
 <!-- END BLOCK B -->
 ```
 
-- [ ] **Step 2** `.mono` 클래스가 `article.css`·`theme.css`에 있는지 `grep -n "\.mono" site/study/article.css site/shared/theme.css` 로 확인한다. 없으면 본문의 `<span class="mono">…</span>` 세 곳을 `<strong>…</strong>` 로 바꾸고 그 사실을 보고한다(새 CSS 를 만들지 않는다).
+- [ ] **Step 2** 새 CSS 를 만들지 않는다. 사이트에 `.mono`·`<code>` 관용이 없어 블록 A/B 의 인라인 강조는 모두 `<strong>` 으로 적혀 있다 — 그대로 옮기면 된다.
 
 - [ ] **Step 3** `tools/leveling.test.mjs` 작성:
 
