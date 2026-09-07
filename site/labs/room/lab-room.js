@@ -265,13 +265,14 @@ function presetOrbit() {
   return { yawDeg: o.yawDeg, pitchDeg: o.pitchDeg, zoom: 1 };
 }
 function setOrbit(next) { orbit = next; applyCamera(); renderOnce(); } // 범위 클램프는 fitCamera 가 한다
-function resetView() { if (!orbit) return; orbit = null; markInput(); applyCamera(); renderOnce(); }
+function resetView() { if (!orbit || dolly) return; orbit = null; markInput(); applyCamera(); renderOnce(); }
+const inViewport = (x, y) => { const r = viewport.getBoundingClientRect(); return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom; };
 
 function bindEvents() {
   let down = null;
   viewport.addEventListener('pointermove', (e) => {
     markInput();
-    if (down && !dolly) { // 드래그 = 시점 회전 (마우스·터치 공통)
+    if (down && e.pointerId === down.id && !dolly) { // 드래그 = 시점 회전 (마우스·터치 공통, 첫 포인터만)
       if (!orbiting && Math.hypot(e.clientX - down.x, e.clientY - down.y) < DRAG_DEADZONE) return; // 클릭과 갈리는 8 px 전에는 가만히 둔다
       orbiting = true;
       const dx = e.clientX - down.last.x, dy = e.clientY - down.last.y;
@@ -291,25 +292,30 @@ function bindEvents() {
   viewport.addEventListener('pointerleave', () => { if (down) return; pendingHover = { key: null }; pendingPointer = null; markInput(); });
   viewport.addEventListener('pointerdown', (e) => {
     markInput();
+    if (down) return; // 두 번째 손가락·버튼은 무시한다 — 안 그러면 두 포인터 사이 거리가 회전량으로 들어간다
     const onLabel = e.target && e.target.closest && e.target.closest('.station-label'); // 라벨은 자기 click 핸들러가 처리
     // 우클릭·수정키 클릭은 브라우저 기본 동작(컨텍스트 메뉴·새 탭)에 맡긴다
-    down = (e.button === 0 && !onLabel) ? { x: e.clientX, y: e.clientY, last: { x: e.clientX, y: e.clientY } } : null;
+    const plain = e.button === 0 && !onLabel && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey;
+    down = plain ? { id: e.pointerId, x: e.clientX, y: e.clientY, last: { x: e.clientX, y: e.clientY } } : null;
     // 뷰포트 밖으로 나가도 드래그가 이어지게 포인터를 잡아둔다(놓을 때 해제)
     if (down && viewport.setPointerCapture) { try { viewport.setPointerCapture(e.pointerId); } catch (err) { /* 캡처 실패는 무시 — 회전만 뷰포트 안으로 제한된다 */ } }
   });
   viewport.addEventListener('pointerup', (e) => {
+    if (down && e.pointerId !== down.id) return; // 드래그 중인 포인터가 아니면 관여하지 않는다
     if (viewport.releasePointerCapture && viewport.hasPointerCapture && viewport.hasPointerCapture(e.pointerId)) viewport.releasePointerCapture(e.pointerId);
     const wasOrbiting = orbiting; orbiting = false;
     if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) { down = null; return; }
     if (!down) return;
     const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
-    if (wasOrbiting || moved >= DRAG_DEADZONE) return;
+    if (wasOrbiting) { pendingPointer = { x: e.clientX, y: e.clientY }; return; } // 회전이 끝나면 호버를 다시 계산한다
+    // 포인터를 잡아둔 상태에서는 뷰포트 밖에서 놓일 수 있다 — 밖이면 스테이션을 열지 않는다
+    if (moved >= DRAG_DEADZONE || !inViewport(e.clientX, e.clientY)) return;
     const key = keyAt(e.clientX, e.clientY);
     if (key) activate(key);
   });
-  viewport.addEventListener('pointercancel', () => { down = null; orbiting = false; });
+  viewport.addEventListener('pointercancel', (e) => { if (down && e.pointerId !== down.id) return; down = null; orbiting = false; });
   viewport.addEventListener('wheel', (e) => { // 휠 = 줌. 랩 페이지는 한 화면이라 스크롤을 뺏지 않는다
-    if (dolly) return;
+    if (dolly || e.ctrlKey) return; // ctrl+휠(트랙패드 핀치)은 브라우저 페이지 확대에 맡긴다
     e.preventDefault();
     markInput();
     const b = orbit || presetOrbit();

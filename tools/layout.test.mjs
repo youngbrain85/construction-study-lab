@@ -34,11 +34,12 @@ test('fitCamera: 모든 aspect 에서 BOUNDS 꼭짓점 8개가 NDC [-1,1] 안', 
   }
 });
 
-test('fitCamera: 인자 없는 호출 = 빈 opts, 기본 각도는 클램프에 걸리지 않는다', () => {
+test('fitCamera: 프리셋을 명시로 넘겨도 인자 없는 호출과 같다(기본 구도 불변)', () => {
   for (const aspect of [0.6, 1.0, 1.6, 2.2]) {
-    assert.deepEqual(L.fitCamera(aspect, {}), L.fitCamera(aspect), `aspect ${aspect}`);
-    const fit = L.fitCamera(aspect), o = L.CAMERA[L.orientationFor(aspect)];
-    assert.equal(fit.yawDeg, o.yawDeg); assert.equal(fit.pitchDeg, o.pitchDeg); assert.equal(fit.zoom, 1);
+    const base = L.fitCamera(aspect), o = L.CAMERA[L.orientationFor(aspect)];
+    assert.equal(base.yawDeg, o.yawDeg); assert.equal(base.pitchDeg, o.pitchDeg); assert.equal(base.zoom, 1);
+    // opts 경로가 프리셋 경로를 그대로 재현해야 한다 — 기존 캡처·구도가 바뀌면 안 된다
+    assert.deepEqual(L.fitCamera(aspect, { yawDeg: o.yawDeg, pitchDeg: o.pitchDeg, zoom: 1 }), base, `aspect ${aspect}`);
   }
 });
 
@@ -59,12 +60,17 @@ test('fitCamera: 줌은 타깃을 두고 거리만 배율만큼 줄인다', () =
   }
 });
 
-test('회전 범위 전체에서 스테이션 5곳이 화면 안에 남는다 (zoom 1)', () => {
+test('회전 범위 안에서는 카메라가 열린 남동 사분면을 벗어나지 않고 스테이션 5곳이 화면에 남는다', () => {
   const { yaw, pitch } = L.CAMERA.orbit;
   for (const aspect of [0.6, 1.6]) {
     for (let y = yaw[0]; y <= yaw[1]; y += 15) {
       for (let p = pitch[0]; p <= pitch[1]; p += 13) {
         const fit = L.fitCamera(aspect, { yawDeg: y, pitchDeg: p });
+        // 방은 북(z-min)·서(x-min) 두 벽뿐이다. 카메라가 그 밖으로 나가면 벽이 시야를 막는다 —
+        // 이 조건이 yaw 범위 [0, 90] 을 실제로 지킨다(범위를 넓히면 여기서 깨진다).
+        assert.ok(fit.position.x >= L.ROOM.xMin && fit.position.z >= L.ROOM.zMin,
+          `camera behind a wall at yaw ${y} pitch ${p}: (${fit.position.x.toFixed(2)}, ${fit.position.z.toFixed(2)})`);
+        assert.ok(fit.position.y > 1, `camera below eye height at yaw ${y} pitch ${p}: ${fit.position.y.toFixed(2)}`);
         for (const st of L.STATIONS) {
           const q = L.projectPoint(fit, aspect, { x: st.center.x, y: 0.9, z: st.center.z });
           assert.ok(q.depth > 0 && Math.abs(q.nx) <= 1 && Math.abs(q.ny) <= 1,

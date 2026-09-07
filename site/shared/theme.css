@@ -245,7 +245,8 @@ body.room-page { min-height:0; height:100vh; height:100dvh; overflow:hidden; } /
 }
 @media (max-height:640px) { /* 가로로 눕힌 폰·낮은 창: 방 420px 고정, 페이지 자연 스크롤 */
   body.room-page { height:auto; min-height:100dvh; overflow:auto; }
-  .room-viewport { flex:none; height:420px; }
+  .room-viewport { flex:none; height:420px;
+    touch-action:pan-y; } /* 이 구간은 페이지가 스크롤되므로 세로 드래그는 스크롤에 양보한다(가로 드래그로 시점 회전) */
 }
 @media (max-width:700px) {
   .room-caption { left:20px; top:18px; }
