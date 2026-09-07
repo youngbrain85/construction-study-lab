@@ -44,8 +44,8 @@ test('Study 사진 4장이 존재하고 용량 예산 안이다', () => {
   }
 });
 
-test('Study 글 사진 폴더(slump 7 · soil 6 · cylinders 7 · gradation 4 · rebar 6)의 모든 파일이 .jpg 이고 각 220 KB 이하다', () => {
-  const dirs = { 'study/slump-test/img': 7, 'study/soil-compaction/img': 6, 'study/concrete-cylinders/img': 7, 'study/aggregate-gradation/img': 4, 'study/rebar-tension/img': 6 };
+test('Study 글 사진 폴더(slump 7 · soil 6 · cylinders 7 · gradation 4 · rebar 6 · air 3)의 모든 파일이 .jpg 이고 각 220 KB 이하다', () => {
+  const dirs = { 'study/slump-test/img': 7, 'study/soil-compaction/img': 6, 'study/concrete-cylinders/img': 7, 'study/aggregate-gradation/img': 4, 'study/rebar-tension/img': 6, 'study/air-yield/img': 3 };
   for (const [rel, count] of Object.entries(dirs)) {
     const files = readdirSync(join(SITE, rel));
     assert.equal(files.length, count, `${rel}: expected ${count} photos, found ${files.join(', ')}`);
