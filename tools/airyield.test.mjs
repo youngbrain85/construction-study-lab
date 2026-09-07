@@ -65,7 +65,7 @@ test('예제의 배치 질량이 사이트 앵커 배합·엔진의 무공기 �
   assert.equal(perYd3, 4007, 'anchor mix mass per cu yd');
   assert.equal(W, Yd * perYd3, 'batch mass = ordered × mass per cu yd');
   // 엔진의 수율 계산에서 공기를 뺀 부피가 본문의 26.60 cu ft 와 같아야 한다
-  const airFree = E.computeYield({ ...anchor, fa: anchor.fa }) - 27 * (anchor.airPct / 100);
+  const airFree = E.computeYield(anchor) - 27 * (anchor.airPct / 100);
   assert.ok(Math.abs(airFree - 26.60) < 0.02, `air-free volume ${airFree}`);
   assert.ok(HTML.includes('26.60 cu ft'), 'the page states the air-free volume');
   assert.equal(Number(attr(t.attrs, 'data-cement')), Yd * anchor.cement, 'cement on the ticket');
@@ -87,8 +87,32 @@ test('산문·수식에만 있는 숫자도 표의 입력에서 나온 값과 �
     String(Math.round(Nt / Y)),                                  // 반올림 전 수율로 계산한 532
     String(Math.round(Nt / (Math.round(Y * 100) / 100))),        // 반올림된 8.19 로 나눈 531
   ];
-  for (const s of shown) assert.ok(HTML.includes(s), `prose is missing ${s}`);
+  const PROSE = HTML.replace(/<table[\s\S]*?<\/table>/g, '');   // 표 밖(산문·수식)에만 있는지 본다
+  for (const s of shown) assert.ok(PROSE.includes(s), `prose is missing ${s}`);
   // 두 밀도의 차이를 본문이 직접 말한다 — 표와 어긋나면 실패한다
   const diff = (Math.round((dA - dB) * 10) / 10).toFixed(1);
-  assert.ok(HTML.includes(`${diff} lb per cubic foot lighter`), `prose density difference: expected "${diff} lb per cubic foot lighter"`);
+  assert.ok(PROSE.includes(`${diff} lb per cubic foot lighter`), `prose density difference: expected "${diff} lb per cubic foot lighter"`);
+});
+
+test('Figure 3: 막대 폭이 표의 입력에서 나온 부피와 축척 16 px/cu ft 로 맞는다', () => {
+  const t = table('tbl-example');
+  const W = Number(attr(t.attrs, 'data-materials')), Yd = Number(attr(t.attrs, 'data-ordered'));
+  const designAir = Number(attr(t.attrs, 'data-design-air'));
+  const rows = bodyRows(t);
+  const dA = Number(attr(rows[0][1].attrs, 'data-density')), dB = Number(attr(rows[0][2].attrs, 'data-density'));
+  const perYd3 = W / Yd, materials = 27 * (1 - designAir / 100), SCALE = 16;
+  const svg = HTML.match(/<svg[^>]*aria-labelledby="fig3-title"[\s\S]*?<\/svg>/);
+  assert.ok(svg, 'figure 3 svg missing');
+  const rects = [...svg[0].matchAll(/<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)"/g)]
+    .map(m => ({ y: Number(m[2]), w: Number(m[3]) }));
+  const barA = rects.filter(r => r.y === 62), barB = rects.filter(r => r.y === 140);
+  assert.equal(barA.length, 5, 'bar A: four material segments and the air sliver');
+  assert.equal(barB.length, 2, 'bar B: one material block and the air sliver');
+  const sum = a => a.reduce((s, r) => s + r.w, 0);
+  const near = (px, ft3, msg) => assert.ok(Math.abs(px / SCALE - ft3) < 0.02, `${msg}: ${px / SCALE} vs ${ft3}`);
+  near(sum(barA), perYd3 / dA, 'bar A total');                                  // 27.00 cu ft
+  near(sum(barB), perYd3 / dB, 'bar B total');                                  // 27.63 cu ft
+  near(sum(barA) - barA[4].w, materials, 'bar A materials');                    // 공기를 뺀 26.60 cu ft
+  near(sum(barB) - barB[1].w, materials, 'bar B materials');                    // 두 막대의 재료 블록은 같다
+  assert.ok(barB[1].w > barA[4].w, 'the air sliver is wider in the lighter load');
 });
