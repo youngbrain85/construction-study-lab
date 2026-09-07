@@ -8,7 +8,9 @@
 
 한 줄에 다 걸려 있습니다. 목록이 `Materials` 한 그룹에 여덟 편을 쌓아두고, 제목은 글 자체의 h1보다 길고("Concrete cylinders: from the mold to the acceptance decision" vs h1 "Concrete cylinders"), 설명문은 두세 줄짜리 문장이며, 왼쪽 첫 칸은 여덟 줄 모두 똑같은 `PAGE` 배지입니다. 목록을 훑어서 원하는 글을 찾기 어렵습니다.
 
-## 2. 제목 — 규칙은 "목록 제목 = 그 글의 h1"
+## 2. 제목 — 카드에서 한 줄에 들어가게 30자 이하
+
+여덟 중 넷은 그 글의 h1 을 그대로 쓰고(Air content and unit weight, Concrete cylinders, Sieve analysis, Compaction control), 나머지 넷은 h1 보다도 더 줄입니다(h1 "How to design a concrete mix" → 카드 "Mix design"). 규칙은 h1 일치가 아니라 **길이 상한**이고, `tools/registry.test.mjs`가 제목 30자·설명 90자를 강제합니다.
 
 | id | 지금 | 바꿈 |
 |---|---|---|

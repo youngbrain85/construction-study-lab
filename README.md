@@ -10,7 +10,7 @@ https://cnstlab.org
 
 - `/` — home: one screen with two doors, **Lab** and **Study**
 - `/labs/` — Lab section: a one-screen 3D lab room (fixed top-down view; hover a station, click to enter). Falls back to the text list when WebGL is unavailable
-- `/study/` — Study section: notes, reference tables, worked examples (Materials, Surveying)
+- `/study/` — Study section: notes, reference tables, worked examples, grouped by material (Concrete, Aggregates, Reinforcing steel, Soils, Surveying)
 - `/labs/mix-design/` — Mix Design Lab module
 
 ## Structure
@@ -22,6 +22,7 @@ https://cnstlab.org
 - `site/shared/dom.js` — shared DOM builder (`window.h`) used by the section pages
 - `site/shared/theme.css` — design tokens and shared components (ISU brand palette and type)
 - `site/study/article.css`, `site/study/article.js` — shared layout for study articles (hero, sticky contents, callouts, equations, tables)
+- `site/study/img/` — 360×240 card thumbnails for the Study index, made by `tools/prep-study-thumbs.py`
 - `site/study/mix-design/` — *Concrete mix design*, part 1 (method) and part 2 (worked example); photos in `img/`, prepared by `tools/prep-study-images.py`
 - `site/study/aggregate-gradation/` — *Sieve analysis and the fineness modulus* (`index.html` + `gradation.js` + `calc.js`); photos in `img/`
 - `site/study/slump-test/` — *The slump test, step by step* (`index.html`); photos in `img/`
@@ -33,7 +34,11 @@ https://cnstlab.org
 - `docs/design/mockups/` — the approved mockups the pages are built from
 
 **Add a lab:** the room already has a station for each lab (`station` = `mix` | `soil` | `steel` | `wood` | `survey`). Create `site/labs/<id>/`, then fill in that station's `LABS` entry in `site/shared/registry.js` (`href`, `desc`, `meta`, `active: true`) — the station lights up and links to it.
-**Add study material:** add one entry to `MATERIALS` (`type` = `pdf` | `link` | `page`, `group` = `materials` or `surveying`). For a `page`, create `site/study/<id>/index.html` from `site/study/mix-design/index.html` as the template (link `article.css` and `article.js`, keep the contents `<nav class="toc">` in sync with the `h2` ids) and set `href` to `<id>/`.
+**Add study material:** add one entry to `MATERIALS` (`type` = `pdf` | `link` | `page`, `group` = `concrete` | `aggregate` | `steel` | `soils` | `surveying`). For a `page`:
+1. Create `site/study/<id>/index.html` from `site/study/mix-design/index.html` as the template (link `article.css` and `article.js`, keep the contents `<nav class="toc">` in sync with the `h2` ids) and set `href` to `<id>/`.
+2. Make the card thumbnail: add the job to `tools/prep-study-thumbs.py` and run it — `site/study/img/<id>.jpg`, 360×240, ≤ 40 KB — then set `thumb: 'img/<id>.jpg'`. Bump the expected count in the thumbnail guard (`tools/site-guards.test.mjs`).
+3. Keep the card short: `title` ≤ 30 characters, `desc` ≤ 90 (enforced by `tools/registry.test.mjs`).
+4. If the thumbnail's photo needs attribution (CC BY / BY-SA), add the photographer to the credits paragraph at the foot of `site/study/index.html`.
 
 ## Dev
 

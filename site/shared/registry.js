@@ -32,7 +32,8 @@
   ];
 
   // { id, group, type:'pdf'|'link'|'page', title, desc, href, thumb } — 비어 있는 그룹은 페이지가 Coming soon 행을 그린다.
-  // 제목은 그 글의 h1 과 같게, desc 는 카드에서 두 줄을 넘지 않게 한 줄로. thumb 는 site/study/ 기준 상대경로.
+  // 제목은 카드에서 한 줄에 들어가게 30자 이하로(글 안의 h1 보다 짧아도 된다), desc 는 한 줄 90자 이하.
+  // thumb 는 site/study/ 기준 상대경로 — 360×240·40 KB 이하, tools/prep-study-thumbs.py 로 만든다.
   const MATERIALS = [
     { id: 'mix-design-1', group: 'concrete', type: 'page', title: 'Mix design',
       desc: 'The ten-step ACI 211.1 workflow, from slump to trial batch.',

@@ -26,7 +26,8 @@ test('site/ 어디에도 대문자 과목 코드 CNST 가 없다', () => {
 test('article.css 와 글 페이지는 theme.css 토큰만 쓴다(리터럴 색 없음)', () => {
   const files = ['study/article.css', 'study/mix-design/index.html', 'study/mix-design/example/index.html', 'study/slump-test/index.html',
     'study/soil-compaction/index.html', 'study/soil-compaction/calc.js', 'study/concrete-cylinders/index.html', 'study/concrete-cylinders/calc.js',
-    'study/aggregate-gradation/index.html', 'study/aggregate-gradation/calc.js', 'study/rebar-tension/index.html', 'study/air-yield/index.html'];
+    'study/aggregate-gradation/index.html', 'study/aggregate-gradation/calc.js', 'study/rebar-tension/index.html', 'study/air-yield/index.html',
+    'study/index.html'];
   for (const rel of files) {
     const src = readFileSync(join(SITE, rel), 'utf8');
     assert.deepEqual(src.match(/#[0-9a-fA-F]{3,8}\b/g) || [], [], `${rel} has literal colours`);
