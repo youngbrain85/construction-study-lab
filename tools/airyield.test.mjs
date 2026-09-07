@@ -70,3 +70,25 @@ test('예제의 배치 질량이 사이트 앵커 배합·엔진의 무공기 �
   assert.ok(HTML.includes('26.60 cu ft'), 'the page states the air-free volume');
   assert.equal(Number(attr(t.attrs, 'data-cement')), Yd * anchor.cement, 'cement on the ticket');
 });
+
+test('산문·수식에만 있는 숫자도 표의 입력에서 나온 값과 같다', () => {
+  const t = table('tbl-example');
+  const W = Number(attr(t.attrs, 'data-materials')), Yd = Number(attr(t.attrs, 'data-ordered'));
+  const Nt = Number(attr(t.attrs, 'data-cement')), designAir = Number(attr(t.attrs, 'data-design-air'));
+  const T = W / (Yd * 27 * (1 - designAir / 100));
+  const rows = bodyRows(t);
+  const dA = Number(attr(rows[0][1].attrs, 'data-density')), dB = Number(attr(rows[0][2].attrs, 'data-density'));
+  const Y = W / dB / 27;
+  const shown = [
+    W.toLocaleString('en-US'),                                   // 배치 재료 합계 32,056 lb
+    Nt.toLocaleString('en-US'),                                  // 결합재 4,352 lb
+    (Math.round(T * 10) / 10).toFixed(1),                        // 이론밀도 150.7
+    (Math.round(Y * 100) / 100).toFixed(2),                      // Load B 수율 8.19
+    String(Math.round(Nt / Y)),                                  // 반올림 전 수율로 계산한 532
+    String(Math.round(Nt / (Math.round(Y * 100) / 100))),        // 반올림된 8.19 로 나눈 531
+  ];
+  for (const s of shown) assert.ok(HTML.includes(s), `prose is missing ${s}`);
+  // 두 밀도의 차이를 본문이 직접 말한다 — 표와 어긋나면 실패한다
+  const diff = (Math.round((dA - dB) * 10) / 10).toFixed(1);
+  assert.ok(HTML.includes(`${diff} lb per cubic foot lighter`), `prose density difference: expected "${diff} lb per cubic foot lighter"`);
+});
