@@ -21,6 +21,10 @@ export const CAMERA = {
   targetY: 0.8,
   landscape: { yawDeg: 35, pitchDeg: 46, fovDeg: 36, margin: 1.08 }, // aspect ≥ 1: 앞쪽 오른쪽(남동) 위에서
   portrait:  { yawDeg: 80, pitchDeg: 55, fovDeg: 52, margin: 1.04 }, // aspect < 1: 마당 쪽(동) 끝에서, 넓은 fov
+  // 마우스 조작 허용 범위. 방은 북(z-min)·서(x-min) 두 벽뿐이고 남동 사분면이 열려 있으므로,
+  // yaw 를 정남(0°)~정동(90°)으로 자르면 벽이 카메라와 방 사이로 들어오지 않는다.
+  // pitch 는 눈높이(15°)와 평면도(80°) 사이, zoom 은 1.0 이 "방 전체가 들어오는" 기본 거리.
+  orbit: { yaw: [0, 90], pitch: [15, 80], zoom: [0.85, 2.2] },
 };
 
 const UP = { x: 0, y: 1, z: 0 };
@@ -30,6 +34,7 @@ const cross = (a, b) => ({ x: a.y * b.z - a.z * b.y, y: a.z * b.x - a.x * b.z, z
 const sub = (a, b) => ({ x: a.x - b.x, y: a.y - b.y, z: a.z - b.z });
 const scale = (a, s) => ({ x: a.x * s, y: a.y * s, z: a.z * s });
 const norm = (a) => { const l = Math.hypot(a.x, a.y, a.z) || 1; return scale(a, 1 / l); };
+const clampTo = (v, [lo, hi]) => Math.min(hi, Math.max(lo, v));
 
 export function orientationFor(aspect) { return aspect < 1 ? 'portrait' : 'landscape'; }
 
@@ -60,7 +65,12 @@ export function boundsCorners(b = BOUNDS) {
 export function fitCamera(aspect, opts = {}) {
   const o = CAMERA[orientationFor(aspect)];
   const bounds = opts.bounds || BOUNDS;
-  const dir = viewDir(o.yawDeg, o.pitchDeg);
+  // 마우스 조작(스펙 §3): 각도·줌은 여기서 한 번 클램프한다 — 화면 코드는 범위를 몰라도 된다.
+  // 인자를 주지 않으면 방위 프리셋 그대로여서 기존 구도가 바뀌지 않는다.
+  const yawDeg = clampTo(opts.yawDeg ?? o.yawDeg, CAMERA.orbit.yaw);
+  const pitchDeg = clampTo(opts.pitchDeg ?? o.pitchDeg, CAMERA.orbit.pitch);
+  const zoom = clampTo(opts.zoom ?? 1, CAMERA.orbit.zoom);
+  const dir = viewDir(yawDeg, pitchDeg);
   const { f, r, u } = cameraBasis(dir);
   const tanV = Math.tan(rad(o.fovDeg) / 2), tanH = tanV * aspect;
   const corners = boundsCorners(bounds);
@@ -93,8 +103,9 @@ export function fitCamera(aspect, opts = {}) {
     target = { x: target.x + r.x * sx + u.x * sy, y: target.y + r.y * sx + u.y * sy, z: target.z + r.z * sx + u.z * sy };
     d = fitDistance(target);
   }
+  d /= zoom; // 재중심이 끝난 뒤에만 줌을 적용한다 — 타깃은 그대로 두고 다가가므로 화면이 자연스럽게 잘린다
   const position = { x: target.x + dir.x * d, y: target.y + dir.y * d, z: target.z + dir.z * d };
-  return { position, target, dir, fovDeg: o.fovDeg, distance: d };
+  return { position, target, dir, fovDeg: o.fovDeg, distance: d, yawDeg, pitchDeg, zoom };
 }
 
 // 원근 투영 (테스트·검증용. 브라우저는 three.js Vector3.project 를 쓰며 같은 결과여야 한다)

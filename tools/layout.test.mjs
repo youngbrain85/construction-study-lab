@@ -34,6 +34,47 @@ test('fitCamera: 모든 aspect 에서 BOUNDS 꼭짓점 8개가 NDC [-1,1] 안', 
   }
 });
 
+test('fitCamera: 인자 없는 호출 = 빈 opts, 기본 각도는 클램프에 걸리지 않는다', () => {
+  for (const aspect of [0.6, 1.0, 1.6, 2.2]) {
+    assert.deepEqual(L.fitCamera(aspect, {}), L.fitCamera(aspect), `aspect ${aspect}`);
+    const fit = L.fitCamera(aspect), o = L.CAMERA[L.orientationFor(aspect)];
+    assert.equal(fit.yawDeg, o.yawDeg); assert.equal(fit.pitchDeg, o.pitchDeg); assert.equal(fit.zoom, 1);
+  }
+});
+
+test('fitCamera: yaw·pitch·zoom 이 허용 범위로 클램프된다', () => {
+  const { yaw, pitch, zoom } = L.CAMERA.orbit;
+  const lo = L.fitCamera(1.6, { yawDeg: yaw[0] - 40, pitchDeg: pitch[0] - 30, zoom: zoom[0] - 0.5 });
+  assert.deepEqual([lo.yawDeg, lo.pitchDeg, lo.zoom], [yaw[0], pitch[0], zoom[0]]);
+  const hi = L.fitCamera(1.6, { yawDeg: yaw[1] + 40, pitchDeg: pitch[1] + 30, zoom: zoom[1] + 2 });
+  assert.deepEqual([hi.yawDeg, hi.pitchDeg, hi.zoom], [yaw[1], pitch[1], zoom[1]]);
+});
+
+test('fitCamera: 줌은 타깃을 두고 거리만 배율만큼 줄인다', () => {
+  const base = L.fitCamera(1.6, { yawDeg: 40, pitchDeg: 45 });
+  for (const z of [0.85, 0.9, 1.5, 2.2]) {
+    const f = L.fitCamera(1.6, { yawDeg: 40, pitchDeg: 45, zoom: z });
+    assert.ok(Math.abs(f.distance - base.distance / z) < 1e-9, `distance at zoom ${z}: ${f.distance} vs ${base.distance / z}`);
+    assert.deepEqual(f.target, base.target, `target moved at zoom ${z}`);
+  }
+});
+
+test('회전 범위 전체에서 스테이션 5곳이 화면 안에 남는다 (zoom 1)', () => {
+  const { yaw, pitch } = L.CAMERA.orbit;
+  for (const aspect of [0.6, 1.6]) {
+    for (let y = yaw[0]; y <= yaw[1]; y += 15) {
+      for (let p = pitch[0]; p <= pitch[1]; p += 13) {
+        const fit = L.fitCamera(aspect, { yawDeg: y, pitchDeg: p });
+        for (const st of L.STATIONS) {
+          const q = L.projectPoint(fit, aspect, { x: st.center.x, y: 0.9, z: st.center.z });
+          assert.ok(q.depth > 0 && Math.abs(q.nx) <= 1 && Math.abs(q.ny) <= 1,
+            `${st.key} at yaw ${y} pitch ${p} aspect ${aspect} → ${q.nx.toFixed(3)}, ${q.ny.toFixed(3)}`);
+        }
+      }
+    }
+  }
+});
+
 test('거리 단조성: 같은 방위 안에서 aspect 가 커질수록 가까워진다', () => {
   for (const group of [[1.0, 1.3, 1.6, 2.2], [0.46, 0.6, 0.9]]) {
     const d = group.map(a => L.fitCamera(a).distance);

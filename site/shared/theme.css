@@ -214,7 +214,8 @@ h3 { font-size:22px; font-weight:700; margin:0; }
 body.room-page { min-height:0; height:100vh; height:100dvh; overflow:hidden; } /* .section-page 의 min-height:100vh 를 눌러야 iOS 주소창 상태에서 푸터가 안 잘림 */
 .room-main { flex:1; min-height:0; display:flex; flex-direction:column; max-width:none; margin:0; padding:0; overflow:auto; }
 .room-main > [hidden] { display:none !important; } /* .section-main{display:flex} 가 UA [hidden] 을 이기므로 명시 */
-.room-viewport { position:relative; flex:1; min-height:0; background:var(--icy); overflow:hidden; }
+.room-viewport { position:relative; flex:1; min-height:0; background:var(--icy); overflow:hidden;
+  touch-action:none; } /* 한 손가락 드래그를 시점 회전에 쓴다 — 랩 페이지는 한 화면이라 스크롤을 뺏지 않는다 */
 .room-viewport canvas { position:absolute; inset:0; z-index:1; }
 .room-caption { position:absolute; left:40px; top:28px; z-index:2; pointer-events:none; }
 .room-caption .eyebrow { margin:0; }
