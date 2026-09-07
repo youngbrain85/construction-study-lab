@@ -58,19 +58,30 @@ test('Table 4: 굽힘 핀 지름 배수(3½·5·7·9 d)', () => {
   for (const r of rows) {
     const v = r.slice(1).map(c => (c.text === '—' ? null : Number(attr(c.attrs, 'data-mult'))));
     assert.deepEqual(v, expected[r[0].text], r[0].text);
-    for (const c of r.slice(1)) if (c.text !== '—') assert.match(c.text, /^(3½|5|7|9) d$/, `pin text ${c.text}`);
+    for (const c of r.slice(1)) if (c.text !== '—') {
+      assert.match(c.text, /^(3½|5|7|9) d$/, `pin text ${c.text}`);
+      assert.equal(c.text === '3½ d' ? 3.5 : Number(c.text.split(' ')[0]), Number(attr(c.attrs, 'data-mult')), `pin text vs data-mult: ${c.text}`);   // 글자와 속성이 같은 배수를 말해야 한다
+    }
   }
 });
 
-test('Table 2: 예제의 표시값이 data-* 입력에서 재계산한 값과 같다', () => {
+test('Table 2: 예제의 표시값이 data-* 입력에서 재계산한 값과 같다(속성값과 본문 글자 모두)', () => {
   const t = table('tbl-example');
   const a = Number(attr(t.attrs, 'data-area')), d = Number(attr(t.attrs, 'data-diameter'));
   const py = Number(attr(t.attrs, 'data-yield-load')), pm = Number(attr(t.attrs, 'data-max-load'));
   const g = Number(attr(t.attrs, 'data-gauge')), f = Number(attr(t.attrs, 'data-final')), mult = Number(attr(t.attrs, 'data-pin-mult'));
   const r1 = v => Math.round(v * 10) / 10, r2 = v => Math.round(v * 100) / 100;
-  const shown = bodyRows(t).map(r => Number(attr(r[2].attrs, 'data-result')));
+  const rows = bodyRows(t);
+  const shown = rows.map(r => Number(attr(r[2].attrs, 'data-result')));
   assert.deepEqual(shown, [r1(py / a / 1000), r1(pm / a / 1000), r1((f - g) / g * 100), r2(mult * d)]);
   assert.deepEqual(shown, [68.1, 100, 13, 2.19]);
+  // 독자가 읽는 글자도 같은 값을 말해야 한다(속성만 맞고 본문이 오타인 경우를 잡는다)
+  const grab = (s, re) => { const m = s.match(re); assert.ok(m, `no number in "${s}"`); return Number(m[1]); };
+  assert.equal(grab(rows[0][2].text, /→\s*([\d.]+)\s*ksi/), shown[0]);
+  assert.equal(grab(rows[1][2].text, /→\s*([\d.]+)\s*ksi/), shown[1]);
+  assert.equal(grab(rows[2][2].text, /=\s*([\d.]+)\s*%/), shown[2]);
+  assert.equal(grab(rows[3][1].text, /([\d.]+) in\. pin/), shown[3]);
+  assert.ok(rows[0][1].text.includes(py.toLocaleString('en-US')) && rows[1][1].text.includes(pm.toLocaleString('en-US')) && rows[2][1].text.includes(String(f)), 'measured cells quote the inputs');
   assert.equal(Math.round(Math.PI * d * d / 4 * 100) / 100, a, 'nominal area of the #5 bar');
   assert.ok(shown[0] >= 60 && shown[1] >= 90 && shown[2] >= 9, 'meets the Grade 60 minimums for a #5 bar');
 });

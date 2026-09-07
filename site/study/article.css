@@ -81,8 +81,7 @@ main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; d
 .table-wrap .ref-table .si { font-size:11px; color:var(--faint); }
 .table-wrap .ref-table tr.group th { text-align:left; font-size:11.5px; color:var(--dark); background:var(--surface2);
   text-transform:uppercase; letter-spacing:.04em; padding:8px; }
-.ref-table--text td, .ref-table--text th { white-space:normal; text-align:left; }
-.table-wrap .ref-table--text td, .table-wrap .ref-table--text th { white-space:normal; text-align:left; }   /* .table-wrap 의 nowrap(0,2,1)에 밀려 죽어 있던 텍스트 표 규칙을 살린다 — 예제 표(Table 2)가 1440 px 에서도 가로 스크롤 없이 줄바꿈된다 */
+.ref-table--text td, .ref-table--text th, .table-wrap .ref-table--text td, .table-wrap .ref-table--text th { white-space:normal; text-align:left; }   /* 텍스트 표: .table-wrap 안에서는 nowrap(0,2,1)이 이기므로 같은 특이성의 선택자를 함께 둔다(소스 순서로 승리) — 예제 표(Table 2)가 가로 스크롤 없이 줄바꿈된다 */
 .article .ref-note { margin:0 0 22px; }
 
 /* 단계 목록: 큰 번호 */
