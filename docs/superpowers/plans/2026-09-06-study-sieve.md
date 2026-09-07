@@ -99,7 +99,7 @@ test('coarse Size 57 example: limits met, NMAS 1 in., maximum size 1-1/2 in.', (
   assert.equal(r.allOk, true);
   assert.deepEqual(r.checks.filter(c => c.ok !== null).map(c => c.label), ['1-1/2 in', '1 in', '1/2 in', 'No. 4', 'No. 8']);
   assert.deepEqual(G.nominalMaxSize(coarse.rows), { nmas: '1 in', maxSize: '1-1/2 in' });
-  assert.deepEqual(Object.keys(G.COARSE_LIMITS), ['467', '57', '67', '7', '8']);
+  assert.deepEqual(Object.keys(G.COARSE_LIMITS).sort(), ['467', '57', '67', '7', '8'].sort()); // 정수형 키는 JS 가 오름차순으로 재배열하므로 집합으로 비교
   assert.deepEqual(G.COARSE_LIMITS['67']['3/8 in'], [20, 55]);
 });
 
