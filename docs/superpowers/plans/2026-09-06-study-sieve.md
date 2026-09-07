@@ -367,7 +367,7 @@ Block A:
     <li><a href="#test">3. The test</a></li>
     <li><a href="#arithmetic">4. The arithmetic</a></li>
     <li><a href="#curve">5. Reading the curve</a></li>
-    <li><a href="#c33">6. What ASTM C33 requires</a></li>
+    <li><a href="#astm-c33">6. What ASTM C33 requires</a></li>
     <li><a href="#calculator">7. Try it: the calculator</a></li>
     <li><a href="#mistakes">8. Common mistakes</a></li>
     <li><a href="#takeaways">9. Key takeaways</a></li>
@@ -520,7 +520,7 @@ Block B:
   <p>The FM is one number; the curve is the whole story. Check both, because a gap-graded and a well-graded sand can share an FM and behave nothing alike.</p>
 </div>
 
-<h2 id="c33"><span class="num">6</span>What ASTM C33 requires</h2>
+<h2 id="astm-c33"><span class="num">6</span>What ASTM C33 requires</h2>
 <p>ASTM C33 is the specification most US concrete aggregate is bought against. For fine aggregate it sets a band of percent passing on each sieve, a cap on dust, a rule against lumps of one size, and a range for the fineness modulus.</p>
 <div class="table-wrap">
 <table class="ref-table" id="tbl-fine">
@@ -786,7 +786,7 @@ if (form) {
 
 - [ ] **Step 5: Gate + browser checks**
 
-Run the full gate (Global Constraints) → all pass. Start `python tools/devserver.py 8770 site` in the background (8771 if busy). Capture with `D:\Codex\Temp\claude\D--Projects-Test\d64fe480-de3e-4585-8fe0-f5b32b07ce45\scratchpad\verify\cdp-shot.mjs` (1440) and `…\scratchpad\verify-room\cdp-shot-390.mjs` (390), files under `…\scratchpad\verify-sieve\`. Steps, each with a screenshot: (1) load → `#pp-1` = 97.6, `#pp-6` = 4.0, `#out-total` = 500 g, `#out-fm` = 3.01, `#out-nmas` starts with "3/8 in", `#out-verdict` = MEETS C33, `#ok-4` reads "25–60 OK", plot has nodes and the band legend text; (2) set `m8` (pan) to 126 and `m3` = 60, `m4` = 60 → `#ok-6` shows "0–10 out", verdict CHECK, an amber diamond in the plot; (3) reset (`form.reset()` + input) then `sampleMass` = 502 → notes say 0.4 % over; 501 → within; (4) switch `mode` to coarse (dispatch `change`) → rows rebuilt (10 rows), `#size-field` visible, `#out-total` 10,000 g, `#out-nmas` starts with "1 in", `#out-fm` 7.09, verdict MEETS C33; switch `sizeNo` to 67 → verdict CHECK with 3/4 in. outside; (5) set all masses blank → error message from `analyze`, plot empty with the "No result" aria-label; (6) mode back to fine → defaults restored, MEETS C33; (7) 390 px: the table scrolls inside `.calc-tests` (documentElement.scrollWidth = 390), the plot labels readable. Read every screenshot; fix genuine defects only and record them. Recompute the byline read time (strip tables/SVG/captions/form; 200 wpm) and correct "11 min read" if needed.
+Run the full gate (Global Constraints) → all pass. Start `python tools/devserver.py 8770 site` in the background (8771 if busy). Capture with `D:\Codex\Temp\claude\D--Projects-Test\d64fe480-de3e-4585-8fe0-f5b32b07ce45\scratchpad\verify\cdp-shot.mjs` (1440) and `…\scratchpad\verify-room\cdp-shot-390.mjs` (390), files under `…\scratchpad\verify-sieve\`. Steps, each with a screenshot: (1) load → `#pp-1` = 97.6, `#pp-6` = 4.0, `#out-total` = 500 g, `#out-fm` = 3.01, `#out-nmas` reads "No. 4 (max 3/8 in)" (the working rule: smallest sieve with ≥ 90 % passing is No. 4 at 97.6 %), `#out-verdict` = MEETS C33, `#ok-4` reads "25–60 OK", plot has nodes and the band legend text; (2) set `m8` (pan) to 126 and `m3` = 60, `m4` = 60 → `#ok-6` shows "0–10 out", verdict CHECK, an amber diamond in the plot; (3) reset (`form.reset()` + input) then `sampleMass` = 502 → notes say 0.4 % over; 501 → within; (4) switch `mode` to coarse (dispatch `change`) → rows rebuilt (10 rows), `#size-field` visible, `#out-total` 10,000 g, `#out-nmas` starts with "1 in", `#out-fm` 7.09, verdict MEETS C33; switch `sizeNo` to 67 → verdict CHECK with 3/4 in. outside; (5) set all masses blank → error message from `analyze`, plot empty with the "No result" aria-label; (6) mode back to fine → defaults restored, MEETS C33; (7) 390 px: the table scrolls inside `.calc-tests` (documentElement.scrollWidth = 390), the plot labels readable. Read every screenshot; fix genuine defects only and record them. Recompute the byline read time (strip tables/SVG/captions/form; 200 wpm) and correct "11 min read" if needed.
 
 - [ ] **Step 6: Commit**
 
