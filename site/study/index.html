@@ -9,9 +9,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared/theme.css">
 <style>
-/* Study 원장은 첫 열이 유형 배지라 조금 넓다 (목업 study-desktop.html) */
-.ledger-row { --ledger-cols:90px 1fr 240px 140px; }
-@media (max-width:700px) { .ledger-row { --ledger-cols:60px 1fr; } }
+/* Study 원장은 첫 열이 대표 사진이라 조금 넓다 (유형 표시는 오른쪽 meta 칸이 맡는다) */
+.ledger-row { --ledger-cols:120px 1fr 130px 140px; } /* 제목·설명이 짧아져 meta 열은 "External link" 가 들어갈 만큼만 둔다 */
+.ledger-row .thumb { width:120px; height:80px; object-fit:cover; border-radius:var(--radius); display:block; background:var(--surface2); }
+.ledger-row .thumb-soon { border:1px dashed var(--faint); background:transparent; }
+@media (max-width:700px) {
+  .ledger-row { --ledger-cols:84px 1fr; }
+  .ledger-row .thumb { width:84px; height:56px; }
+}
 </style>
 </head>
 <body class="section-page">
@@ -48,18 +53,32 @@ const TYPE_LABEL = { pdf: 'PDF', link: 'Link', page: 'Page' };
 
 function itemRow(m) {
   const external = m.type === 'link';
-  return h('div', { class: 'ledger-row is-active' },
-    h('div', { class: 'type' }, TYPE_LABEL[m.type] || m.type),
+  // 첫 칸은 대표 사진. 바로 옆 제목이 같은 내용을 말하므로 장식 이미지로 두고 alt 는 비운다.
+  const lead = m.thumb
+    ? h('img', { class: 'thumb', src: m.thumb, alt: '', width: 360, height: 240, loading: 'lazy' })
+    : h('div', { class: 'type' }, TYPE_LABEL[m.type] || m.type);
+  return h('div', { class: 'ledger-row is-active' }, lead,
     h('div', {}, h('h3', { class: 'title' }, m.title), h('p', { class: 'desc' }, m.desc)),
     h('div', { class: 'meta' }, m.type === 'pdf' ? 'PDF' : m.type === 'link' ? 'External link' : 'Page'),
     h('a', Object.assign({ class: 'btn btn-primary', href: m.href }, external ? { target: '_blank', rel: 'noopener' } : {}), 'Open →'));
 }
 function soonRow() {
   return h('div', { class: 'ledger-row is-soon' },
-    h('div', { class: 'type' }, 'Soon'),
+    h('div', { class: 'thumb thumb-soon' }),
     h('div', {}, h('h3', { class: 'title' }, 'Lecture notes and reference tables will appear here.')),
     h('div', { class: 'meta' }, '—'),
     h('div', { class: 'soon' }, 'Soon'));
+}
+// 카드 사진은 각 글에 실린 사진의 일부다 — CC BY·BY-SA 는 쓰이는 자리마다 저작자 표시가 필요하므로 목록 끝에 한 문단을 둔다
+function credits() {
+  const deed = (href, text) => h('a', { href, rel: 'license noopener', target: '_blank' }, text);
+  return h('p', { class: 'ref-note' },
+    'Card photographs are details from the images credited on each article page, which link the original files: Habib M’henni ',
+    deed('https://creativecommons.org/licenses/by/4.0/', 'CC BY 4.0'), ' and ',
+    deed('https://creativecommons.org/licenses/by-sa/3.0/', 'CC BY-SA 3.0'), '; W.carter ',
+    deed('https://creativecommons.org/licenses/by-sa/4.0/', 'CC BY-SA 4.0'), '; Nixdorf ',
+    deed('https://creativecommons.org/licenses/by/4.0/', 'CC BY 4.0'), '; MichaelM314 ',
+    deed('https://creativecommons.org/publicdomain/zero/1.0/', 'CC0'), '; Xb-70 and the Federal Highway Administration, public domain — all via Wikimedia Commons.');
 }
 
 function render() {
@@ -71,6 +90,7 @@ function render() {
       h('div', { class: 'group-head' }, h('h2', {}, g.name), h('p', {}, g.blurb)),
       ...(items.length ? items.map(itemRow) : [soonRow()])));
   }
+  root.append(credits());
   document.getElementById('year').textContent = new Date().getFullYear();
 }
 render();
