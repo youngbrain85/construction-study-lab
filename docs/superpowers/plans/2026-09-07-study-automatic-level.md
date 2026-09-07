@@ -175,26 +175,26 @@ Block A:
     <circle cx="395" cy="180" r="13" fill="var(--surface2)" stroke="var(--dark)" stroke-width="2"/>
     <circle cx="252" cy="184" r="14" fill="var(--bg)" stroke="var(--dark)" stroke-width="2"/>
     <circle cx="252" cy="184" r="5" fill="none" stroke="var(--royal)" stroke-width="1.5"/>
-    <circle cx="310" cy="196" r="9" fill="var(--surface2)" stroke="var(--dark)" stroke-width="1.5"/>
+    <circle cx="200" cy="190" r="9" fill="var(--surface2)" stroke="var(--dark)" stroke-width="1.5"/>
     <path d="M210,205 h250 l-16,30 h-218 z" fill="var(--surface2)" stroke="var(--dark)" stroke-width="2"/>
     <g fill="var(--surface2)" stroke="var(--dark)" stroke-width="2">
       <rect x="228" y="235" width="12" height="22" rx="3"/><rect x="329" y="235" width="12" height="22" rx="3"/><rect x="430" y="235" width="12" height="22" rx="3"/>
     </g>
-    <path d="M240,257 l-40,44 M335,257 v44 M430,257 l40,44" stroke="var(--dark)" stroke-width="2" fill="none"/>
+    <path d="M240,257 l-32,31 M335,257 v31 M430,257 l32,31" stroke="var(--dark)" stroke-width="2" fill="none"/>
     <path d="M492,140 h34 M366,143 h120 M395,193 h96" stroke="var(--muted)" stroke-width="1" fill="none"/>
     <text x="532" y="144" fill="var(--dark)">objective lens</text>
     <text x="500" y="118" fill="var(--royal)">compensator, inside</text>
     <path d="M330,120 v-8 h164" stroke="var(--royal)" stroke-width="1" fill="none"/>
     <text x="500" y="197" fill="var(--dark)">focusing knob</text>
-    <path d="M178,143 h-20" stroke="var(--muted)" stroke-width="1" fill="none"/>
+    <path d="M180,143 h-22" stroke="var(--muted)" stroke-width="1" fill="none"/>
     <text x="152" y="147" text-anchor="end" fill="var(--dark)">eyepiece</text>
-    <path d="M238,184 h-60" stroke="var(--muted)" stroke-width="1" fill="none"/>
-    <text x="172" y="188" text-anchor="end" fill="var(--dark)">circular bubble</text>
-    <path d="M301,196 h-40" stroke="var(--muted)" stroke-width="1" fill="none"/>
-    <text x="255" y="216" text-anchor="end" fill="var(--dark)">tangent drive</text>
+    <path d="M240,175 L180,164" stroke="var(--muted)" stroke-width="1" fill="none"/>
+    <text x="175" y="168" text-anchor="end" fill="var(--dark)">circular bubble</text>
+    <path d="M191,190 h-8" stroke="var(--muted)" stroke-width="1" fill="none"/>
+    <text x="178" y="194" text-anchor="end" fill="var(--dark)">tangent drive</text>
     <path d="M228,246 h-40" stroke="var(--muted)" stroke-width="1" fill="none"/>
     <text x="182" y="250" text-anchor="end" fill="var(--dark)">levelling screws (3)</text>
-    <text x="60" y="300">You centre the circular bubble; the compensator does the rest.</text>
+    <text x="60" y="308">You centre the circular bubble; the compensator does the rest.</text>
   </g>
 </svg>
 <figcaption>Figure 1. The controls you actually touch. The compensator is the only part doing work you cannot see.</figcaption>
@@ -240,9 +240,10 @@ Block A:
 <p>The reticle carries <strong>three horizontal wires</strong>. The middle one is the reading. The upper and lower ones — the stadia wires — give you the distance to the rod, which is how you keep your sights balanced without a tape:</p>
 <div class="eq"><i>D</i> = 100 × (upper − lower)</div>
 <figure>
-<svg class="fig-svg" viewBox="0 0 720 300" role="img" aria-labelledby="fig3-title">
-  <title id="fig3-title">Reading a levelling rod through the three wires of the reticle</title>
+<svg class="fig-svg" viewBox="0 0 720 300" role="img" aria-labelledby="fig2-title">
+  <title id="fig2-title">Reading a levelling rod through the three wires of the reticle</title>
   <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <text x="125" y="30" text-anchor="middle" fill="var(--dark)">rod</text>
     <rect x="96" y="40" width="58" height="232" fill="var(--bg)" stroke="var(--dark)" stroke-width="2"/>
     <g stroke="var(--dark)" stroke-width="1">
       <path d="M96,80 h20 M96,120 h20 M96,160 h20 M96,200 h20 M96,240 h20"/>
@@ -251,22 +252,22 @@ Block A:
     <g font-size="11" fill="var(--dark)">
       <text x="160" y="84">6</text><text x="160" y="124">5</text><text x="160" y="164">4</text><text x="160" y="204">3</text><text x="160" y="244">2</text>
     </g>
-    <text x="125" y="30" text-anchor="middle" fill="var(--dark)">rod</text>
     <circle cx="400" cy="156" r="96" fill="var(--bg)" stroke="var(--dark)" stroke-width="2"/>
-    <rect x="368" y="60" width="64" height="192" fill="var(--surface2)"/>
+    <rect x="372" y="78" width="56" height="156" fill="var(--surface2)"/>
     <g stroke="var(--dark)" stroke-width="1">
-      <path d="M368,92 h22 M368,124 h22 M368,156 h22 M368,188 h22 M368,220 h22"/>
+      <path d="M372,92 h20 M372,124 h20 M372,156 h20 M372,188 h20 M372,220 h20"/>
     </g>
-    <path d="M400,60 v192" stroke="var(--muted)" stroke-width="1"/>
+    <path d="M400,78 v156" stroke="var(--muted)" stroke-width="1"/>
     <path d="M318,108 h164" stroke="var(--royal)" stroke-width="1.5"/>
     <path d="M310,156 h180" stroke="var(--royal)" stroke-width="2.5"/>
     <path d="M318,204 h164" stroke="var(--royal)" stroke-width="1.5"/>
     <text x="506" y="112" fill="var(--dark)">upper 5.07</text>
     <text x="506" y="160" fill="var(--royal)">middle 4.32 — the reading</text>
     <text x="506" y="208" fill="var(--dark)">lower 3.57</text>
-    <text x="506" y="240">interval 1.50 ft → D = 150 ft</text>
-    <text x="506" y="262">(5.07 + 3.57) ÷ 2 = 4.32 ✓</text>
-    <text x="60" y="292">Read feet, then tenths, then estimate hundredths. Always three digits.</text>
+    <text x="506" y="238">interval 1.50 ft</text>
+    <text x="506" y="258">D = 100 × 1.50 = 150 ft</text>
+    <text x="506" y="280">(5.07 + 3.57) ÷ 2 = 4.32</text>
+    <text x="60" y="292">Read feet, then tenths, then estimate hundredths.</text>
   </g>
 </svg>
 <figcaption>Figure 2. The three wires. The mean of the outer two must equal the middle one — that check catches a misread digit on the spot.</figcaption>
@@ -289,33 +290,33 @@ Block B:
 <p>Levelling walks a known elevation forward. From a setup you read <em>back</em> to a point you know, which tells you how high the line of sight is; then you read <em>forward</em> to a point you want, which tells you how far below that line it sits.</p>
 <div class="eq"><i>HI</i> = elevation + <i>BS</i> &nbsp;·&nbsp; elevation = <i>HI</i> − <i>FS</i></div>
 <figure>
-<svg class="fig-svg" viewBox="0 0 720 330" role="img" aria-labelledby="fig2-title">
-  <title id="fig2-title">Two instrument setups carrying an elevation from a benchmark to a turning point and on</title>
+<svg class="fig-svg" viewBox="0 0 720 270" role="img" aria-labelledby="fig3-title">
+  <title id="fig3-title">Two instrument setups carrying an elevation from a benchmark through a turning point</title>
   <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
-    <path d="M60,300 C200,296 300,286 400,282 C500,278 590,262 660,250" fill="none" stroke="var(--dark)" stroke-width="2"/>
-    <path d="M92,296 v-108 M400,282 v-96 M652,250 v-84" stroke="var(--vintage)" stroke-width="6"/>
-    <path d="M84,192 h240" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <path d="M392,170 h268" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="60" y="40" fill="var(--dark)">Setup 1: 100.00 + 4.32 = 104.32, then 104.32 − 6.75 = 97.57 at TP1.</text>
+    <text x="60" y="60" fill="var(--dark)">Setup 2: 97.57 + 5.18 = 102.75, then 102.75 − 3.04 = 99.71 at TP2.</text>
+    <text x="60" y="80">Keep the backsight and foresight distances equal at each setup.</text>
+    <path d="M60,181 L92,185 L400,214 L652,188 L660,187" fill="none" stroke="var(--dark)" stroke-width="2"/>
+    <path d="M92,185 v-60 M400,214 v-89 M652,188 v-45" stroke="var(--vintage)" stroke-width="6"/>
+    <path d="M84,133 h330" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <path d="M392,152 h268" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
     <g stroke="var(--dark)" stroke-width="2" fill="var(--surface2)">
-      <rect x="196" y="182" width="42" height="14" rx="3"/><path d="M204,196 l-12,32 M230,196 l12,32 M217,196 v32" fill="none"/>
-      <rect x="500" y="160" width="42" height="14" rx="3"/><path d="M508,174 l-12,34 M534,174 l12,34 M521,174 v34" fill="none"/>
+      <rect x="225" y="126" width="42" height="14" rx="3"/><path d="M233,140 l-12,60 M259,140 l12,60 M246,140 v60" fill="none"/>
+      <rect x="505" y="145" width="42" height="14" rx="3"/><path d="M513,159 l-12,42 M539,159 l12,42 M526,159 v42" fill="none"/>
     </g>
-    <path d="M104,192 v104" stroke="var(--muted)" stroke-width="1"/>
-    <text x="112" y="240" fill="var(--dark)">BS 4.32</text>
-    <path d="M388,192 v90" stroke="var(--muted)" stroke-width="1"/>
-    <text x="330" y="240" text-anchor="end" fill="var(--dark)">FS 6.75</text>
-    <path d="M412,170 v112" stroke="var(--muted)" stroke-width="1"/>
-    <text x="420" y="226" fill="var(--dark)">BS 5.18</text>
-    <path d="M644,170 v80" stroke="var(--muted)" stroke-width="1"/>
-    <text x="636" y="212" text-anchor="end" fill="var(--dark)">FS 3.04</text>
-    <text x="92" y="316" text-anchor="middle" fill="var(--dark)">BM-1</text>
-    <text x="400" y="302" text-anchor="middle" fill="var(--dark)">TP1</text>
-    <text x="656" y="272" text-anchor="middle" fill="var(--dark)">TP2</text>
-    <text x="60" y="176" fill="var(--royal)">HI = 104.32</text>
-    <text x="392" y="154" fill="var(--royal)">HI = 102.75</text>
-    <text x="60" y="46" fill="var(--dark)">Setup 1: 100.00 + 4.32 = 104.32, then 104.32 − 6.75 = 97.57 at TP1.</text>
-    <text x="60" y="66">Setup 2: 97.57 + 5.18 = 102.75, then 102.75 − 3.04 = 99.71 at TP2.</text>
-    <text x="60" y="86">Keep the backsight and foresight distances equal at each setup.</text>
+    <path d="M104,133 v52" stroke="var(--muted)" stroke-width="1"/>
+    <text x="112" y="163" fill="var(--dark)">BS 4.32</text>
+    <path d="M388,133 v81" stroke="var(--muted)" stroke-width="1"/>
+    <text x="380" y="177" text-anchor="end" fill="var(--dark)">FS 6.75</text>
+    <path d="M412,152 v62" stroke="var(--muted)" stroke-width="1"/>
+    <text x="420" y="187" fill="var(--dark)">BS 5.18</text>
+    <path d="M644,152 v36" stroke="var(--muted)" stroke-width="1"/>
+    <text x="636" y="173" text-anchor="end" fill="var(--dark)">FS 3.04</text>
+    <text x="60" y="121" fill="var(--royal)">HI = 104.32</text>
+    <text x="440" y="140" fill="var(--royal)">HI = 102.75</text>
+    <text x="92" y="205" text-anchor="middle" fill="var(--dark)">BM-1</text>
+    <text x="400" y="230" text-anchor="middle" fill="var(--dark)">TP1</text>
+    <text x="652" y="207" text-anchor="middle" fill="var(--dark)">TP2</text>
   </g>
 </svg>
 <figcaption>Figure 3. One setup produces one instrument height and hands the elevation forward through a turning point.</figcaption>
@@ -352,29 +353,29 @@ Block B:
 <svg class="fig-svg" viewBox="0 0 720 320" role="img" aria-labelledby="fig4-title">
   <title id="fig4-title">Two-peg test: instrument midway between the pegs, then close beside one of them</title>
   <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <text x="60" y="40" fill="var(--dark)">Setup ① midway — equal sights, so any tilt cancels: this gives the true difference.</text>
     <path d="M70,120 h580" stroke="var(--dark)" stroke-width="2"/>
     <path d="M100,120 v-70 M620,120 v-70" stroke="var(--vintage)" stroke-width="6"/>
     <g stroke="var(--dark)" stroke-width="2" fill="var(--surface2)">
-      <rect x="339" y="52" width="42" height="14" rx="3"/><path d="M347,66 l-12,42 M373,66 l12,42 M360,66 v42" fill="none"/>
+      <rect x="339" y="52" width="42" height="14" rx="3"/><path d="M347,66 l-12,54 M373,66 l12,54 M360,66 v54" fill="none"/>
     </g>
-    <path d="M104,72 h232 M384,72 h232" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <path d="M98,72 h234 M388,72 h232" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
     <text x="100" y="140" text-anchor="middle" fill="var(--dark)">A</text>
     <text x="620" y="140" text-anchor="middle" fill="var(--dark)">B</text>
-    <text x="220" y="106" text-anchor="middle">100 ft</text>
-    <text x="500" y="106" text-anchor="middle">100 ft</text>
-    <text x="60" y="40" fill="var(--dark)">Setup ① midway — equal sights, so any tilt cancels: this gives the true difference.</text>
+    <text x="230" y="106" text-anchor="middle">100 ft</text>
+    <text x="490" y="106" text-anchor="middle">100 ft</text>
+    <text x="60" y="170" fill="var(--dark)">Setup ② beside A — the tilt (amber) now has 200 ft to act on B, and none on A.</text>
     <path d="M70,250 h580" stroke="var(--dark)" stroke-width="2"/>
     <path d="M130,250 v-70 M620,250 v-70" stroke="var(--vintage)" stroke-width="6"/>
     <g stroke="var(--dark)" stroke-width="2" fill="var(--surface2)">
-      <rect x="74" y="182" width="42" height="14" rx="3"/><path d="M82,196 l-12,42 M108,196 l12,42 M95,196 v42" fill="none"/>
+      <rect x="74" y="182" width="42" height="14" rx="3"/><path d="M82,196 l-12,54 M108,196 l12,54 M95,196 v54" fill="none"/>
     </g>
-    <path d="M118,202 h500" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <path d="M118,202 L618,190" stroke="var(--amber)" stroke-width="1.5"/>
+    <path d="M118,202 h504" stroke="var(--royal)" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <path d="M118,202 L622,214" stroke="var(--amber)" stroke-width="1.5"/>
     <text x="130" y="270" text-anchor="middle" fill="var(--dark)">A</text>
     <text x="620" y="270" text-anchor="middle" fill="var(--dark)">B</text>
-    <text x="380" y="236" text-anchor="middle">200 ft</text>
-    <text x="60" y="170" fill="var(--dark)">Setup ② beside A — the tilt (amber) has almost no room to act on A, and 200 ft to act on B.</text>
-    <text x="60" y="300" fill="var(--amber)">The difference between the two answers is the collimation error over 200 ft.</text>
+    <text x="376" y="238" text-anchor="middle">200 ft</text>
+    <text x="60" y="300" fill="var(--amber)">The gap between the two answers is the collimation error over 200 ft.</text>
   </g>
 </svg>
 <figcaption>Figure 4. Equal sights hide the error; unequal sights expose it. That is the whole idea of the test — and the reason to balance sights while levelling.</figcaption>
