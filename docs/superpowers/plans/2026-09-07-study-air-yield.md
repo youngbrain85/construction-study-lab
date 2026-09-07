@@ -205,13 +205,13 @@ Block A:
     <g fill="var(--bg)" stroke="var(--dark)" stroke-width="1">
       <circle cx="130" cy="190" r="5"/><circle cx="176" cy="212" r="5"/><circle cx="228" cy="186" r="5"/><circle cx="262" cy="226" r="5"/><circle cx="150" cy="250" r="5"/><circle cx="212" cy="256" r="5"/>
     </g>
-    <rect x="88" y="132" width="204" height="18" rx="3" fill="var(--icy)" stroke="var(--dark)" stroke-width="2"/>
+    <rect x="88" y="132" width="204" height="18" rx="3" fill="var(--vintage)" stroke="var(--dark)" stroke-width="2"/>
     <text x="190" y="145" text-anchor="middle" fill="var(--dark)">water above the concrete</text>
     <path d="M84,150 h-10 v-16 h10 M296,150 h10 v-16 h-10" fill="none" stroke="var(--dark)" stroke-width="2"/>
     <text x="190" y="306" text-anchor="middle" fill="var(--dark)">bowl of concrete — rodded, struck off, clamped</text>
     <path d="M266,230 L300,252" stroke="var(--muted)" stroke-width="1" fill="none"/>
     <text x="304" y="256">air voids in the concrete</text>
-    <rect x="392" y="96" width="132" height="86" rx="4" fill="var(--icy)" stroke="var(--dark)" stroke-width="2"/>
+    <rect x="392" y="96" width="132" height="86" rx="4" fill="var(--neon)" stroke="var(--dark)" stroke-width="2"/>
     <text x="458" y="130" text-anchor="middle" fill="var(--dark)">air chamber</text>
     <text x="458" y="148" text-anchor="middle">pumped to the</text>
     <text x="458" y="164" text-anchor="middle">initial pressure</text>
@@ -311,7 +311,7 @@ Block B:
   <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
     <text x="60" y="30" fill="var(--dark)">One cubic yard of materials, air-free: 26.60 cu ft. The air rides on top.</text>
     <rect x="90" y="62" width="44.3" height="34" fill="var(--royal)" stroke="var(--bg)" stroke-width="1"/>
-    <rect x="134.3" y="62" width="76.7" height="34" fill="var(--primary-50)" stroke="var(--bg)" stroke-width="1"/>
+    <rect x="134.3" y="62" width="76.7" height="34" fill="var(--vintage)" stroke="var(--bg)" stroke-width="1"/>
     <rect x="211" y="62" width="179.1" height="34" fill="var(--dark)" stroke="var(--bg)" stroke-width="1"/>
     <rect x="390.1" y="62" width="125.4" height="34" fill="var(--icy)" stroke="var(--bg)" stroke-width="1"/>
     <rect x="515.5" y="62" width="6.5" height="34" fill="var(--amber)" stroke="var(--dark)" stroke-width="1"/>
@@ -324,14 +324,14 @@ Block B:
     </g>
     <text x="545" y="70" fill="var(--dark)">27.00 cu ft</text>
     <text x="545" y="86" fill="var(--dark)">148.4 lb/cu ft</text>
-    <text x="545" y="102" fill="var(--amber)">air 0.41 (1.5 %)</text>
+    <text x="545" y="102" fill="var(--amber)">air 1.5 %</text>
     <rect x="90" y="140" width="425.5" height="34" fill="var(--surface2)" stroke="var(--dark)" stroke-width="1"/>
     <rect x="515.5" y="140" width="16.6" height="34" fill="var(--amber)" stroke="var(--dark)" stroke-width="1"/>
     <text x="52" y="162" text-anchor="end" fill="var(--dark)">Load B</text>
     <text x="302" y="162" text-anchor="middle" fill="var(--dark)">the same 26.60 cu ft of materials</text>
     <text x="545" y="148" fill="var(--dark)">27.63 cu ft</text>
     <text x="545" y="164" fill="var(--dark)">145.0 lb/cu ft</text>
-    <text x="545" y="180" fill="var(--amber)">air 1.04 (3.8 %)</text>
+    <text x="545" y="180" fill="var(--amber)">air 3.8 %</text>
     <line x1="90" y1="212" x2="630" y2="212" stroke="var(--border)" stroke-width="1"/>
     <text x="60" y="238" fill="var(--dark)">Same mass, more volume: density falls, yield rises, cement is spread thinner.</text>
     <text x="60" y="262">The amber sliver is all that changed. It moves every number on the ticket.</text>
