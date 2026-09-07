@@ -9,9 +9,9 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const STUDY_DIR = join(dirname(fileURLToPath(import.meta.url)), '../site/study');
 
-test('그룹 2개 + 랩의 group이 전부 유효', () => {
+test('그룹 목록 + 랩의 group이 전부 유효', () => {
   assert.deepEqual(S.LAB_GROUPS.map(g => g.id), ['material', 'survey']);
-  assert.deepEqual(S.STUDY_GROUPS.map(g => g.id), ['materials', 'surveying']);
+  assert.deepEqual(S.STUDY_GROUPS.map(g => g.id), ['concrete', 'aggregate', 'steel', 'soils', 'surveying']);
   const ids = new Set(S.LAB_GROUPS.map(g => g.id));
   for (const lab of S.LABS) assert.ok(ids.has(lab.group), `${lab.id} group`);
   for (const g of [...S.LAB_GROUPS, ...S.STUDY_GROUPS]) { assert.ok(g.name); assert.ok(g.blurb); }
@@ -52,13 +52,19 @@ test('MATERIALS: 항목이 있으면 group·type·필수 필드가 유효', () =
   }
 });
 
-test('MATERIALS: 믹스 디자인 2편·골재 입도·슬럼프·공시체·철근 인장·공기량 글이 등록돼 있고 page href 가 실제 파일을 가리킨다', () => {
+test('MATERIALS: 글 8편이 재료별 그룹에 순서대로 있고 href·썸네일이 실제 파일을 가리킨다', () => {
   const pages = S.MATERIALS.filter(m => m.type === 'page');
-  assert.deepEqual(pages.map(m => m.id), ['mix-design-1', 'mix-design-2', 'aggregate-gradation', 'slump-test', 'concrete-cylinders', 'rebar-tension', 'air-yield', 'soil-compaction']);
+  assert.deepEqual(pages.map(m => m.id), ['mix-design-1', 'mix-design-2', 'slump-test', 'air-yield', 'concrete-cylinders', 'aggregate-gradation', 'rebar-tension', 'soil-compaction']);
+  // 그룹 배정: 콘크리트 5 · 골재 1 · 철근 1 · 토양 1 (측량은 아직 글이 없다)
+  assert.deepEqual(pages.map(m => m.group),
+    ['concrete', 'concrete', 'concrete', 'concrete', 'concrete', 'aggregate', 'steel', 'soils']);
   for (const m of pages) {
-    assert.equal(m.group, 'materials');
     assert.ok(m.href.endsWith('/'), `${m.id} href ends with /`);
     assert.ok(existsSync(join(STUDY_DIR, m.href, 'index.html')), `${m.id} → ${m.href}index.html`);
+    assert.ok(m.thumb && m.thumb.startsWith('img/'), `${m.id} thumb`);
+    assert.ok(existsSync(join(STUDY_DIR, m.thumb)), `${m.id} → ${m.thumb}`);
+    assert.ok(m.title.length <= 30, `${m.id} title too long for a card: "${m.title}"`);
+    assert.ok(m.desc.length <= 90, `${m.id} desc too long for a card: ${m.desc.length} chars`);
   }
 });
 

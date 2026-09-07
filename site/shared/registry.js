@@ -22,37 +22,42 @@
     { id: 'surveying',    group: 'survey',   station: 'survey', name: 'Surveying Lab',     active: false },
   ];
 
+  // 재료별 그룹. 글이 늘면 그 재료의 그룹에 한 줄만 더한다.
   const STUDY_GROUPS = [
-    { id: 'materials', name: 'Materials', blurb: 'Concrete, aggregates, reinforcing steel, soils, and mix design.' },
-    { id: 'surveying', name: 'Surveying', blurb: 'Leveling, traversing, and site layout.' },
+    { id: 'concrete',  name: 'Concrete',          blurb: 'Mix design, and the tests that judge concrete fresh and hardened.' },
+    { id: 'aggregate', name: 'Aggregates',        blurb: 'Grading, fineness modulus, and the limits a concrete aggregate must meet.' },
+    { id: 'steel',     name: 'Reinforcing steel', blurb: 'What a bar is bought by, and how it is proven.' },
+    { id: 'soils',     name: 'Soils',             blurb: 'Compaction control and earthwork acceptance.' },
+    { id: 'surveying', name: 'Surveying',         blurb: 'Leveling, traversing, and site layout.' },
   ];
 
-  // { id, group, type:'pdf'|'link'|'page', title, desc, href } — 비어 있으면 페이지가 Coming soon 행을 그린다
+  // { id, group, type:'pdf'|'link'|'page', title, desc, href, thumb } — 비어 있는 그룹은 페이지가 Coming soon 행을 그린다.
+  // 제목은 그 글의 h1 과 같게, desc 는 카드에서 두 줄을 넘지 않게 한 줄로. thumb 는 site/study/ 기준 상대경로.
   const MATERIALS = [
-    { id: 'mix-design-1', group: 'materials', type: 'page', title: 'How to design a concrete mix',
-      desc: 'Concrete mix design, part 1 — the ten-step ACI workflow, from slump to trial batch, with the tables you need.',
-      href: 'mix-design/' },
-    { id: 'mix-design-2', group: 'materials', type: 'page', title: 'Worked example: a 3,000 psi beam',
-      desc: 'Concrete mix design, part 2 — every step of one mix, from 325 lb of water to a checked 1 yd³ batch.',
-      href: 'mix-design/example/' },
-    { id: 'aggregate-gradation', group: 'materials', type: 'page', title: 'Sieve analysis and the fineness modulus',
-      desc: 'How aggregate grading is measured (ASTM C136), turned into percent passing and the fineness modulus, and checked against ASTM C33 — with a calculator that plots your sieve results on the grading band.',
-      href: 'aggregate-gradation/' },
-    { id: 'slump-test', group: 'materials', type: 'page', title: 'The slump test, step by step',
-      desc: 'ASTM C143 in the field — apparatus, sampling and timing, filling and rodding, the lift, and how to read true, shear, or collapse.',
-      href: 'slump-test/' },
-    { id: 'concrete-cylinders', group: 'materials', type: 'page', title: 'Concrete cylinders: from the mold to the acceptance decision',
-      desc: 'Making and curing test cylinders (ASTM C31), breaking them (ASTM C39), reading the fracture, and deciding acceptance the ACI 318 way — with a calculator for strength tests and the age curve.',
-      href: 'concrete-cylinders/' },
-    { id: 'rebar-tension', group: 'materials', type: 'page', title: 'Testing reinforcing steel: the tension test',
-      desc: 'What ASTM A615 asks of a reinforcing bar — grade, tensile strength, elongation and the bend — how the tension test (ASTM A370) measures each, and how to read the result and the mill certificate.',
-      href: 'rebar-tension/' },
-    { id: 'air-yield', group: 'materials', type: 'page', title: 'Air content and unit weight',
-      desc: 'Two measurements from one bucket of fresh concrete — how much air the pressure meter finds (ASTM C231), and what the density says about how much concrete the batch really made (ASTM C138).',
-      href: 'air-yield/' },
-    { id: 'soil-compaction', group: 'materials', type: 'page', title: 'Compaction control: the Proctor test and field density',
-      desc: 'How fill is specified and checked — the Proctor curve, sand cone and nuclear gauge tests, percent compaction, and a calculator to try it.',
-      href: 'soil-compaction/' },
+    { id: 'mix-design-1', group: 'concrete', type: 'page', title: 'Mix design',
+      desc: 'The ten-step ACI 211.1 workflow, from slump to trial batch.',
+      href: 'mix-design/', thumb: 'img/mix-design.jpg' },
+    { id: 'mix-design-2', group: 'concrete', type: 'page', title: 'Mix design: worked example',
+      desc: 'One 3,000 psi mix worked through to a checked 1 yd³ batch.',
+      href: 'mix-design/example/', thumb: 'img/mix-design-example.jpg' },
+    { id: 'slump-test', group: 'concrete', type: 'page', title: 'Slump test',
+      desc: 'ASTM C143 in the field: filling, rodding, the lift, and reading the result.',
+      href: 'slump-test/', thumb: 'img/slump-test.jpg' },
+    { id: 'air-yield', group: 'concrete', type: 'page', title: 'Air content and unit weight',
+      desc: 'The pressure meter (C231), and what density says about yield (C138).',
+      href: 'air-yield/', thumb: 'img/air-yield.jpg' },
+    { id: 'concrete-cylinders', group: 'concrete', type: 'page', title: 'Concrete cylinders',
+      desc: 'Making, curing and breaking them (C31/C39), and the ACI 318 acceptance rule.',
+      href: 'concrete-cylinders/', thumb: 'img/concrete-cylinders.jpg' },
+    { id: 'aggregate-gradation', group: 'aggregate', type: 'page', title: 'Sieve analysis',
+      desc: 'Grading by ASTM C136, the fineness modulus, and the C33 band.',
+      href: 'aggregate-gradation/', thumb: 'img/aggregate-gradation.jpg' },
+    { id: 'rebar-tension', group: 'steel', type: 'page', title: 'Rebar tension test',
+      desc: 'What ASTM A615 asks of a bar, and how ASTM A370 measures it.',
+      href: 'rebar-tension/', thumb: 'img/rebar-tension.jpg' },
+    { id: 'soil-compaction', group: 'soils', type: 'page', title: 'Compaction control',
+      desc: 'The Proctor curve, field density tests, and percent compaction.',
+      href: 'soil-compaction/', thumb: 'img/soil-compaction.jpg' },
   ];
 
   // 점수 → 등급 (Mix Design Lab 채점 등급과 동일한 경계값)
