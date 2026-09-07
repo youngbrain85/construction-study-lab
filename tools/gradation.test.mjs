@@ -23,6 +23,13 @@ test('analyze: percent retained, cumulative and passing for the fine example (50
   assert.ok(G.analyze([], G.SIEVES.fine).error, 'empty → error');
 });
 
+test('analyze: cumulative retained and passing always add to 100 after rounding', () => {
+  const rows = G.analyze([0, 1, 0, 0, 0, 0, 0, 0, 399], G.SIEVES.fine).rows;
+  for (const r of rows) near(r.cumRetained + r.passing, 100, 1e-9, `${r.label} cumRetained+passing`);
+  const no4 = rows.find(r => r.label === 'No. 4');
+  assert.equal(no4.cumRetained, 0.3); assert.equal(no4.passing, 99.7);
+});
+
 test('finenessModulus: 3.01 for the fine example, 7.09 for the coarse example', () => {
   near(G.finenessModulus(fine.rows), 3.01, 0.005, 'fine FM');
   near(G.finenessModulus(coarse.rows), 7.09, 0.005, 'coarse FM'); // No. 30·50·100 은 100 % 잔류로 센다

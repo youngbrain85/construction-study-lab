@@ -24,8 +24,8 @@ if (form) {
     while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
     SIEVES[mode].forEach((s, i) => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<th scope="row">${s.label}</th><td>${s.mm ? s.mm : '—'}</td>` +
-        `<td><input type="number" step="0.1" min="0" name="m${i}" value="${DEFAULTS[mode][i] || ''}" aria-label="${s.label} mass retained, grams"></td>` +
+      tr.innerHTML = `<th scope="row">${s.label}</th><td>${s.mm ? (s.mm >= 1 ? s.mm : s.mm.toFixed(3)) : '—'}</td>` +
+        `<td><input type="number" step="0.1" min="0" name="m${i}" value="${Number.isFinite(DEFAULTS[mode][i]) ? DEFAULTS[mode][i] : ''}" aria-label="${s.label} mass retained, grams"></td>` +
         `<td class="out" id="pr-${i}">—</td><td class="out" id="cr-${i}">—</td><td class="out" id="pp-${i}">—</td><td class="out" id="ok-${i}">—</td>`;
       tbody.appendChild(tr);
     });
@@ -58,7 +58,7 @@ if (form) {
   function draw(rows, limits, checks) {
     clearSvg(''); const svg = $('calc-plot');
     const L = 80, R = 700, T = 24, B = 300, lo = Math.log10(0.05), hi = Math.log10(100);
-    const X = mm => L + (Math.log10(mm) - lo) / (hi - lo) * (R - L), Y = p => B - p / 100 * (B - T);
+    const X = mm => R - (Math.log10(mm) - lo) / (hi - lo) * (R - L), Y = p => B - p / 100 * (B - T);
     const g = el('g', { 'font-family': 'var(--font-mono)', 'font-size': '11', fill: 'var(--muted)' }); svg.appendChild(g);
     // 허용대 다각형 (제한이 있는 체만, 굵은 체 → 가는 체 순)
     const band = rows.filter(r => r.mm > 0 && limits[r.label]);
@@ -77,7 +77,7 @@ if (form) {
     });
     g.appendChild(el('line', { x1: L, y1: B, x2: R, y2: B, stroke: 'var(--dark)', 'stroke-width': 1.5 }));
     g.appendChild(el('line', { x1: L, y1: T, x2: L, y2: B, stroke: 'var(--dark)', 'stroke-width': 1.5 }));
-    g.appendChild(el('text', { x: (L + R) / 2, y: 350, 'text-anchor': 'middle', fill: 'var(--dark)' }, 'sieve opening, mm (log scale; coarse on the right)'));
+    g.appendChild(el('text', { x: (L + R) / 2, y: 350, 'text-anchor': 'middle', fill: 'var(--dark)' }, 'sieve opening, mm (log scale; coarse on the left)'));
     g.appendChild(el('text', { x: 18, y: (T + B) / 2, 'text-anchor': 'middle', fill: 'var(--dark)', transform: `rotate(-90 18 ${(T + B) / 2})` }, '% passing'));
     const pts = rows.filter(r => r.mm > 0);
     if (pts.length > 1) g.appendChild(el('polyline', { points: pts.map(r => `${X(r.mm).toFixed(1)},${Y(r.passing).toFixed(1)}`).join(' '), fill: 'none', stroke: 'var(--royal)', 'stroke-width': 3 }));
@@ -107,19 +107,19 @@ if (form) {
       $('pr-' + i).textContent = fmt1(r.pctRetained); $('cr-' + i).textContent = fmt1(r.cumRetained); $('pp-' + i).textContent = fmt1(r.passing);
       const c = lim.checks.find(k => k.label === r.label), cell = $('ok-' + i);
       if (!c || c.ok === null) { cell.textContent = r.label === 'pan' ? '' : '—'; cell.className = 'out'; }
-      else { cell.textContent = c.ok ? `${c.min}–${c.max} OK` : `${c.min}–${c.max} out`; cell.className = 'out ' + (c.ok ? 'ok' : 'bad'); }
+      else { const range = c.min === c.max ? `${c.min}` : `${c.min}–${c.max}`; cell.textContent = c.ok ? `${range} OK` : `${range} out`; cell.className = 'out ' + (c.ok ? 'ok' : 'bad'); }
     });
     const fm = finenessModulus(res.rows), size = nominalMaxSize(res.rows), single = maxSingleFraction(res.rows);
     const fines = res.rows[res.rows.length - 1].pctRetained; // 팬 = No. 200 통과분(건식)
     const mc = massCheck(res.total, inp.sampleMass);
     $('out-total').textContent = `${fmtG(res.total)} g`;
     $('out-fm').textContent = fm.toFixed(2);
-    $('out-nmas').textContent = size.nmas ? `${size.nmas} (max ${size.maxSize || '—'})` : '—';
+    $('out-nmas').textContent = size.nmas ? `${size.nmas} · max ${size.maxSize || '—'}` : '—';
     const problems = [];
     if (!lim.allOk) problems.push(`outside the band on ${lim.checks.filter(k => k.ok === false).map(k => k.label).join(', ')}`);
     if (fine && (fm < FM_RANGE[0] || fm > FM_RANGE[1])) problems.push(`FM ${fm.toFixed(2)} outside ${FM_RANGE[0]}–${FM_RANGE[1]}`);
     if (fine && !single.ok) problems.push(`${fmt1(single.pct)} % on ${single.label} exceeds the ${MAX_SINGLE_FRACTION} % single-sieve limit`);
-    if (fine && fines > FINES_LIMIT) problems.push(`${fmt1(fines)} % finer than No. 200 exceeds ${FINES_LIMIT} % (abrasion service)`);
+    if (fine && fines > FINES_LIMIT) problems.push(`${fmt1(fines)} % finer than No. 200 exceeds ${FINES_LIMIT} % (abrasion service; confirm by washing)`);
     if (mc && !mc.ok) problems.push(`sieved mass differs from the sample mass by ${fmt1(mc.diffPct)} % (limit 0.3 %) — the run is not acceptable`);
     const verdict = $('out-verdict');
     verdict.textContent = problems.length ? 'CHECK' : 'MEETS C33';
@@ -127,7 +127,7 @@ if (form) {
     const n = lim.checks.filter(k => k.ok !== null).length, okN = lim.checks.filter(k => k.ok === true).length;
     $('out-limits').textContent = `${okN} of ${n} limited sieves within the ${fine ? 'C33 fine-aggregate band' : 'C33 Size ' + inp.sizeNo + ' band'}. ${problems.length ? 'Issues: ' + problems.join('; ') + '.' : ''}`;
     const notes = [];
-    if (fine) notes.push(`Largest single-sieve fraction ${fmt1(single.pct)} % on ${single.label} (limit ${MAX_SINGLE_FRACTION} %). Finer than No. 200 (dry): ${fmt1(fines)} %.`);
+    if (fine) notes.push(`Largest single-sieve fraction ${fmt1(single.pct)} % on ${single.label} (limit ${MAX_SINGLE_FRACTION} %). Finer than No. 200 (dry sieving; the C33 limit applies to a washed sample): ${fmt1(fines)} %.`);
     if (mc) notes.push(`Mass check: ${fmt1(mc.diffPct)} % difference (${mc.ok ? 'within' : 'over'} 0.3 %).`); else notes.push('Enter the dried sample mass to check the 0.3 % rule.');
     $('out-notes').textContent = notes.join(' ');
     draw(res.rows, limits, lim.checks);
@@ -136,7 +136,6 @@ if (form) {
   buildRows();
   form.addEventListener('input', update);
   $('mode').addEventListener('change', () => { mode = form.elements.mode.value; buildRows(); update(); });
-  $('sizeNo').addEventListener('change', update);
   form.addEventListener('submit', e => { e.preventDefault(); update(); });
   update();
 }

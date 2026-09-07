@@ -34,7 +34,8 @@ export function analyze(retained, sieves) {
   let cum = 0;
   const rows = sieves.map((s, i) => {
     cum += masses[i];
-    return { label: s.label, mm: s.mm, retained: masses[i], pctRetained: pct1(masses[i] / total * 100), cumRetained: pct1(cum / total * 100), passing: pct1(100 - cum / total * 100) };
+    const cumR = pct1(cum / total * 100); // 반올림한 누적잔류율 — 통과율을 이 값 기준으로 계산해 두 값의 합이 항상 100 이 되게 한다
+    return { label: s.label, mm: s.mm, retained: masses[i], pctRetained: pct1(masses[i] / total * 100), cumRetained: cumR, passing: pct1(100 - cumR) };
   });
   return { total, rows };
 }
