@@ -224,9 +224,9 @@ Block A:
   <li><strong>Cut and mark.</strong> Cut a length long enough to fill both grips and leave a free length between them; in the middle of the free length, punch or scribe two gauge marks 8.00 in. apart. Eight inches is the gauge length for reinforcing bars — every elongation figure in A615 is "in 8 in."</li>
   <li><strong>Grip it straight.</strong> The bar goes into wedge grips with its axis on the line of pull. A bar seated crooked is bent as well as pulled, and reads low.</li>
   <li><strong>Pull slowly through yield.</strong> The standard caps the rate of straining through the yield region; a bar rushed through it shows a higher yield than it has. On a bar with a sharp-kneed curve the load stops rising — the pointer halts, or the beam drops — while the bar keeps stretching. That load is the yield point by the <em>halt-of-force</em> method: yield strength = yield load ÷ nominal area.</li>
-  <li><strong>Or construct the offset.</strong> Higher grades usually have no plateau. With an extensometer on the bar the machine plots stress against strain; a line parallel to the elastic slope, offset by 0.2 % strain, is drawn, and where it meets the curve is the yield strength by the <em>0.2 % offset</em> method. ACI 318-19 accepts either method — the offset for any bar, the halt of force only where the knee is sharp; the extension-under-load reading of earlier editions is no longer used.</li>
+  <li><strong>Or construct the offset.</strong> Higher grades usually have no plateau. With an extensometer on the bar the machine plots stress against strain; a line parallel to the elastic slope, offset by 0.2 % strain, is drawn, and where it meets the curve is the yield strength by the <em>0.2 % offset</em> method. ACI 318-19 accepts either method — the offset for any bar, the halt of force only where the knee is sharp. Older editions of ACI 318 read the yield as the stress at a fixed extension under load instead; ASTM A370 still describes that method, so check which one the specification in force names.</li>
   <li><strong>Pull to fracture.</strong> Past yield the machine may run faster. The load climbs again through strain hardening to a maximum, then falls as one spot thins into a neck, and the bar breaks there. Tensile strength = maximum load ÷ nominal area.</li>
-  <li><strong>Measure the elongation.</strong> Fit the two pieces together along their axis and measure between the gauge marks. Elongation = (final length − 8.00) ÷ 8.00 × 100, reported to the nearest 0.5 %. If the break falls near a gauge mark instead of in the middle portion and the elongation falls short, the result is discarded and another bar is tested.</li>
+  <li><strong>Measure the elongation.</strong> Fit the two pieces together along their axis and measure between the gauge marks. Elongation = (final length − 8.00) ÷ 8.00 × 100, reported to the nearest 0.5 %. If the break lands outside the middle third of the gauge length — A615's retest rule; A370's general rule draws the line at the middle half — and the elongation falls short, the result is discarded and another bar is tested.</li>
 </ol>
 <figure>
 <svg class="fig-svg" viewBox="0 0 720 360" role="img" aria-labelledby="fig2-title">
@@ -283,7 +283,7 @@ Block A:
     <text x="384" y="75" fill="var(--dark)">0.2 % offset yield, 82 ksi (no plateau)</text>
     <text x="352" y="114" fill="var(--dark)">the offset meets the plateau at the same 68 ksi</text>
     <text x="230" y="262" fill="var(--dark)">0.2 % offset line, parallel to the elastic slope</text>
-    <text x="170" y="150" text-anchor="end" fill="var(--dark)">E = 29,000 ksi</text>
+    <text x="86" y="104" fill="var(--dark)">E = 29,000 ksi</text>
   </g>
 </svg>
 <figcaption>Figure 3. The first 1 % of strain. Blue: a bar with a sharp knee — the yield point is where the force halts, 68 ksi, and the 0.2 % offset line meets its plateau at the same value. Amber: a bar without a plateau, typical of the higher grades — only the offset construction gives it a yield strength, here 82 ksi. Both bars share the same elastic slope.</figcaption>
@@ -327,7 +327,7 @@ Block B:
   </tbody>
 </table>
 </div>
-<p class="ref-note">Grade 40 is made in sizes #3 to #6 only. The elongation minimum eases with bar size and with grade: the price of a stronger bar is a little less stretch.</p>
+<p class="ref-note">Grade 40 is made in sizes #3 to #6 only. The elongation minimum eases with grade — the price of a stronger bar is a little less stretch — and, from Grade 60 up, with bar size; Grade 40 is the exception, asking 11 % of a #3 bar and 12 % of #4 to #6.</p>
 
 <h2 id="bend"><span class="num">5</span>The bend test</h2>
 <figure>
@@ -492,19 +492,30 @@ test('Table 4: 굽힘 핀 지름 배수(3½·5·7·9 d)', () => {
   for (const r of rows) {
     const v = r.slice(1).map(c => (c.text === '—' ? null : Number(attr(c.attrs, 'data-mult'))));
     assert.deepEqual(v, expected[r[0].text], r[0].text);
-    for (const c of r.slice(1)) if (c.text !== '—') assert.match(c.text, /^(3½|5|7|9) d$/, `pin text ${c.text}`);
+    for (const c of r.slice(1)) if (c.text !== '—') {
+      assert.match(c.text, /^(3½|5|7|9) d$/, `pin text ${c.text}`);
+      assert.equal(c.text === '3½ d' ? 3.5 : Number(c.text.split(' ')[0]), Number(attr(c.attrs, 'data-mult')), `pin text vs data-mult: ${c.text}`);   // 글자와 속성이 같은 배수를 말해야 한다
+    }
   }
 });
 
-test('Table 2: 예제의 표시값이 data-* 입력에서 재계산한 값과 같다', () => {
+test('Table 2: 예제의 표시값이 data-* 입력에서 재계산한 값과 같다(속성값과 본문 글자 모두)', () => {
   const t = table('tbl-example');
   const a = Number(attr(t.attrs, 'data-area')), d = Number(attr(t.attrs, 'data-diameter'));
   const py = Number(attr(t.attrs, 'data-yield-load')), pm = Number(attr(t.attrs, 'data-max-load'));
   const g = Number(attr(t.attrs, 'data-gauge')), f = Number(attr(t.attrs, 'data-final')), mult = Number(attr(t.attrs, 'data-pin-mult'));
   const r1 = v => Math.round(v * 10) / 10, r2 = v => Math.round(v * 100) / 100;
-  const shown = bodyRows(t).map(r => Number(attr(r[2].attrs, 'data-result')));
+  const rows = bodyRows(t);
+  const shown = rows.map(r => Number(attr(r[2].attrs, 'data-result')));
   assert.deepEqual(shown, [r1(py / a / 1000), r1(pm / a / 1000), r1((f - g) / g * 100), r2(mult * d)]);
   assert.deepEqual(shown, [68.1, 100, 13, 2.19]);
+  // 독자가 읽는 글자도 같은 값을 말해야 한다(속성만 맞고 본문이 오타인 경우를 잡는다)
+  const grab = (s, re) => { const m = s.match(re); assert.ok(m, `no number in "${s}"`); return Number(m[1]); };
+  assert.equal(grab(rows[0][2].text, /→\s*([\d.]+)\s*ksi/), shown[0]);
+  assert.equal(grab(rows[1][2].text, /→\s*([\d.]+)\s*ksi/), shown[1]);
+  assert.equal(grab(rows[2][2].text, /=\s*([\d.]+)\s*%/), shown[2]);
+  assert.equal(grab(rows[3][1].text, /([\d.]+) in\. pin/), shown[3]);
+  assert.ok(rows[0][1].text.includes(py.toLocaleString('en-US')) && rows[1][1].text.includes(pm.toLocaleString('en-US')) && rows[2][1].text.includes(String(f)), 'measured cells quote the inputs');
   assert.equal(Math.round(Math.PI * d * d / 4 * 100) / 100, a, 'nominal area of the #5 bar');
   assert.ok(shown[0] >= 60 && shown[1] >= 90 && shown[2] >= 9, 'meets the Grade 60 minimums for a #5 bar');
 });
@@ -514,7 +525,7 @@ Run: `node --test tools/rebar.test.mjs` before Step 1 is complete → FAIL (file
 
 - [ ] **Step 3: Register with the guards** — in `tools/site-guards.test.mjs` add `'study/rebar-tension/index.html'` to the tokens-only `files` list (after `'study/aggregate-gradation/calc.js'`) and to `ARTICLE_PAGES` (last).
 
-- [ ] **Step 3b: Let text tables wrap inside the scroll wrapper** — in `site/study/article.css`, directly after `.ref-table--text td, .ref-table--text th { white-space:normal; text-align:left; }` add `.table-wrap .ref-table--text td, .table-wrap .ref-table--text th { white-space:normal; text-align:left; }` with a Korean comment (the `.table-wrap` nowrap rule has specificity 0,2,1 and silently overrode the text-table rule; without this, Table 2 scrolls sideways even at 1440 px).
+- [ ] **Step 3b: Let text tables wrap inside the scroll wrapper** — in `site/study/article.css`, replace the line `.ref-table--text td, .ref-table--text th { white-space:normal; text-align:left; }` with `.ref-table--text td, .ref-table--text th, .table-wrap .ref-table--text td, .table-wrap .ref-table--text th { white-space:normal; text-align:left; }` plus a Korean comment (the `.table-wrap` nowrap rule has specificity 0,2,1 and silently overrode the text-table rule; the added selectors tie it and win on source order, so Table 2 — and the text tables of the soil-compaction and mix-design example pages — wrap instead of scrolling).
 
 - [ ] **Step 4: Gate + browser check**
 
