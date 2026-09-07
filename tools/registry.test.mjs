@@ -52,9 +52,9 @@ test('MATERIALS: 항목이 있으면 group·type·필수 필드가 유효', () =
   }
 });
 
-test('MATERIALS: 믹스 디자인 2편·슬럼프·공시체·다짐 글이 등록돼 있고 page href 가 실제 파일을 가리킨다', () => {
+test('MATERIALS: 믹스 디자인 2편·골재 입도·슬럼프·공시체·다짐 글이 등록돼 있고 page href 가 실제 파일을 가리킨다', () => {
   const pages = S.MATERIALS.filter(m => m.type === 'page');
-  assert.deepEqual(pages.map(m => m.id), ['mix-design-1', 'mix-design-2', 'slump-test', 'concrete-cylinders', 'soil-compaction']);
+  assert.deepEqual(pages.map(m => m.id), ['mix-design-1', 'mix-design-2', 'aggregate-gradation', 'slump-test', 'concrete-cylinders', 'soil-compaction']);
   for (const m of pages) {
     assert.equal(m.group, 'materials');
     assert.ok(m.href.endsWith('/'), `${m.id} href ends with /`);
