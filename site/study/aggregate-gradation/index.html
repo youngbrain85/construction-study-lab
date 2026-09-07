@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sieve analysis and the fineness modulus — Construction Study Lab</title>
+<meta name="description" content="How aggregate grading is measured by sieve analysis (ASTM C136), turned into percent passing, the fineness modulus and the nominal maximum size, and checked against the ASTM C33 grading bands — with a calculator that plots your sieve results.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@800&family=Hepta+Slab:wght@400;600;700&family=Red+Hat+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../shared/theme.css">
+<link rel="stylesheet" href="../article.css">
+</head>
+<body class="section-page article-page">
+<header class="appbar"><div class="appbar-inner appbar-inner--wide">
+  <a class="logo" href="../../">Construction Study Lab</a>
+  <nav class="appbar-nav" aria-label="Sections">
+    <a href="../../labs/">Lab</a>
+    <a href="../" class="is-active" aria-current="true">Study</a>
+  </nav>
+</div></header>
+
+<section class="band-royal article-hero"><div class="article-hero-inner">
+  <p class="eyebrow">Materials · Aggregates</p>
+  <h1>Sieve analysis</h1>
+  <p class="lede">A stack of sieves, a balance, and twenty minutes of shaking tell you how an aggregate is graded — the number that sets how much paste a concrete needs. Here is the test, the arithmetic behind the fineness modulus, and the ASTM C33 bands, with a calculator that plots your own results.</p>
+  <p class="byline">Jisoo Park · September 2026 · 10 min read</p>
+</div></section>
+
+<main class="article-layout">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#why">1. Why grading matters</a></li>
+    <li><a href="#terms">2. Sieves, percent passing, FM</a></li>
+    <li><a href="#test">3. The test</a></li>
+    <li><a href="#arithmetic">4. The arithmetic</a></li>
+    <li><a href="#curve">5. Reading the curve</a></li>
+    <li><a href="#astm-c33">6. What ASTM C33 requires</a></li>
+    <li><a href="#calculator">7. Try it: the calculator</a></li>
+    <li><a href="#mistakes">8. Common mistakes</a></li>
+    <li><a href="#takeaways">9. Key takeaways</a></li>
+  </ol>
+</nav>
+
+<article class="article">
+
+<h2 id="why"><span class="num">1</span>Why grading matters</h2>
+<figure>
+  <img src="img/sieve-stack.jpg" width="1200" height="800" alt="Stacks of stainless-steel test sieves of many sizes standing on a laboratory floor" loading="eager">
+  <figcaption>Nests of standard sieves waiting for the next sample. Photo: Habib M'henni, Wikimedia Commons, CC BY-SA 3.0.</figcaption>
+</figure>
+<p>Aggregate is two-thirds to three-quarters of a concrete by volume, and it is the cheap part. The paste — cement and water — is the expensive part, and it has to fill every void between the aggregate particles and coat every surface. How much paste that takes depends on how the particle sizes are distributed: a <em>well-graded</em> aggregate, with a range of sizes that pack into one another, leaves few voids; a <em>uniformly graded</em> one, with all particles about the same size, leaves many; a <em>gap-graded</em> one, missing a size range, packs poorly and tends to segregate. Grading therefore sets the water and cement a mix needs, how it flows and finishes, and whether it stays together on the way from the chute to the form.</p>
+<p>That is why the mix design in <a href="../mix-design/">Part 1</a> asks for two numbers before anything else can be chosen: the <em>nominal maximum size</em> of the coarse aggregate, which sets the water and air content, and the <em>fineness modulus</em> of the sand, which sets the volume of coarse aggregate. Both come from one test, the sieve analysis, and this article is about running it and reading it.</p>
+<figure class="fig-small">
+  <img src="../mix-design/img/graded-aggregate.jpg" width="350" height="200" alt="Two samples of aggregate side by side, one well graded with a range of particle sizes and one poorly graded" loading="lazy">
+  <figcaption>Well-graded and poorly graded aggregate. The well-graded sample packs tighter and needs less paste.</figcaption>
+</figure>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>Grading does not change the strength of the stone; it changes how much paste the concrete needs to be workable, and paste is where the cost, the shrinkage and the heat are.</p>
+</div>
+
+<h2 id="terms"><span class="num">2</span>Sieves, percent passing, and the fineness modulus</h2>
+<p>A sieve analysis shakes a dried sample through a nest of sieves with square openings, largest on top, and weighs what stays on each one. The standard sieves are named by opening (3 in., 1 1/2 in., 3/4 in., 3/8 in.) down to about 5 mm, and by mesh number below that: No. 4 (4.75 mm), No. 8 (2.36 mm), No. 16 (1.18 mm), No. 30 (0.600 mm), No. 50 (0.300 mm), No. 100 (0.150 mm), No. 200 (0.075 mm). The ones used for the fineness modulus double in opening from one to the next.</p>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 330" role="img" aria-labelledby="fig1-title">
+  <title id="fig1-title">A nest of standard sieves for fine aggregate, largest opening on top</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <rect x="200" y="20" width="200" height="28" rx="3" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/><text x="300" y="39" text-anchor="middle" fill="var(--dark)">3/8 in. · 9.5 mm</text>
+    <rect x="200" y="54" width="200" height="28" rx="3" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/><text x="300" y="73" text-anchor="middle" fill="var(--dark)">No. 4 · 4.75 mm</text>
+    <rect x="200" y="88" width="200" height="28" rx="3" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/><text x="300" y="107" text-anchor="middle" fill="var(--dark)">No. 8 · 2.36 mm</text>
+    <rect x="200" y="122" width="200" height="28" rx="3" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/><text x="300" y="141" text-anchor="middle" fill="var(--dark)">No. 16 · 1.18 mm</text>
+    <rect x="200" y="156" width="200" height="28" rx="3" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/><text x="300" y="175" text-anchor="middle" fill="var(--dark)">No. 30 · 0.600 mm</text>
+    <rect x="200" y="190" width="200" height="28" rx="3" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/><text x="300" y="209" text-anchor="middle" fill="var(--dark)">No. 50 · 0.300 mm</text>
+    <rect x="200" y="224" width="200" height="28" rx="3" fill="var(--icy)" stroke="var(--dark)" stroke-width="1.5"/><text x="300" y="243" text-anchor="middle" fill="var(--dark)">No. 100 · 0.150 mm</text>
+    <rect x="200" y="258" width="200" height="28" rx="3" fill="var(--bg)" stroke="var(--dark)" stroke-width="1.5"/><text x="300" y="277" text-anchor="middle" fill="var(--dark)">No. 200 · 0.075 mm</text>
+    <rect x="200" y="292" width="200" height="28" rx="3" fill="var(--border)" stroke="var(--dark)" stroke-width="1.5"/><text x="300" y="311" text-anchor="middle" fill="var(--dark)">pan</text>
+    <path d="M420 34 L470 34 L470 257 L420 257" fill="none" stroke="var(--royal)" stroke-width="1.5"/>
+    <text x="480" y="130" fill="var(--royal)">the seven FM sieves:</text>
+    <text x="480" y="148" fill="var(--royal)">each opening is twice</text>
+    <text x="480" y="166" fill="var(--royal)">the one below it</text>
+    <text x="180" y="277" text-anchor="end" fill="var(--muted)">not in the FM</text>
+    <text x="180" y="311" text-anchor="end" fill="var(--muted)">not in the FM</text>
+    <path d="M300 4 L294 12 L306 12 Z" fill="var(--dark)"/><text x="316" y="12" fill="var(--muted)" font-size="11">sample goes in here</text>
+  </g>
+</svg>
+<figcaption>Figure 1. The nest for a fine aggregate. The No. 200 sieve and the pan are weighed like the others but do not enter the fineness modulus.</figcaption>
+</figure>
+<div class="callout callout-def"><span class="label">Definitions</span>
+  <p><strong>Percent retained</strong> on a sieve is the mass it holds divided by the whole sample. <strong>Cumulative percent retained</strong> is the running total from the top sieve down. <strong>Percent passing</strong> is 100 minus the cumulative retained — the fraction finer than that sieve, and the number the grading bands are written in.</p>
+  <p><strong>Fineness modulus (FM)</strong> is the sum of the cumulative percentages retained on the standard sieves — 3 in., 1 1/2 in., 3/4 in., 3/8 in., No. 4, 8, 16, 30, 50 and 100 — divided by 100. For a sand only the last seven contribute. A higher FM means a coarser sand.</p>
+  <p><strong>Nominal maximum size (NMAS)</strong> is the smallest sieve opening through which the specification allows the whole aggregate to pass, a small amount retained being permitted; the <strong>maximum size</strong> is the smallest opening through which all of it must pass. In practice the NMAS of a sample is read as the smallest sieve retaining no more than 10 %.</p>
+</div>
+
+<h2 id="test"><span class="num">3</span>The test (ASTM C136)</h2>
+<div class="fig-grid">
+  <figure><img src="img/weighing.jpg" width="1200" height="900" alt="Hands lifting a brass test sieve over a laboratory balance to weigh the material retained on it" loading="lazy"><figcaption>Weighing what stayed on a sieve. Photo: Soccer jim2002, Wikimedia Commons, CC BY-SA 4.0.</figcaption></figure>
+  <figure><img src="img/shaker.jpg" width="1200" height="900" alt="A laboratory vibrating sieve shaker with a sieve mounted on top" loading="lazy"><figcaption>A mechanical shaker does the shaking; the standard still defines when it is enough. Photo: Cjp24, Wikimedia Commons, CC BY-SA 3.0.</figcaption></figure>
+</div>
+<ol class="steps">
+  <li><strong>Get a fair sample and dry it.</strong> Reduce the field sample by splitting or quartering (ASTM C702) and dry it to constant mass at 110 ± 5 °C. The test sample must be big enough for the sizes in it: at least 300 g for a sand, and for a coarse aggregate about 1 kg for 3/8 in. nominal maximum size, 2 kg for 1/2 in., 5 kg for 3/4 in., 10 kg for 1 in., 15 kg for 1 1/2 in., 20 kg for 2 in.</li>
+  <li><strong>Nest the sieves and shake.</strong> Largest opening on top, pan on the bottom, lid on. Shake by hand or in a machine until the sieving is <em>adequate</em>: when not more than 1 % by mass of what is on any sieve passes it during one more minute of hand sieving. Do not overload: a sieve finer than No. 4 should carry no more than about 7 kg per square metre of screen, roughly 200 g on an 8 in. sieve, so split a large sample into more than one run.</li>
+  <li><strong>Weigh every fraction.</strong> The mass on each sieve and in the pan, to 0.1 % of the sample mass. Brush the sieves out; what clings to the mesh belongs to that sieve.</li>
+  <li><strong>Check the total.</strong> The fractions must add up to the original dried mass within 0.3 %. If they do not, something was lost or a sieve was not emptied, and the run is not acceptable — start again.</li>
+</ol>
+<p class="ref-note">Dry sieving under-reads the dust: fines cling to the larger particles. When the amount finer than No. 200 matters — and for concrete sand it does — the sample is first washed over a No. 200 sieve (ASTM C117) and the washed-out mass is added to the pan.</p>
+<div class="callout callout-warn"><span class="label">Watch out</span>
+  <p>Ten seconds on the shaker is not a test. The 1 %-in-one-minute rule is what makes one laboratory's percent passing comparable with another's; an under-shaken sample reads coarser than it is, and its fineness modulus comes out high.</p>
+</div>
+
+<h2 id="arithmetic"><span class="num">4</span>The arithmetic</h2>
+<p>Here is a 500 g sand, sieved and weighed. The example numbers are made up but typical. Each row's percent retained is its mass over the total; the cumulative column adds them from the top; percent passing is 100 minus the cumulative. Report the passing values to the nearest 1 % (the No. 200 fraction to 0.1 %).</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-example">
+  <caption>Table 1. Sieve analysis of a 500 g fine aggregate (example numbers)</caption>
+  <thead><tr><th scope="col">Sieve</th><th scope="col">Retained, g</th><th scope="col">Retained, %</th><th scope="col">Cumulative retained, %</th><th scope="col">Passing, %</th></tr></thead>
+  <tbody>
+    <tr><td>3/8 in.</td><td>0</td><td>0.0</td><td>0.0</td><td>100</td></tr>
+    <tr><td>No. 4</td><td>12</td><td>2.4</td><td>2.4</td><td>98</td></tr>
+    <tr><td>No. 8</td><td>68</td><td>13.6</td><td>16.0</td><td>84</td></tr>
+    <tr><td>No. 16</td><td>110</td><td>22.0</td><td>38.0</td><td>62</td></tr>
+    <tr><td>No. 30</td><td>130</td><td>26.0</td><td>64.0</td><td>36</td></tr>
+    <tr><td>No. 50</td><td>105</td><td>21.0</td><td>85.0</td><td>15</td></tr>
+    <tr><td>No. 100</td><td>55</td><td>11.0</td><td>96.0</td><td>4</td></tr>
+    <tr><td>No. 200</td><td>14</td><td>2.8</td><td>98.8</td><td>1.2</td></tr>
+    <tr><td>pan</td><td>6</td><td>1.2</td><td>100.0</td><td>0</td></tr>
+  </tbody>
+</table>
+</div>
+<p>The fineness modulus adds the cumulative percentages retained on the seven FM sieves — 0 + 2.4 + 16.0 + 38.0 + 64.0 + 85.0 + 96.0 = 301.4 — and divides by 100:</p>
+<div class="eq">FM = Σ (cumulative % retained on 3/8 in., No. 4, 8, 16, 30, 50, 100) / 100 = 301.4 / 100 = 3.01</div>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 260" role="img" aria-labelledby="fig2-title">
+  <title id="fig2-title">The fineness modulus as the sum of cumulative percent retained bars</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="12" fill="var(--muted)">
+    <line x1="70" y1="210" x2="700" y2="210" stroke="var(--dark)" stroke-width="1.5"/>
+    <line x1="70" y1="20" x2="70" y2="210" stroke="var(--dark)" stroke-width="1.5"/>
+    <text x="40" y="214" text-anchor="end">0</text><text x="40" y="119" text-anchor="end">50</text><text x="40" y="24" text-anchor="end">100</text>
+    <line x1="70" y1="115" x2="700" y2="115" stroke="var(--border)" stroke-width="1"/>
+    <rect x="100" y="210" width="60" height="0" fill="var(--royal)"/><text x="130" y="232" text-anchor="middle">3/8 in.</text><text x="130" y="204" text-anchor="middle" fill="var(--dark)">0</text>
+    <rect x="185" y="205.4" width="60" height="4.6" fill="var(--royal)"/><text x="215" y="232" text-anchor="middle">No. 4</text><text x="215" y="199" text-anchor="middle" fill="var(--dark)">2.4</text>
+    <rect x="270" y="179.6" width="60" height="30.4" fill="var(--royal)"/><text x="300" y="232" text-anchor="middle">No. 8</text><text x="300" y="173" text-anchor="middle" fill="var(--dark)">16.0</text>
+    <rect x="355" y="137.8" width="60" height="72.2" fill="var(--royal)"/><text x="385" y="232" text-anchor="middle">No. 16</text><text x="385" y="131" text-anchor="middle" fill="var(--dark)">38.0</text>
+    <rect x="440" y="88.4" width="60" height="121.6" fill="var(--royal)"/><text x="470" y="232" text-anchor="middle">No. 30</text><text x="470" y="82" text-anchor="middle" fill="var(--dark)">64.0</text>
+    <rect x="525" y="48.5" width="60" height="161.5" fill="var(--royal)"/><text x="555" y="232" text-anchor="middle">No. 50</text><text x="555" y="42" text-anchor="middle" fill="var(--dark)">85.0</text>
+    <rect x="610" y="27.6" width="60" height="182.4" fill="var(--royal)"/><text x="640" y="232" text-anchor="middle">No. 100</text><text x="640" y="21" text-anchor="middle" fill="var(--dark)">96.0</text>
+    <text x="385" y="254" text-anchor="middle" fill="var(--dark)">cumulative % retained on the seven FM sieves · sum 301.4 → FM 3.01</text>
+  </g>
+</svg>
+<figcaption>Figure 2. The fineness modulus is the total height of these bars divided by 100. A coarser sand fills the bars sooner and its FM is higher.</figcaption>
+</figure>
+<p>An FM of 3.01 is a coarse sand — near the top of the range C33 allows. In Part 1's Step 6 table a higher FM means less coarse aggregate per cubic yard, because a coarse sand already does some of the coarse aggregate's work.</p>
+
+<h2 id="curve"><span class="num">5</span>Reading the grading curve</h2>
+<p>Percent passing plotted against sieve opening is the grading curve. Openings are plotted on a logarithmic scale because the sieves double in size from one to the next, which turns the standard series into evenly spaced marks.</p>
+<figure>
+  <img src="img/gravel.jpg" width="1200" height="900" alt="Close-up of a natural mix of sand and gravel with particles of many sizes" loading="lazy">
+  <figcaption>A pit-run mix before it is sorted: sand, gravel and everything between — the raw material a sieve analysis separates into sizes. Photo: Sabina Bajracharya, Wikimedia Commons, CC BY-SA 4.0.</figcaption>
+</figure>
+<figure>
+<svg class="fig-svg" viewBox="0 0 720 340" role="img" aria-labelledby="fig3-title">
+  <title id="fig3-title">Three grading curves on the ASTM C33 fine-aggregate band: well graded, gap graded, uniformly graded</title>
+  <g font-family="var(--font-mono)" font-weight="500" font-size="11" fill="var(--muted)">
+    <polygon points="92,20 176,20 260,20 344,60.5 428,128 512,209 596,263 596,290 512,276.5 428,222.5 344,155 260,74 176,33.5 92,20" fill="var(--icy)" stroke="var(--border)" stroke-width="1"/>
+    <line x1="80" y1="290" x2="680" y2="290" stroke="var(--dark)" stroke-width="1.5"/>
+    <line x1="80" y1="20" x2="80" y2="290" stroke="var(--dark)" stroke-width="1.5"/>
+    <text x="70" y="294" text-anchor="end">0</text><text x="70" y="159" text-anchor="end">50</text><text x="70" y="24" text-anchor="end">100</text>
+    <line x1="80" y1="155" x2="680" y2="155" stroke="var(--border)" stroke-width="1"/>
+    <text x="596" y="312" text-anchor="middle">No. 100</text><text x="512" y="312" text-anchor="middle">No. 50</text><text x="428" y="312" text-anchor="middle">No. 30</text><text x="344" y="312" text-anchor="middle">No. 16</text><text x="260" y="312" text-anchor="middle">No. 8</text><text x="176" y="312" text-anchor="middle">No. 4</text><text x="92" y="312" text-anchor="middle">3/8 in.</text>
+    <text x="380" y="332" text-anchor="middle" fill="var(--dark)">sieve opening (log scale, coarse on the left)</text>
+    <text x="24" y="155" transform="rotate(-90 24 155)" text-anchor="middle" fill="var(--dark)">% passing</text>
+    <polyline points="92,20 176,26 260,63 344,123 428,193 512,250 596,279" fill="none" stroke="var(--royal)" stroke-width="3"/>
+    <polyline points="92,20 176,22 260,38 344,44 428,50 512,222 596,279" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-dasharray="7 4"/>
+    <polyline points="92,20 176,20 260,25 344,36 428,239 512,282 596,288" fill="none" stroke="var(--dark)" stroke-width="2" stroke-dasharray="3 3"/>
+    <text x="640" y="60" fill="var(--royal)" font-weight="600">well graded</text>
+    <text x="640" y="80" fill="var(--amber)" font-weight="600">gap graded</text>
+    <text x="640" y="100" fill="var(--dark)" font-weight="600">uniform</text>
+    <text x="300" y="98" fill="var(--muted)">C33 fine-aggregate band</text>
+  </g>
+</svg>
+<figcaption>Figure 3. Three sands on the ASTM C33 band. The well-graded curve runs smoothly through the band; the gap-graded one is missing the No. 16 to No. 30 sizes and drops in a step; the uniform one is nearly all one size.</figcaption>
+</figure>
+<p>A smooth S-shaped curve inside the band is what you want. A flat stretch followed by a steep drop means a size range is missing — the classic gap-graded sand that bleeds and segregates. A curve that is nearly vertical means one size — a uniform sand that is harsh to finish and needs a lot of paste. Two aggregates with the same fineness modulus can have quite different curves, which is why the specification limits both the FM and every sieve.</p>
+<div class="callout callout-key"><span class="label">Key idea</span>
+  <p>The FM is one number; the curve is the whole story. Check both, because a gap-graded and a well-graded sand can share an FM and behave nothing alike.</p>
+</div>
+
+<h2 id="astm-c33"><span class="num">6</span>What ASTM C33 requires</h2>
+<p>ASTM C33 is the specification most US concrete aggregate is bought against. For fine aggregate it sets a band of percent passing on each sieve, a cap on dust, a rule against lumps of one size, and a range for the fineness modulus.</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-fine">
+  <caption>Table 2. ASTM C33 grading limits for fine aggregate, percent passing</caption>
+  <thead><tr><th scope="col">Sieve</th><th scope="col">3/8 in.</th><th scope="col">No. 4</th><th scope="col">No. 8</th><th scope="col">No. 16</th><th scope="col">No. 30</th><th scope="col">No. 50</th><th scope="col">No. 100</th></tr></thead>
+  <tbody><tr><td>Passing, %</td><td>100</td><td>95–100</td><td>80–100</td><td>50–85</td><td>25–60</td><td>5–30</td><td>0–10</td></tr></tbody>
+</table>
+</div>
+<ul>
+  <li><strong>Dust.</strong> Material finer than No. 200 (by washing, ASTM C117) at most 3 % for concrete subject to abrasion and 5 % for other concrete; manufactured sands are allowed a little more.</li>
+  <li><strong>No lumps of one size.</strong> Not more than 45 % of the sand may pass one sieve and be retained on the next.</li>
+  <li><strong>Fineness modulus</strong> between 2.3 and 3.1, and once a mix is designed around a sand, later shipments may not drift more than 0.20 from that base FM — the mix would have to be re-proportioned.</li>
+</ul>
+<p>Coarse aggregate is specified by <em>size number</em>, each a band of its own. The common ones for structural concrete are these; sieves not listed for a size carry no limit.</p>
+<div class="table-wrap">
+<table class="ref-table" id="tbl-coarse">
+  <caption>Table 3. ASTM C33 grading limits for common coarse-aggregate sizes, percent passing</caption>
+  <thead><tr><th scope="col">Size</th><th scope="col">2 in.</th><th scope="col">1 1/2 in.</th><th scope="col">1 in.</th><th scope="col">3/4 in.</th><th scope="col">1/2 in.</th><th scope="col">3/8 in.</th><th scope="col">No. 4</th><th scope="col">No. 8</th><th scope="col">No. 16</th></tr></thead>
+  <tbody>
+    <tr><td>467 (1 1/2 in. to No. 4)</td><td>100</td><td>95–100</td><td>—</td><td>35–70</td><td>—</td><td>10–30</td><td>0–5</td><td>—</td><td>—</td></tr>
+    <tr><td>57 (1 in. to No. 4)</td><td>—</td><td>100</td><td>95–100</td><td>—</td><td>25–60</td><td>—</td><td>0–10</td><td>0–5</td><td>—</td></tr>
+    <tr><td>67 (3/4 in. to No. 4)</td><td>—</td><td>—</td><td>100</td><td>90–100</td><td>—</td><td>20–55</td><td>0–10</td><td>0–5</td><td>—</td></tr>
+    <tr><td>7 (1/2 in. to No. 4)</td><td>—</td><td>—</td><td>—</td><td>100</td><td>90–100</td><td>40–70</td><td>0–15</td><td>0–5</td><td>—</td></tr>
+    <tr><td>8 (3/8 in. to No. 8)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>100</td><td>85–100</td><td>10–30</td><td>0–10</td><td>0–5</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="ref-note">The size number's first sieve — 1 in. for No. 57 — is the nominal maximum size the mix design uses; the sieve that must pass 100 % is the maximum size. Coarse aggregate dust is capped at 1 % (1.5 % for crushed-stone dust of fracture).</p>
+
+<h2 id="calculator"><span class="num">7</span>Try it: from sieve masses to the C33 band</h2>
+<p>The numbers below are example numbers. Enter the mass retained on each sieve and the calculator computes the percentages, the fineness modulus, the nominal maximum size, checks every sieve against the ASTM C33 band you choose, and plots the curve on that band. Enter the dried mass you started with and it also checks the 0.3 % rule.</p>
+<form id="calc" class="calc" novalidate>
+  <div class="calc-grid">
+    <div class="num-field"><label for="mode">Aggregate</label><div class="wrap"><select id="mode" name="mode"><option value="fine" selected>Fine aggregate (sand)</option><option value="coarse">Coarse aggregate</option></select></div><p class="hint">Switching loads that mode's example numbers.</p></div>
+    <div class="num-field" id="size-field" hidden><label for="sizeNo">C33 size number</label><div class="wrap"><select id="sizeNo" name="sizeNo"><option value="467">467 — 1 1/2 in. to No. 4</option><option value="57" selected>57 — 1 in. to No. 4</option><option value="67">67 — 3/4 in. to No. 4</option><option value="7">7 — 1/2 in. to No. 4</option><option value="8">8 — 3/8 in. to No. 8</option></select></div></div>
+    <div class="num-field"><label for="sampleMass">Dried sample mass before sieving</label><div class="wrap"><input id="sampleMass" name="sampleMass" type="number" step="0.1" value=""><span class="unit">g</span></div><p class="hint">Optional — checks the 0.3 % mass rule.</p></div>
+  </div>
+  <fieldset class="calc-points">
+    <legend>Mass retained on each sieve, g</legend>
+    <div class="calc-tests">
+    <table class="calc-table calc-sieve">
+      <thead><tr><th scope="col">Sieve</th><th scope="col">Opening, mm</th><th scope="col">Retained, g</th><th scope="col">Retained, %</th><th scope="col">Cumulative, %</th><th scope="col">Passing, %</th><th scope="col">C33</th></tr></thead>
+      <tbody id="sieve-rows"></tbody>
+    </table>
+    </div>
+  </fieldset>
+  <p class="calc-error" id="calc-errors" aria-live="polite"></p>
+</form>
+<div class="calc-result" aria-live="polite">
+  <dl class="calc-summary">
+    <div><dt>Total sieved</dt><dd id="out-total">—</dd></div>
+    <div><dt id="lbl-fm">Fineness modulus</dt><dd id="out-fm">—</dd></div>
+    <div><dt>Nominal max. size</dt><dd id="out-nmas">—</dd></div>
+    <div><dt>Verdict</dt><dd id="out-verdict">—</dd></div>
+  </dl>
+  <p id="out-limits" class="calc-notes"></p>
+  <p id="out-notes" class="calc-notes"></p>
+</div>
+<figure class="calc-plot-wrap">
+  <svg id="calc-plot" class="fig-svg calc-svg" viewBox="0 0 720 360" role="img" aria-label="Grading curve on the ASTM C33 band"></svg>
+  <figcaption>Figure 4. Your sieve results on the ASTM C33 band: percent passing against sieve opening on a log scale. Points outside the band turn amber.</figcaption>
+</figure>
+<noscript><p class="ref-note">The calculator needs JavaScript. With the example numbers the 500 g sand gives 98, 84, 62, 36, 15 and 4 % passing the No. 4 to No. 100 sieves, a fineness modulus of 3.01, and meets every C33 fine-aggregate limit; the 10 kg coarse example meets the Size 57 limits with a nominal maximum size of 1 in.</p></noscript>
+<p class="ref-note">Percentages are shown to 0.1 % in the table so the arithmetic can be followed; a report would round percent passing to 1 %. The fineness modulus of a coarse aggregate is computed the same way, counting the sieves finer than the finest one used as fully retained.</p>
+
+<h2 id="mistakes"><span class="num">8</span>Common mistakes</h2>
+<ul>
+  <li><strong>Not shaking long enough.</strong> The sample reads coarser than it is. Apply the 1 %-in-one-minute check on at least one sieve before you believe a result.</li>
+  <li><strong>Overloading the fine sieves.</strong> Particles cannot reach the openings through a thick bed; split the sample instead.</li>
+  <li><strong>Losing mass and carrying on.</strong> If the fractions do not add to the start mass within 0.3 %, the run is void. Brush the sieves; wear a dust mask, not a fan.</li>
+  <li><strong>Including the pan or the No. 200 in the FM.</strong> Only the seven standard sieves count for a sand. Adding the No. 200 line inflates the FM.</li>
+  <li><strong>Judging a sand by its FM alone.</strong> The band and the 45 % rule catch gap grading that the FM hides.</li>
+  <li><strong>Dry-sieving for the dust content.</strong> Fines cling to the coarse particles; wash over the No. 200 first (ASTM C117) when the dust limit matters.</li>
+  <li><strong>Reading the maximum size as the nominal maximum size.</strong> For a No. 57 stone the sieve that passes 100 % is 1 1/2 in.; the mix design wants 1 in.</li>
+</ul>
+
+<h2 id="takeaways"><span class="num">9</span>Key takeaways</h2>
+<ol>
+  <li>Grading sets the <strong>paste demand</strong>, workability and cohesion of a concrete; the sieve analysis is how it is measured.</li>
+  <li>Percent passing is 100 minus the cumulative percent retained; the <strong>fineness modulus</strong> is the sum of the cumulative percent retained on the seven (or ten) standard sieves divided by 100.</li>
+  <li>A valid run needs a big enough dried sample, <strong>adequate shaking</strong> (≤ 1 % in one more minute), unloaded sieves, and fractions that add up within <strong>0.3 %</strong>.</li>
+  <li>ASTM C33 limits every sieve, the dust (3 or 5 %), lumps of one size (45 %), and the FM (<strong>2.3 to 3.1</strong>, ± 0.20 from the base); coarse aggregate is bought by size number, whose first sieve is the nominal maximum size.</li>
+</ol>
+
+<p class="ref-note">Sources: ASTM C136/C136M (sieve analysis), C117 (material finer than No. 200 by washing), C125 (terminology: fineness modulus, nominal maximum size), C702 (sample reduction), C33/C33M (grading requirements). Precision is stated qualitatively.</p>
+<p class="ref-note">Photo credits: <a href="https://commons.wikimedia.org/wiki/File:Tamis_analyse_granulometrique.JPG">Tamis analyse granulométrique</a> by Habib M'henni, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Sieve_Analysis.jpg">Sieve Analysis</a> by Soccer jim2002, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Vibrating_sieve.jpg">Vibrating sieve</a> by Cjp24, <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>; <a href="https://commons.wikimedia.org/wiki/File:Varieties_of_Gravel_in_different_shapes_and_size._01.jpg">Varieties of Gravel</a> by Sabina Bajracharya, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; all via Wikimedia Commons. The photos were resized, cropped and recompressed for the web.</p>
+
+<nav class="article-nav" aria-label="Series">
+  <a class="prev" href="../mix-design/example/"><span class="dir">← Related</span><span class="ttl">Worked example: a 3,000 psi beam</span></a>
+  <a class="next" href="../"><span class="dir">Study →</span><span class="ttl">All study materials</span></a>
+</nav>
+
+</article>
+</main>
+
+<footer class="site-footer">
+  <span>© <span id="year"></span> Jisoo Park. All rights reserved.</span>
+  <a href="../../">← Home</a>
+</footer>
+<script src="../article.js"></script>
+<script type="module" src="calc.js"></script>
+</body>
+</html>

@@ -143,6 +143,8 @@ main.article-layout { max-width:1100px; margin:0 auto; padding:48px 40px 80px; d
 .calc .num-field .wrap select { border:0; outline:0; padding:10px 12px; width:100%; background:var(--bg); color:var(--text);
   font:500 14px/1.2 var(--font); text-overflow:ellipsis; white-space:nowrap; overflow:hidden; } /* 브리프 규칙에 없던 말줄임: 긴 옵션 문구가 상자 폭에서 글자 중간이 잘려 보이던 결함 수정(검증 스크린샷에서 발견) */
 .calc-plots { display:grid; gap:8px; }
+.calc-sieve th[scope="row"] { text-align:left; color:var(--dark); white-space:nowrap; }   /* 체가름 표: 체 이름 열 */
+.calc-sieve input { width:6em; }
 
 @media (max-width:900px) {
   .article-hero { padding:36px 20px 32px; }
