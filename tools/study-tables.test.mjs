@@ -91,3 +91,14 @@ test('2 in. NMAS 열(엔진 미포함)은 ACI 211.1 값 그대로', () => {
   assert.ok(two, 'bb0 2 in. row');
   assert.deepEqual(['2.4', '2.6', '2.8', '3'].map(k => cells(two.body, 'data-fm')[k]), [0.78, 0.76, 0.74, 0.72]);
 });
+
+// Part 2(워크 예제)의 절대용적 표 ↔ 엔진 absoluteVolumes — 랩의 자동 채움값과 발행된 워크시트가 어긋나지 않게 묶는다
+const HTML_EXAMPLE = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../site/study/mix-design/example/index.html'), 'utf8');
+test('#tbl-volumes: 발행된 워크 예제의 절대용적 = 엔진 absoluteVolumes(강의 예제)', () => {
+  const m = HTML_EXAMPLE.match(/<table[^>]*id="tbl-volumes"[^>]*>([\s\S]*?)<\/table>/);
+  assert.ok(m, 'table #tbl-volumes missing');
+  const shown = [...m[1].matchAll(/<tr><td>[^<]*<\/td><td>[^<]*<\/td><td>([\d.]+)<\/td><\/tr>/g)].map(x => parseFloat(x[1]));
+  const v = E.absoluteVolumes({ cement: 544, water: 299, ca: 1872, airPct: 1.5 });
+  assert.deepEqual(shown, [v.vCm, v.vWater, v.vCa, v.vAir]);
+  assert.deepEqual(shown, [0.102, 0.177, 0.415, 0.015]);
+});

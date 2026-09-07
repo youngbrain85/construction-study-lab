@@ -136,6 +136,21 @@ test('computeYield: 강의 예제 = 27.00 ft³', () => {
   assert.ok(Math.abs(v - 27.0) < 0.05, `got=${v}`);
 });
 
+test('absoluteVolumes: 강의 예제의 워크시트 부피(인쇄 상수 1,685 · 소수 3자리)', () => {
+  const v = E.absoluteVolumes(TEXTBOOK);
+  assert.deepEqual(v, { vCm: 0.102, vWater: 0.177, vCa: 0.415, vAir: 0.015 });
+  // 표시 정밀도로 반올림한 합이 물리 계산(computeYield, 잔골재 0)과 어긋나지 않는다
+  const sumFt3 = (v.vCm + v.vWater + v.vCa + v.vAir) * 27;
+  assert.ok(Math.abs(sumFt3 - E.computeYield({ ...TEXTBOOK, fa: 0 })) < 0.05, `sum ${sumFt3} ft³`);
+});
+
+test('absoluteVolumes: 결측 입력은 그 항목만 null, 범위 밖은 0–1로 클램프', () => {
+  assert.deepEqual(E.absoluteVolumes({ cement: null, water: 299, ca: undefined, airPct: NaN }),
+    { vCm: null, vWater: 0.177, vCa: null, vAir: null });
+  assert.deepEqual(E.absoluteVolumes({ cement: -50, water: 99999, ca: 0, airPct: 1.5 }),
+    { vCm: 0, vWater: 1, vCa: 0, vAir: 0.015 });
+});
+
 test('targetAirFor: 노출등급 → 목표 공기량', () => {
   const bridge = E.MISSIONS.find(m => m.id === 'bridge');
   assert.equal(E.targetAirFor(bridge, 0.75), 6.0); // severe @ 3/4"

@@ -169,6 +169,23 @@
       + 27 * (mix.airPct / 100);
   }
 
+  // ── Step 7 워크시트: 재료별 절대용적 (cu yd) ──────────────────────
+  // 화면 공식 카드와 Study 글에 인쇄된 관용값 1,685 lb/yd³(물 1 yd³의 무게)을 그대로 쓴다.
+  // computeYield는 물리값 62.4 × 27 = 1,684.8을 쓰지만, 학생이 화면의 식을 계산기에 그대로
+  // 넣었을 때 나오는 값과 채워지는 기본값이 어긋나면 안 되므로 워크시트는 인쇄된 값을 따른다
+  // (시멘트 부피가 정확히 반올림 경계에 걸린다: 0.1025 vs 0.1024). 수율 차이는 0.02 ft³ 미만.
+  const WORKSHEET_LB_PER_YD3 = 1685;
+  function absoluteVolumes(mix) {
+    const r3 = (x) => clamp(Math.round(x * 1000) / 1000, 0, 1); // 입력칸의 step·min·max와 같은 정밀도·범위
+    const byMass = (mass, rd) => (Number.isFinite(mass) ? r3(mass / (rd * WORKSHEET_LB_PER_YD3)) : null);
+    return {
+      vCm: byMass(mix.cement, MAT.sgCement),
+      vWater: byMass(mix.water, 1), // 물은 기준물질이라 상대밀도 1.00
+      vCa: byMass(mix.ca, MAT.sgCA),
+      vAir: Number.isFinite(mix.airPct) ? r3(mix.airPct / 100) : null,
+    };
+  }
+
   // 필요 설계 강도 (ACI 211.1): fc → fcr (안전 계수 적용)
   function fcrFor(fc) {
     if (fc < 3000) return fc + 1000;
@@ -255,7 +272,7 @@
     MISSIONS,
     fcrFor,
     predictSlump, classifyBehavior, mulberry32, predictStrength, cylinderStrengths,
-    computeYield, targetAirFor, scoreMix, quantizeQuarter, evaluateMix,
+    computeYield, absoluteVolumes, targetAirFor, scoreMix, quantizeQuarter, evaluateMix,
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = MixEngine;
