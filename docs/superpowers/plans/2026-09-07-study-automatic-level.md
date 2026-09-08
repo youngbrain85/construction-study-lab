@@ -588,6 +588,7 @@ EOF
 ```
 
 - [ ] **Step 3** README 구조 목록에 `- \`site/study/leveling/\` — *Automatic level: a field manual* (\`index.html\`, static); photos in \`img/\`` 를 soil-compaction 줄 뒤에 추가하고, 테스트 명령 끝에 ` tools/leveling.test.mjs` 를 붙인다.
+- [ ] **Step 3b** `site/study/index.html` 의 `credits()` 문단에 새 카드 사진의 저작자를 더한다. CC BY 는 쓰이는 자리마다 표시가 필요한데 leveling 카드 썸네일은 `study/leveling/img/setup.jpg`(Cvstr, CC BY 4.0)에서 잘라 온 것이다. Nixdorf 항목 뒤에 같은 모양으로 `'; Cvstr ', deed('https://creativecommons.org/licenses/by/4.0/', 'CC BY 4.0'),` 한 줄을 넣는다. **문단의 나머지(Pixabay 문장 포함)는 건드리지 않는다.**
 - [ ] **Step 4** 전체 게이트 통과 확인 후, 서버를 8812 로 띄워 `/study/` 를 1440×2800 으로 캡처한다. **Surveying 그룹에 Coming soon 행 대신 카드 한 장이 있어야 한다**(썸네일·제목 Automatic level). 서버 종료.
 - [ ] **Step 5** 커밋
 
