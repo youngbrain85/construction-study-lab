@@ -25,6 +25,7 @@ JOBS = [
     ('aggregate-gradation.jpg', os.path.join(ROOT, 'site/study/aggregate-gradation/img/sieve-stack.jpg'), 0.5),
     ('rebar-tension.jpg',       os.path.join(ROOT, 'site/study/rebar-tension/img/rebar-closeup.jpg'), 0.5),
     ('soil-compaction.jpg',     os.path.join(ROOT, 'site/study/soil-compaction/img/earthwork-hero.jpg'), 0.5),
+    ('leveling.jpg', os.path.join(ROOT, 'site/study/leveling/img/setup.jpg'), 0.5),
 ]
 for job in JOBS:
     out, src, anchor = job[0], job[1], job[2]
