@@ -1,0 +1,14 @@
+# Netlify 빌드 설정.
+# 저장소를 Netlify 에 연결하면 이 파일이 UI 설정보다 우선한다 — 발행 디렉터리를
+# 여기에 박아 두어야 저장소 루트(docs/·tools/ 까지)가 실수로 공개되지 않는다.
+#
+# 사이트는 정적이라 만들어 낼 산출물이 없다. 그래서 build command 는 빌드가 아니라
+# 테스트 게이트다: 실패하면 배포가 중단되고 직전 배포가 그대로 살아 있는다.
+
+[build]
+  publish = "site"
+  command = "node --test engine.test.mjs tools/*.test.mjs"
+
+[build.environment]
+  # node --test 는 18 이상 필요. 개발 환경과 맞춰 22 로 고정한다.
+  NODE_VERSION = "22"
