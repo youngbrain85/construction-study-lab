@@ -30,6 +30,7 @@ https://cnstlab.org
 - `site/study/rebar-tension/` — *Testing reinforcing steel: the tension test* (`index.html`, static); photos in `img/`
 - `site/study/air-yield/` — *Air content and unit weight* (`index.html`, static); photos in `img/`
 - `site/study/soil-compaction/` — *Compaction control: the Proctor test and field density* (`index.html` + `compaction.js` + `calc.js`); photos in `img/`
+- `site/study/leveling/` — *Automatic level: a field manual* (`index.html`, static); photos in `img/`
 - `site/labs/mix-design/` — Mix Design Lab module (`engine.js` scoring, `scene3d.js` three.js scenes)
 - `docs/design/mockups/` — the approved mockups the pages are built from
 
@@ -51,5 +52,5 @@ Then open http://localhost:8123 (the custom server serves `.js` with the right M
 ## Test
 
 ```sh
-node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs tools/layout.test.mjs tools/props.test.mjs tools/decor.test.mjs tools/compaction.test.mjs tools/cylinders.test.mjs tools/gradation.test.mjs tools/rebar.test.mjs tools/airyield.test.mjs
+node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs tools/layout.test.mjs tools/props.test.mjs tools/decor.test.mjs tools/compaction.test.mjs tools/cylinders.test.mjs tools/gradation.test.mjs tools/rebar.test.mjs tools/airyield.test.mjs tools/leveling.test.mjs
 ```

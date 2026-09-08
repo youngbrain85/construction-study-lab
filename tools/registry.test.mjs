@@ -52,12 +52,12 @@ test('MATERIALS: 항목이 있으면 group·type·필수 필드가 유효', () =
   }
 });
 
-test('MATERIALS: 글 8편이 재료별 그룹에 순서대로 있고 href·썸네일이 실제 파일을 가리킨다', () => {
+test('MATERIALS: 글 9편이 재료별 그룹에 순서대로 있고 href·썸네일이 실제 파일을 가리킨다', () => {
   const pages = S.MATERIALS.filter(m => m.type === 'page');
-  assert.deepEqual(pages.map(m => m.id), ['mix-design-1', 'mix-design-2', 'slump-test', 'air-yield', 'concrete-cylinders', 'aggregate-gradation', 'rebar-tension', 'soil-compaction']);
-  // 그룹 배정: 콘크리트 5 · 골재 1 · 철근 1 · 토양 1 (측량은 아직 글이 없다)
+  assert.deepEqual(pages.map(m => m.id), ['mix-design-1', 'mix-design-2', 'slump-test', 'air-yield', 'concrete-cylinders', 'aggregate-gradation', 'rebar-tension', 'soil-compaction', 'leveling']);
+  // 그룹 배정: 콘크리트 5 · 골재 1 · 철근 1 · 토양 1 · 측량 1
   assert.deepEqual(pages.map(m => m.group),
-    ['concrete', 'concrete', 'concrete', 'concrete', 'concrete', 'aggregate', 'steel', 'soils']);
+    ['concrete', 'concrete', 'concrete', 'concrete', 'concrete', 'aggregate', 'steel', 'soils', 'surveying']);
   for (const m of pages) {
     assert.ok(m.href.endsWith('/'), `${m.id} href ends with /`);
     assert.ok(existsSync(join(STUDY_DIR, m.href, 'index.html')), `${m.id} → ${m.href}index.html`);

@@ -59,6 +59,9 @@
     { id: 'soil-compaction', group: 'soils', type: 'page', title: 'Compaction control',
       desc: 'The Proctor curve, field density tests, and percent compaction.',
       href: 'soil-compaction/', thumb: 'img/soil-compaction.jpg' },
+    { id: 'leveling', group: 'surveying', type: 'page', title: 'Automatic level',
+      desc: 'Set up, read the rod, run a loop, and check the instrument — a field manual.',
+      href: 'leveling/', thumb: 'img/leveling.jpg' },
   ];
 
   // 점수 → 등급 (Mix Design Lab 채점 등급과 동일한 경계값)
