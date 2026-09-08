@@ -23,7 +23,14 @@ function bodyRows(t) {
 }
 const attr = (s, n) => { const m = s.match(new RegExp(`${n}="([^"]*)"`)); return m ? m[1] : null; };
 const mils = (x) => Math.round(Number(x) * 1000);   // ft → 0.001 ft 정수
-const cell = (row, i, name) => { const v = attr(row[i].attrs, name); return v === null ? null : mils(v); };
+// data-* 입력과 화면에 보이는 숫자가 어긋나면(한쪽만 고친 경우) 여기서 잡는다
+const cell = (row, i, name) => {
+  const v = attr(row[i].attrs, name);
+  if (v === null) return null;
+  const shown = row[i].text.split(/\s/)[0];   // "0.568 — true" 같은 셀은 앞의 숫자만 본다
+  assert.equal(mils(shown), mils(v), `${name}: 표시값 ${shown} 이 입력값 ${v} 와 다르다`);
+  return mils(v);
+};
 
 test('Table 2: 야장의 HI·표고가 BS·FS 에서만 다시 계산된다', () => {
   const t = table('tbl-fieldbook');
