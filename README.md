@@ -52,5 +52,7 @@ Then open http://localhost:8123 (the custom server serves `.js` with the right M
 ## Test
 
 ```sh
-node --test engine.test.mjs tools/contrast-check.test.mjs tools/registry.test.mjs tools/study-tables.test.mjs tools/site-guards.test.mjs tools/layout.test.mjs tools/props.test.mjs tools/decor.test.mjs tools/compaction.test.mjs tools/cylinders.test.mjs tools/gradation.test.mjs tools/rebar.test.mjs tools/airyield.test.mjs tools/leveling.test.mjs
+node --test engine.test.mjs tools/*.test.mjs
 ```
+
+Same command `netlify.toml` runs before a deploy, so a new `tools/*.test.mjs` file is picked up in both places without editing either.
