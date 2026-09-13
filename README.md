@@ -55,4 +55,11 @@ Then open http://localhost:8123 (the custom server serves `.js` with the right M
 node --test engine.test.mjs tools/*.test.mjs
 ```
 
-Same command `netlify.toml` runs before a deploy, so a new `tools/*.test.mjs` file is picked up in both places without editing either.
+## Deploy
+
+`main` is connected to Netlify. Push to `main` and that's the deploy — Netlify runs the test command above and, if it passes, publishes to https://cnstlab.org. A failing test fails the build and the previous version stays live, so a broken commit can't take the site down.
+
+Build settings come from `netlify.toml` rather than the Netlify UI:
+
+- publish directory `site/` — nothing outside it is served (`/README.md` and `/tools/…` return 404)
+- build command `node --test engine.test.mjs tools/*.test.mjs` — the same glob as above, so a new `tools/*.test.mjs` file is picked up in both places without editing either
