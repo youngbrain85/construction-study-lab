@@ -187,7 +187,7 @@
     const byMass = (mass, rd) => (Number.isFinite(mass) ? r3(mass / (rd * WORKSHEET_LB_PER_YD3)) : null);
     return {
       vCm: byMass(mix.cement, MAT.sgCement),
-      vWater: byMass(mix.water, 1), // 물은 기준물질이라 상대밀도 1.00
+      vWater: byMass(mix.water, 1), // 물은 기준물질이라 비중 1.00
       vCa: byMass(mix.ca, MAT.sgCA),
       vAir: Number.isFinite(mix.airPct) ? r3(mix.airPct / 100) : null,
     };
