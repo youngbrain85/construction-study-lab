@@ -7,8 +7,8 @@ const E = require('./site/labs/mix-design/engine.js');
 
 test('DATA: 새 재료 상수와 형상 계수', () => {
   const M = E.DATA.MAT;
-  assert.equal(M.sgCA, 2.68); assert.equal(M.absCA, 0.005);
-  assert.equal(M.sgFA, 2.64); assert.equal(M.absFA, 0.007);
+  assert.equal(M.sgCA, 2.68); assert.equal(M.sgFA, 2.64);
+  assert.equal(M.absCA, undefined); assert.equal(M.absFA, undefined); // 흡수율 제거 — 랩에 함수율 보정이 없어 OD/SSD 를 구분하지 않는다
   assert.equal(M.fmSand, 2.60); assert.equal(M.sgCement, 3.15);
   assert.deepEqual(E.DATA.SHAPE_FACTOR, { rounded: 0.92, crushed: 1.0 });
   assert.equal(E.DATA.FRESH_WEIGHT_TABLE, undefined); // 중량법 표 제거
@@ -32,6 +32,15 @@ test('MISSIONS: 미션 5종과 필드', () => {
 // 기준 배합(강의 예제): 1" NMAS, 비공기연행, well-rounded gravel
 const TEXTBOOK = { water: 299, cement: 544, ca: 1872, fa: 1292, airPct: 1.5,
   nmas: 1.0, isAE: false, aggShape: 'rounded' };
+
+test('shapeAdjustedWater: rounded 는 ×0.92 정수 반올림, crushed·형상 누락은 그대로, 비수치는 null', () => {
+  assert.equal(E.shapeAdjustedWater(325, 'rounded'), 299);   // 강의 예제: 325 × 0.92 = 299
+  assert.equal(E.shapeAdjustedWater(340, 'rounded'), 313);   // 312.8 → 313
+  assert.equal(E.shapeAdjustedWater(340, 'crushed'), 340);
+  assert.equal(E.shapeAdjustedWater(340, undefined), 340);   // 형상 누락 → crushed 취급 (predictSlump 와 동일)
+  assert.equal(E.shapeAdjustedWater(null, 'rounded'), null);
+  assert.equal(E.shapeAdjustedWater(NaN, 'rounded'), null);
+});
 
 test('predictSlump: 형상 계수 반영 앵커 (1" 비AE rounded = 276/299/312.8)', () => {
   assert.ok(Math.abs(E.predictSlump({ ...TEXTBOOK, water: 276 }) - 1.5) < 1e-9);
