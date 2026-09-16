@@ -250,7 +250,7 @@ const STEP_DEFS = [
   },
   {
     id: 'water', title: 'Step 3 — Mixing water and air content', sub:
-      'Read the water requirement for your slump and aggregate size. Decide whether this mix needs air entrainment.',
+      'Read the water requirement for your slump and aggregate size, adjust it for the aggregate shape, then decide whether this mix needs air entrainment.',
     render(box) {
       const d = game.design;
       const aeBtn = (on, lbl) => h('button', {
@@ -260,12 +260,14 @@ const STEP_DEFS = [
       // 이 미션의 굵은골재 형상 — 물을 정하는 자리에서 바로 보이도록 두 입력란 사이에 둔다
       const shape = game.mission.aggShape;
       const factor = E.DATA.SHAPE_FACTOR[shape] ?? 1.0;
+      // 문구의 숫자도 SHAPE_FACTOR 에서 뽑는다 — 계수가 바뀌어도 형상 줄과 아래 힌트가 어긋나지 않게
       const shapeLine = shape === 'rounded'
-        ? `${AGG_SHAPE_LABEL.rounded} — reduce the table value by 8 % (× 0.92).`
-        : `${AGG_SHAPE_LABEL.crushed} — use the table value as-is (× 1.00).`;
+        ? `${AGG_SHAPE_LABEL.rounded} — reduce the table value by ${Math.round((1 - factor) * 100)}% (× ${factor.toFixed(2)}).`
+        : `${AGG_SHAPE_LABEL.crushed} — use the table value as-is (× ${factor.toFixed(2)}).`;
       const adjHint = () => (d.waterInitial == null ? 'Enter the initial water first.'
         : `Suggested: ${d.waterInitial} × ${factor.toFixed(2)} = ${E.shapeAdjustedWater(d.waterInitial, shape)}. The batch uses the value in this field.`);
-      const adjField = numField({ label: 'Adjusted water', key: 'water', unit: 'lb/cu yd', min: 100, max: 500, step: 1, hint: adjHint() });
+      // 하한 92 = Initial 하한 100 × 가장 작은 형상 계수 0.92 — 자동 채움 값이 필드 범위를 벗어나지 않게
+      const adjField = numField({ label: 'Adjusted water', key: 'water', unit: 'lb/cu yd', min: 92, max: 500, step: 1, hint: adjHint() });
       const adjInput = adjField.querySelector('input'), adjHintEl = adjField.querySelector('.hint');
       // Initial 이 확정될 때마다 Adjusted 를 형상 계수로 다시 채운다. 학생이 Adjusted 를 직접 고친 값은
       // Initial 을 다시 바꾸기 전까지 그대로 둔다(Step 7 자동 채움과 같은 규칙). 재렌더 없이 요소만 갱신한다.
@@ -336,12 +338,14 @@ const STEP_DEFS = [
   },
   {
     id: 'cement', title: 'Step 5 — Cement content', sub:
-      'Compute the cement content from your water content and w/c ratio, then enter it.',
+      'Compute the cement content from your adjusted water content and w/c ratio, then enter it.',
     render(box) {
+      // Step 3 에 물이 둘(Initial·Adjusted) 있으므로 어느 쪽을 나누는지 문구와 힌트로 못박는다 — Initial 로 나눠도 채점은 통과해 버려 눈치챌 길이 없다
       box.append(
         h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin-bottom:4px' },
-          h('strong', {}, 'Formula: '), 'cement = water ÷ (w/c)'),
-        numField({ label: 'Cement content', key: 'cement', unit: 'lb/cu yd', min: 200, max: 1200, step: 1 }));
+          h('strong', {}, 'Formula: '), 'cement = adjusted water ÷ (w/c)'),
+        numField({ label: 'Cement content', key: 'cement', unit: 'lb/cu yd', min: 200, max: 1200, step: 1,
+          hint: `Adjusted water from step 3: ${game.design.water ?? '—'} lb/cu yd.` }));
     },
     refPanels: () => [],
     ready: () => game.design.cement != null,
