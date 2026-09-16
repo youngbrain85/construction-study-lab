@@ -63,7 +63,7 @@ const game = {
   mission: null, design: null, result: null, seed: 1,
   newRun(mission) {
     this.mission = mission;
-    this.design = { slumpTarget: null, nmas: null, isAE: false, water: null,
+    this.design = { slumpTarget: null, nmas: null, isAE: false, waterInitial: null, water: null,
       airPct: null, wc: null, cement: null, ca: null, fa: null,
       vCm: null, vWater: null, vCa: null, vAir: null }; // vCm/vWater/vCa/vAir는 Step 7 절대용적법 워크시트 전용 — 판정(designToMix)에는 쓰지 않는다
     this.result = null;
@@ -160,7 +160,7 @@ function updateWizNav() {
 }
 
 // ── 숫자 입력 (클램프 + NaN 복원) ─────────────────────────────────
-function numField({ label, key, unit, min, max, step, hint }) {
+function numField({ label, key, unit, min, max, step, hint, onCommit }) {
   const input = h('input', { type: 'number', min, max, step: step || 'any',
     value: game.design[key] ?? '' });
   // 타이핑 중(input): 파싱 성공 시 클램프해 라이브 커밋만 하고, 화면(input.value)과
@@ -168,7 +168,11 @@ function numField({ label, key, unit, min, max, step, hint }) {
   // Next 클릭이 사라진 옛 요소를 향하게 되어 클릭 삼켜짐·포커스 유실이 발생했다.
   input.addEventListener('input', () => {
     const v = parseFloat(input.value);
-    if (!Number.isNaN(v)) game.design[key] = Math.min(max, Math.max(min, v));
+    if (!Number.isNaN(v)) {
+      game.design[key] = Math.min(max, Math.max(min, v));
+      // 파생 필드(onCommit)는 범위 안의 값이 다 입력됐을 때만 갱신 — "3", "32" 같은 타이핑 중간값으로 튀지 않게
+      if (onCommit && v >= min && v <= max) onCommit();
+    }
     updateWizNav(); // Next 버튼 상태만 갱신
   });
   // blur(change): 최종값을 클램프해 input.value에 반영. NaN이면 이전 값으로 복원.
@@ -179,6 +183,7 @@ function numField({ label, key, unit, min, max, step, hint }) {
     const c = Math.min(max, Math.max(min, v));
     game.design[key] = c;
     input.value = c;
+    if (onCommit) onCommit();
     updateWizNav(); // Next 버튼 상태만 갱신
   });
   return h('div', { class: 'num-field' },
@@ -187,21 +192,20 @@ function numField({ label, key, unit, min, max, step, hint }) {
 }
 
 // ── 재료 물성 카드 (상시 표시) ────────────────────────────────────
-// 미션의 굵은골재 형상(aggShape)에 따라 라벨에 형상 문구를 덧붙인다.
+// 랩에는 함수율 보정 단계가 없으므로 골재의 건조 상태를 구분하지 않는다 — 상대밀도와 형상만 보여 준다.
+// 굵은골재 형상은 독립 행이다: Step 3 에서 물을 정할 때 학생이 바로 찾을 수 있어야 한다.
 const AGG_SHAPE_LABEL = { rounded: 'Well-rounded river gravel', crushed: 'Crushed stone (angular)' };
 function materialsCard() {
   const M = E.DATA.MAT;
-  const shape = game.mission ? AGG_SHAPE_LABEL[game.mission.aggShape] : null;
+  const shape = game.mission ? AGG_SHAPE_LABEL[game.mission.aggShape] : '—';
   return refTable('Materials Lab Report',
     ['Property', 'Value'],
-    [['Cement specific gravity', M.sgCement],
-     ['Coarse aggregate', shape ? `${M.sgCA} SG (SSD) — ${shape}` : `${M.sgCA} SG (SSD)`],
+    [['Cement relative density', M.sgCement],
+     ['Coarse aggregate', shape],
+     ['Coarse agg. relative density', M.sgCA],
      ['Coarse agg. dry-rodded unit weight', M.druwCA + ' lb/cu ft'],
-     ['Coarse agg. absorption', (M.absCA * 100).toFixed(1) + '%'],
-     ['Fine agg. specific gravity (SSD)', M.sgFA],
-     ['Fine agg. fineness modulus', M.fmSand.toFixed(2)],
-     ['Fine agg. absorption', (M.absFA * 100).toFixed(1) + '%']],
-    'All aggregates assumed at SSD condition.');
+     ['Fine agg. relative density', M.sgFA],
+     ['Fine agg. fineness modulus', M.fmSand.toFixed(2)]]);
 }
 
 // ── 스텝 정의 (1–2) ───────────────────────────────────────────────
@@ -253,10 +257,31 @@ const STEP_DEFS = [
         class: 'choice' + (d.isAE === on ? ' selected' : ''),
         'aria-pressed': d.isAE === on ? 'true' : 'false',
         onclick: () => { d.isAE = on; renderDesign(); } }, lbl);
+      // 이 미션의 굵은골재 형상 — 물을 정하는 자리에서 바로 보이도록 두 입력란 사이에 둔다
+      const shape = game.mission.aggShape;
+      const factor = E.DATA.SHAPE_FACTOR[shape] ?? 1.0;
+      const shapeLine = shape === 'rounded'
+        ? `${AGG_SHAPE_LABEL.rounded} — reduce the table value by 8 % (× 0.92).`
+        : `${AGG_SHAPE_LABEL.crushed} — use the table value as-is (× 1.00).`;
+      const adjHint = () => (d.waterInitial == null ? 'Enter the initial water first.'
+        : `Suggested: ${d.waterInitial} × ${factor.toFixed(2)} = ${E.shapeAdjustedWater(d.waterInitial, shape)}. The batch uses the value in this field.`);
+      const adjField = numField({ label: 'Adjusted water', key: 'water', unit: 'lb/cu yd', min: 100, max: 500, step: 1, hint: adjHint() });
+      const adjInput = adjField.querySelector('input'), adjHintEl = adjField.querySelector('.hint');
+      // Initial 이 확정될 때마다 Adjusted 를 형상 계수로 다시 채운다. 학생이 Adjusted 를 직접 고친 값은
+      // Initial 을 다시 바꾸기 전까지 그대로 둔다(Step 7 자동 채움과 같은 규칙). 재렌더 없이 요소만 갱신한다.
+      const syncAdjusted = () => {
+        d.water = E.shapeAdjustedWater(d.waterInitial, shape);
+        adjInput.value = d.water ?? '';
+        adjHintEl.textContent = adjHint();
+      };
       box.append(
         h('div', { class: 'num-field' }, h('label', {}, 'Mix type'),
           h('div', { class: 'choice-row' }, aeBtn(false, 'Non-air-entrained'), aeBtn(true, 'Air-entrained'))),
-        numField({ label: 'Mixing water', key: 'water', unit: 'lb/cu yd', min: 100, max: 500, step: 1 }),
+        numField({ label: 'Initial water (from the table)', key: 'waterInitial', unit: 'lb/cu yd', min: 100, max: 500, step: 1,
+          hint: 'Read the row for your slump and the column for your aggregate size.', onCommit: syncAdjusted }),
+        h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin:4px 0' },
+          h('strong', {}, "This mission's coarse aggregate: "), shapeLine),
+        adjField,
         numField({ label: 'Target air content', key: 'airPct', unit: '%', min: 0, max: 10, step: 0.5,
           hint: 'Non-AE mixes still trap some air — see the table.' }));
     },
@@ -284,7 +309,7 @@ const STEP_DEFS = [
           'Angular/crushed: use the table value as-is. Well-rounded gravel: start with an 8% reduction.'),
       ];
     },
-    ready: () => game.design.water != null && game.design.airPct != null,
+    ready: () => game.design.waterInitial != null && game.design.water != null && game.design.airPct != null,
   },
   {
     id: 'wc', title: 'Step 4 — Water-cement ratio', sub:
@@ -327,9 +352,8 @@ const STEP_DEFS = [
     render(box) {
       box.append(
         h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin-bottom:4px' },
-          h('div', {}, h('strong', {}, 'Formula: '), 'OD weight = (b/b₀) × 27 cu ft × dry-rodded unit weight'),
-          h('div', {}, 'SSD weight = OD × (1 + absorption)')),
-        numField({ label: 'Coarse aggregate (SSD basis)', key: 'ca', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
+          h('strong', {}, 'Formula: '), 'weight = (b/b₀) × 27 cu ft × dry-rodded unit weight'),
+        numField({ label: 'Coarse aggregate', key: 'ca', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
     },
     refPanels: () => {
       const T = E.DATA.CA_VOLUME_TABLE;
@@ -375,7 +399,7 @@ const STEP_DEFS = [
       // 라이브 표시줄: 요소는 여기서 한 번만 만들고, 이후 갱신은 updateWizNav() → updateVFineLine()가 담당한다
       vFineLine = h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;font-weight:600' }, 'V_fine = —');
       box.append(vFineLine,
-        numField({ label: 'Fine aggregate (SSD basis)', key: 'fa', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
+        numField({ label: 'Fine aggregate', key: 'fa', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
       updateVFineLine(); // 스텝을 다시 방문했을 때 기존 입력값을 즉시 반영
     },
     refPanels: () => [], // 참고표 없음 — materialsCard()의 비중(RD) 값만 사용
