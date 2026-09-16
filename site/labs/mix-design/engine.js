@@ -41,9 +41,9 @@
   };
 
 
-  // 재료 물성 (Materials Lab Report)
+  // 재료 물성 (Materials Lab Report). 랩에는 함수율 보정 단계가 없어 OD/SSD 를 구분하지 않는다 — 흡수율은 두지 않는다.
   const MAT = {
-    sgCement: 3.15, sgCA: 2.68, absCA: 0.005, sgFA: 2.64, absFA: 0.007, // 비중·흡수율
+    sgCement: 3.15, sgCA: 2.68, sgFA: 2.64, // 상대밀도
     druwCA: 100,   // 굵은골재 건조봉다짐 단위중량 (lb/ft³)
     fmSand: 2.60,  // 잔골재 조립률
     wUnit: 62.4,   // 물 단위중량 (lb/ft³)
@@ -51,6 +51,13 @@
 
   // 굵은골재 형상 계수 (1" 앵커 기준 비교)
   const SHAPE_FACTOR = { rounded: 0.92, crushed: 1.0 };
+
+  // 형상 보정 수량: 표 값(각진 쇄석 기준) × 형상 계수, 정수 lb — Step 3 의 Adjusted water 자동 채움이 쓴다.
+  // predictSlump 와 같은 SHAPE_FACTOR 를 쓰므로 0.92 는 한 곳에만 있다.
+  function shapeAdjustedWater(waterInitial, aggShape) {
+    if (!Number.isFinite(waterInitial)) return null;
+    return Math.round(waterInitial * (SHAPE_FACTOR[aggShape] ?? 1.0));
+  }
 
   // 미션 5종 (형상 계수 기준 지정)
   const MISSIONS = [
@@ -271,6 +278,7 @@
     DATA: { NMAS_LIST, SLUMP_ANCHORS, WATER_TABLE, WC_TABLE, CA_VOLUME_TABLE, MAT, SHAPE_FACTOR, WORKSHEET_LB_PER_YD3 },
     MISSIONS,
     fcrFor,
+    shapeAdjustedWater,
     predictSlump, classifyBehavior, mulberry32, predictStrength, cylinderStrengths,
     computeYield, absoluteVolumes, targetAirFor, scoreMix, quantizeQuarter, evaluateMix,
   };
