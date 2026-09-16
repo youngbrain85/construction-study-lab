@@ -192,7 +192,7 @@ function numField({ label, key, unit, min, max, step, hint, onCommit }) {
 }
 
 // ── 재료 물성 카드 (상시 표시) ────────────────────────────────────
-// 랩에는 함수율 보정 단계가 없으므로 골재의 건조 상태를 구분하지 않는다 — 상대밀도와 형상만 보여 준다.
+// 랩에는 함수율 보정 단계가 없으므로 골재의 건조 상태를 구분하지 않는다 — 비중과 형상만 보여 준다.
 // 굵은골재 형상은 독립 행이다: Step 3 에서 물을 정할 때 학생이 바로 찾을 수 있어야 한다.
 const AGG_SHAPE_LABEL = { rounded: 'Well-rounded river gravel', crushed: 'Crushed stone (angular)' };
 function materialsCard() {
@@ -200,11 +200,11 @@ function materialsCard() {
   const shape = game.mission ? AGG_SHAPE_LABEL[game.mission.aggShape] : '—';
   return refTable('Materials Lab Report',
     ['Property', 'Value'],
-    [['Cement relative density', M.sgCement],
+    [['Cement specific gravity', M.sgCement],
      ['Coarse aggregate', shape],
-     ['Coarse agg. relative density', M.sgCA],
+     ['Coarse agg. specific gravity', M.sgCA],
      ['Coarse agg. dry-rodded unit weight', M.druwCA + ' lb/cu ft'],
-     ['Fine agg. relative density', M.sgFA],
+     ['Fine agg. specific gravity', M.sgFA],
      ['Fine agg. fineness modulus', M.fmSand.toFixed(2)]]);
 }
 
@@ -387,7 +387,7 @@ const STEP_DEFS = [
       const q = (v) => (v == null ? '—' : v.toLocaleString('en-US')); // 힌트에 쓸 앞 단계 값(식 안에 들어가므로 로캘 고정)
       box.append(
         h('div', { class: 'card', style: 'background:var(--primary-50);border-color:transparent;box-shadow:none;margin-bottom:4px' },
-          h('div', {}, h('strong', {}, 'Formula: '), `V (cu yd) = mass ÷ (relative density × ${WS})`),
+          h('div', {}, h('strong', {}, 'Formula: '), `V (cu yd) = mass ÷ (specific gravity × ${WS})`),
           h('div', {}, 'V_air = air% ÷ 100'),
           h('div', {}, 'V_fine = 1.000 − ΣV'),
           h('div', { class: 'ref-note' },
@@ -406,7 +406,7 @@ const STEP_DEFS = [
         numField({ label: 'Fine aggregate', key: 'fa', unit: 'lb/cu yd', min: 0, max: 2500, step: 1 }));
       updateVFineLine(); // 스텝을 다시 방문했을 때 기존 입력값을 즉시 반영
     },
-    refPanels: () => [], // 참고표 없음 — materialsCard()의 비중(RD) 값만 사용
+    refPanels: () => [], // 참고표 없음 — materialsCard()의 비중(SG) 값만 사용
     ready: () => game.design.vCm != null && game.design.vWater != null && game.design.vCa != null
       && game.design.vAir != null && game.design.fa != null,
   },

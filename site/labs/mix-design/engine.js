@@ -43,7 +43,7 @@
 
   // 재료 물성 (Materials Lab Report). 랩에는 함수율 보정 단계가 없어 OD/SSD 를 구분하지 않는다 — 흡수율은 두지 않는다.
   const MAT = {
-    sgCement: 3.15, sgCA: 2.68, sgFA: 2.64, // 상대밀도
+    sgCement: 3.15, sgCA: 2.68, sgFA: 2.64, // 비중
     druwCA: 100,   // 굵은골재 건조봉다짐 단위중량 (lb/ft³)
     fmSand: 2.60,  // 잔골재 조립률
     wUnit: 62.4,   // 물 단위중량 (lb/ft³)
@@ -187,7 +187,7 @@
     const byMass = (mass, rd) => (Number.isFinite(mass) ? r3(mass / (rd * WORKSHEET_LB_PER_YD3)) : null);
     return {
       vCm: byMass(mix.cement, MAT.sgCement),
-      vWater: byMass(mix.water, 1), // 물은 기준물질이라 상대밀도 1.00
+      vWater: byMass(mix.water, 1), // 물은 기준물질이라 비중 1.00
       vCa: byMass(mix.ca, MAT.sgCA),
       vAir: Number.isFinite(mix.airPct) ? r3(mix.airPct / 100) : null,
     };
