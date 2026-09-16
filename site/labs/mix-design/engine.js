@@ -43,7 +43,7 @@
 
   // 재료 물성 (Materials Lab Report). 랩에는 함수율 보정 단계가 없어 OD/SSD 를 구분하지 않는다 — 흡수율은 두지 않는다.
   const MAT = {
-    sgCement: 3.15, sgCA: 2.68, sgFA: 2.64, // 상대밀도
+    sgCement: 3.15, sgCA: 2.68, sgFA: 2.64, // 비중
     druwCA: 100,   // 굵은골재 건조봉다짐 단위중량 (lb/ft³)
     fmSand: 2.60,  // 잔골재 조립률
     wUnit: 62.4,   // 물 단위중량 (lb/ft³)
